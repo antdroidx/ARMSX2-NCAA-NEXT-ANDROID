@@ -360,6 +360,13 @@ jobs:
           python3 ../scripts/patch_startup.py
           grep -n "NEXT_STARTUP_" platforms/android/app/src/main/java/com/armsx2/runtime/MainActivityRuntime.kt
 
+      - name: Apply splash-to-Main startup probe
+        working-directory: src
+        run: |
+          set -euxo pipefail
+          python3 ../scripts/patch_splash_probe.py
+          grep -n "STARTUP_PROBE_SPLASH_PASSED" platforms/android/app/src/main/java/com/armsx2/BootSplashActivity.kt
+
       - name: Fetch shaderc third-party deps
         working-directory: src/platforms/android
         run: python3 app/src/main/cpp/3rdparty/shaderc/utils/git-sync-deps
@@ -388,8 +395,8 @@ jobs:
             ./gradlew :app:cleanCxx
             ./gradlew :app:assembleGithubDebug \
               -Parmsx2.applicationId=com.armsx2.ncaanext \
-              -Parmsx2.versionCode=128005 \
-              -Parmsx2.versionName=0.1.0-next128-jd4029-startupfix \
+              -Parmsx2.versionCode=128006 \
+              -Parmsx2.versionName=0.1.1-next128-jd4029-splashprobe \
               -Parmsx2.hostPageSize="$page_size" \
               -Parmsx2.nativeLibName="$lib_name" \
               --stacktrace
