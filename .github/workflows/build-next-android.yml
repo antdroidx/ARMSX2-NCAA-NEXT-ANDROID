@@ -353,19 +353,12 @@ jobs:
           grep -n "JD4029 compatibility" pcsx2/GS/Renderers/HW/GSTextureReplacements.cpp
           grep -n "0x00000007FFF00000ULL" pcsx2/GS/Renderers/HW/GSTextureCache.cpp
 
-      - name: Apply startup crash isolation
+      - name: Apply minimal Main activity probe
         working-directory: src
         run: |
           set -euxo pipefail
-          python3 ../scripts/patch_startup.py
-          grep -n "NEXT_STARTUP_" platforms/android/app/src/main/java/com/armsx2/runtime/MainActivityRuntime.kt
-
-      - name: Apply splash-to-Main startup probe
-        working-directory: src
-        run: |
-          set -euxo pipefail
-          python3 ../scripts/patch_splash_probe.py
-          grep -n "STARTUP_PROBE_SPLASH_PASSED" platforms/android/app/src/main/java/com/armsx2/BootSplashActivity.kt
+          python3 ../scripts/patch_main_probe.py
+          grep -n "MAIN_PROBE_ONCREATE_PASSED" platforms/android/app/src/main/java/com/armsx2/Main.kt
 
       - name: Fetch shaderc third-party deps
         working-directory: src/platforms/android
@@ -395,8 +388,8 @@ jobs:
             ./gradlew :app:cleanCxx
             ./gradlew :app:assembleGithubDebug \
               -Parmsx2.applicationId=com.armsx2.ncaanext \
-              -Parmsx2.versionCode=128006 \
-              -Parmsx2.versionName=0.1.1-next128-jd4029-splashprobe \
+              -Parmsx2.versionCode=128007 \
+              -Parmsx2.versionName=0.1.2-next128-jd4029-mainprobe \
               -Parmsx2.hostPageSize="$page_size" \
               -Parmsx2.nativeLibName="$lib_name" \
               --stacktrace
