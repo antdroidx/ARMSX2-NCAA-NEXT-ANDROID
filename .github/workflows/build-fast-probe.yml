@@ -1,0 +1,105 @@
+name: Fast ARMSX2 Runtime Probe
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/build-fast-probe.yml'
+      - 'scripts/patch_runtime_early_probe.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  build-fast-probe:
+    name: Build Fast Runtime Probe APK
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out probe project
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+
+      - name: Download ARMSX2 source
+        run: |
+          set -euxo pipefail
+          curl -L "https://github.com/SgtBilko76/ARMSX2-3D/archive/f4904cb5e3b322178e3815683e221f3ab9354d2e.zip" -o armsx2.zip
+          unzip -q armsx2.zip
+          mv ARMSX2-3D-f4904cb5e3b322178e3815683e221f3ab9354d2e src
+
+      - name: Restore Gradle cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-armsx2-f4904cb5-${{ hashFiles('src/platforms/android/**/*.gradle*', 'src/platforms/android/gradle/libs.versions.toml') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-armsx2-f4904cb5-
+
+      - name: Download known-good native cores from Run 6
+        uses: actions/download-artifact@v4
+        with:
+          name: ARMSX2-NCAA-NEXT-ANDROID-test-apk
+          path: prebuilt
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: 36368317970
+
+      - name: Stage prebuilt 4K and 16K emucore libraries
+        run: |
+          set -euxo pipefail
+          APK="$(find prebuilt -type f -name '*.apk' -print -quit)"
+          test -n "$APK"
+          JNI="src/platforms/android/app/src/main/jniLibs/arm64-v8a"
+          mkdir -p "$JNI"
+          unzip -p "$APK" "lib/arm64-v8a/libemucore_4k.so" > "$JNI/libemucore_4k.so"
+          unzip -p "$APK" "lib/arm64-v8a/libemucore_16k.so" > "$JNI/libemucore_16k.so"
+          test -s "$JNI/libemucore_4k.so"
+          test -s "$JNI/libemucore_16k.so"
+          ls -lh "$JNI/libemucore_4k.so" "$JNI/libemucore_16k.so"
+
+      - name: Apply early MainActivityRuntime probe
+        working-directory: src
+        run: |
+          set -euxo pipefail
+          python3 ../scripts/patch_runtime_early_probe.py
+          grep -n "RUNTIME_EARLY_ONCREATE_PASSED" platforms/android/app/src/main/java/com/armsx2/runtime/MainActivityRuntime.kt
+
+      - name: Build APK without recompiling native core
+        working-directory: src/platforms/android
+        run: |
+          set -euxo pipefail
+          ./gradlew :app:assembleGithubDebug             -x ':app:configureCMakeDebug[arm64-v8a]'             -x ':app:buildCMakeDebug[arm64-v8a]'             -Parmsx2.applicationId=com.armsx2.ncaanext             -Parmsx2.versionCode=128008             -Parmsx2.versionName=0.1.3-runtime-early-probe-fast             -Parmsx2.hostPageSize=0x1000             -Parmsx2.nativeLibName=emucore_4k             --stacktrace
+
+      - name: Verify and collect APK
+        run: |
+          set -euxo pipefail
+          APK="src/platforms/android/app/build/outputs/apk/github/debug/app-github-debug.apk"
+          test -f "$APK"
+          unzip -l "$APK" "lib/arm64-v8a/libemucore_4k.so"
+          unzip -l "$APK" "lib/arm64-v8a/libemucore_16k.so"
+          mkdir -p out
+          cp "$APK" out/ARMSX2-NCAA-NEXT-ANDROID-RUNTIME-PROBE-fast-debug.apk
+          sha256sum out/ARMSX2-NCAA-NEXT-ANDROID-RUNTIME-PROBE-fast-debug.apk > out/ARMSX2-NCAA-NEXT-ANDROID-RUNTIME-PROBE-fast-debug.apk.sha256
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ARMSX2-NCAA-NEXT-ANDROID-fast-probe-apk
+          path: out/*
+          if-no-files-found: error
