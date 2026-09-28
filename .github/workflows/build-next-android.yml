@@ -1,11 +1,6 @@
-name: Build ARMSX2 NCAA NEXT Android
+name: Full ARMSX2 NCAA NEXT Native Build
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - '.github/workflows/build-next-android.yml'
   workflow_dispatch:
 
 jobs:
@@ -353,13 +348,6 @@ jobs:
           grep -n "JD4029 compatibility" pcsx2/GS/Renderers/HW/GSTextureReplacements.cpp
           grep -n "0x00000007FFF00000ULL" pcsx2/GS/Renderers/HW/GSTextureCache.cpp
 
-      - name: Apply minimal Main activity probe
-        working-directory: src
-        run: |
-          set -euxo pipefail
-          python3 ../scripts/patch_main_probe.py
-          grep -n "MAIN_PROBE_ONCREATE_PASSED" platforms/android/app/src/main/java/com/armsx2/Main.kt
-
       - name: Fetch shaderc third-party deps
         working-directory: src/platforms/android
         run: python3 app/src/main/cpp/3rdparty/shaderc/utils/git-sync-deps
@@ -388,8 +376,8 @@ jobs:
             ./gradlew :app:cleanCxx
             ./gradlew :app:assembleGithubDebug \
               -Parmsx2.applicationId=com.armsx2.ncaanext \
-              -Parmsx2.versionCode=128007 \
-              -Parmsx2.versionName=0.1.2-next128-jd4029-mainprobe \
+              -Parmsx2.versionCode=128100 \
+              -Parmsx2.versionName=0.2.0-next128-jd4029-full \
               -Parmsx2.hostPageSize="$page_size" \
               -Parmsx2.nativeLibName="$lib_name" \
               --stacktrace
