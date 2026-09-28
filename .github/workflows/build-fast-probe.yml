@@ -60,18 +60,26 @@ jobs:
           repository: ${{ github.repository }}
           run-id: 36368317970
 
-      - name: Stage prebuilt 4K and 16K emucore libraries
+      - name: Stage all prebuilt native libraries from Run 6
         run: |
           set -euxo pipefail
           APK="$(find prebuilt -type f -name '*.apk' -print -quit)"
           test -n "$APK"
           JNI="src/platforms/android/app/src/main/jniLibs/arm64-v8a"
+          TMP_NATIVE="$(mktemp -d)"
           mkdir -p "$JNI"
-          unzip -p "$APK" "lib/arm64-v8a/libemucore_4k.so" > "$JNI/libemucore_4k.so"
-          unzip -p "$APK" "lib/arm64-v8a/libemucore_16k.so" > "$JNI/libemucore_16k.so"
+          unzip -q "$APK" 'lib/arm64-v8a/*.so' -d "$TMP_NATIVE"
+          cp -f "$TMP_NATIVE"/lib/arm64-v8a/*.so "$JNI"/
           test -s "$JNI/libemucore_4k.so"
           test -s "$JNI/libemucore_16k.so"
-          ls -lh "$JNI/libemucore_4k.so" "$JNI/libemucore_16k.so"
+          test -s "$JNI/libc++_shared.so"
+          test -s "$JNI/libshaderc_shared.so"
+          test -s "$JNI/libSPIRV-Tools-shared.so"
+          test -s "$JNI/liblibrashader_capi.so"
+          COUNT="$(find "$JNI" -maxdepth 1 -type f -name '*.so' | wc -l)"
+          echo "Staged $COUNT native libraries"
+          test "$COUNT" -ge 15
+          ls -lh "$JNI"/*.so
 
       - name: Apply early MainActivityRuntime probe
         working-directory: src
@@ -84,7 +92,7 @@ jobs:
         working-directory: src/platforms/android
         run: |
           set -euxo pipefail
-          ./gradlew :app:assembleGithubDebug             -x ':app:configureCMakeDebug[arm64-v8a]'             -x ':app:buildCMakeDebug[arm64-v8a]'             -Parmsx2.applicationId=com.armsx2.ncaanext             -Parmsx2.versionCode=128008             -Parmsx2.versionName=0.1.3-runtime-early-probe-fast             -Parmsx2.hostPageSize=0x1000             -Parmsx2.nativeLibName=emucore_4k             --stacktrace
+          ./gradlew :app:assembleGithubDebug             -x ':app:configureCMakeDebug[arm64-v8a]'             -x ':app:buildCMakeDebug[arm64-v8a]'             -Parmsx2.applicationId=com.armsx2.ncaanext             -Parmsx2.versionCode=128009             -Parmsx2.versionName=0.1.4-runtime-early-probe-fast-fullnative             -Parmsx2.hostPageSize=0x1000             -Parmsx2.nativeLibName=emucore_4k             --stacktrace
 
       - name: Verify and collect APK
         run: |
