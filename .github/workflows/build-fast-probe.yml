@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/build-fast-probe.yml'
       - 'scripts/patch_runtime_early_probe.py'
+      - 'scripts/patch_crash_debugger.py'
   workflow_dispatch:
 
 permissions:
@@ -88,11 +89,18 @@ jobs:
           python3 ../scripts/patch_runtime_early_probe.py
           grep -n "RUNTIME_EARLY_ONCREATE_PASSED" platforms/android/app/src/main/java/com/armsx2/runtime/MainActivityRuntime.kt
 
+      - name: Apply on-device crash debugger
+        working-directory: src
+        run: |
+          set -euxo pipefail
+          python3 ../scripts/patch_crash_debugger.py
+          grep -n "NCAA NEXT CRASH DEBUGGER" platforms/android/app/src/main/java/com/armsx2/BootSplashActivity.kt
+
       - name: Build APK without recompiling native core
         working-directory: src/platforms/android
         run: |
           set -euxo pipefail
-          ./gradlew :app:assembleGithubDebug             -x ':app:configureCMakeDebug[arm64-v8a]'             -x ':app:buildCMakeDebug[arm64-v8a]'             -Parmsx2.applicationId=com.armsx2.ncaanext             -Parmsx2.versionCode=128009             -Parmsx2.versionName=0.1.4-runtime-early-probe-fast-fullnative             -Parmsx2.hostPageSize=0x1000             -Parmsx2.nativeLibName=emucore_4k             --stacktrace
+          ./gradlew :app:assembleGithubDebug             -x ':app:configureCMakeDebug[arm64-v8a]'             -x ':app:buildCMakeDebug[arm64-v8a]'             -Parmsx2.applicationId=com.armsx2.ncaanext             -Parmsx2.versionCode=128010             -Parmsx2.versionName=0.1.5-runtime-crash-debugger-fast             -Parmsx2.hostPageSize=0x1000             -Parmsx2.nativeLibName=emucore_4k             --stacktrace
 
       - name: Verify and collect APK
         run: |
