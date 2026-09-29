@@ -1,0 +1,29 @@
+{
+  "apk_sha256": "b4292cfb6f80b00148751ef77a063e836c0741a31d72565e31ab92bf41f8e2f9",
+  "native_sha256": {
+    "lib/arm64-v8a/libEGL_angle.so": "0638fd7d03631a65659e2af51c997ac966f082d3e189ba7137382952daa334c2",
+    "lib/arm64-v8a/libGLESv2_angle.so": "def0973783d540aa1a888e9c3bc34849afcfb04d7487a823184a52c390e361c5",
+    "lib/arm64-v8a/libSPIRV-Tools-shared.so": "e3ddfa34f7c9b4b0df181751d251df3c9e3e4d649c42df7f62cdca6b2d47e883",
+    "lib/arm64-v8a/libandroidx.graphics.path.so": "41e9a793c43a0f4fddb19e33f346bace464f30f888ba7b9eaf96294ea115bfb6",
+    "lib/arm64-v8a/libc++_shared.so": "cd61762848882a16c8244c964a6f396c0caa0b440588a210ce9cc4ab0e6d9f0c",
+    "lib/arm64-v8a/libemucore_16k.so": "fcd51483361de66e1ed31cd05faf75a82c17d4d7005d91511ece60623d2901f6",
+    "lib/arm64-v8a/libemucore_4k.so": "7f9727dbc25430701216351c24cfdf8a529c095813cffb573c820932e40bfb6b",
+    "lib/arm64-v8a/libfile_redirect_hook.so": "282a6dfc5950c0b41218b403b89a6beb6ac22c9c97f6022a946935994e23816b",
+    "lib/arm64-v8a/libflurry.so": "c55be44b12743e457466275bb1c63b731e643932f465f96cec7033b2b2daca93",
+    "lib/arm64-v8a/libgsl_alloc_hook.so": "02ab86248e9832df97169dad4b0196237ba8cae3d1908d3beaa0aad863a2dfd8",
+    "lib/arm64-v8a/libhook_impl.so": "506701d63d352316b224501ec859b66e1050740273da43409d1622a09126f546",
+    "lib/arm64-v8a/liblibrashader_capi.so": "3ef56b0ed1e5bb662cb86d1624fe507d7e38dd11fd82576dd98343e652f73dc2",
+    "lib/arm64-v8a/libmain_hook.so": "905154d71f4de2dc9be6d7e943783f5eff915d1bbd6c9ec309af4d4ffe081c88",
+    "lib/arm64-v8a/libsavers.so": "be2c77df2882969d46716c575cb19ec0c6ecb232f5c7231d249b9105cc285082",
+    "lib/arm64-v8a/libshaderc_shared.so": "f9311716c14b1a88212685c44fdda196e4351c4030d6ced4862792cb3b2c34c8"
+  },
+  "package": "com.armsx2.ncaanext",
+  "version_code": 128015,
+  "version_name": "0.1.9-settings-source-constructor-fix",
+  "certificate_sha256": "599891bb2245e9c90237c41e7066889cb9c28e11c2f8b5d6af75b10cad3a783f",
+  "core_resource_count": 113,
+  "pr_head": "aeb5e9296eebc546f3f4d7df09d9e5c86cfadae9",
+  "merge_commit": "d3b23e8d5f1e41ec947db92a3285c14015d8fe17",
+  "workflow_run": 36592876989,
+  "device_evidence": "User reports app/game launch and NEXT 27 extended-RAM gameplay succeed; Close Game crashes."
+}

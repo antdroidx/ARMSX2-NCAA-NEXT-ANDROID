@@ -48,13 +48,18 @@ def main():
     p.add_argument("--report", type=Path, required=True)
     a = p.parse_args()
     report = identity(a.apk, a.build_tools)
-    previous = identity(a.previous, a.build_tools, BUILD16_CERT)
-    if report["version_code"] != 128015 or report["version_code"] <= previous["version_code"]:
-        raise ValueError("New APK must be versionCode 128015 and upgrade the previous build")
-    if report["version_name"] != "0.1.9-settings-source-constructor-fix":
+    previous = identity(a.previous, a.build_tools)
+    if report["version_code"] != 128016 or report["version_code"] <= previous["version_code"]:
+        raise ValueError("New APK must be versionCode 128016 and upgrade the previous build")
+    if report["version_name"] != "0.1.10-game-exit-no-intro":
         raise ValueError("Unexpected version name")
     run(a.build_tools / "zipalign", "-c", "-P", "16", "4", a.apk)
+    baseline = json.loads(Path(__file__).resolve().parents[1].joinpath("baseline/known-good.json").read_text())
+    if hashlib.sha256(a.previous.read_bytes()).hexdigest() != baseline["apk_sha256"]:
+        raise ValueError("Previous APK differs from accepted PR 1 artifact")
     native = native_inventory(a.apk)
+    if native != baseline["native_sha256"]:
+        raise ValueError("Native libraries differ from accepted NEXT 27 baseline")
     if native != native_inventory(a.native_base):
         raise ValueError("Native library inventory/content changed from Run 6")
     if {n.split("/")[1] for n in native} != {"arm64-v8a"}:
@@ -95,15 +100,15 @@ def main():
             definitions += result.stdout.count("Class descriptor  : 'Lcom/armsx2/config/Settings;'")
         if definitions != 1 or not any(d["settings_constructors"] for d in report["dex"].values()):
             raise ValueError("Expected exactly one Settings class definition")
-        for marker in (b"NCAA NEXT CRASH DEBUGGER", b"DIAG_CRASH_REPORT_SHOWN", b"DIAG_FIRST_LAUNCH"):
+        for marker in (b"NCAA NEXT CRASH DEBUGGER", b"DIAG_CRASH_REPORT_SHOWN", b"DIAG_FIRST_LAUNCH", b"STARTUP_INTRO_BYPASSED", b"LIBRARY_READY", b"SHUTDOWN_BEGIN"):
             if not any(marker in d for d in all_dex):
                 raise ValueError(f"Crash instrumentation missing: {marker!r}")
         report["core_resource_count"] = len(resources)
     report["apk_sha256"] = hashlib.sha256(a.apk.read_bytes()).hexdigest()
     report["previous_apk"] = previous
-    report["update_compatible_with_build16"] = report["certificate_sha256"] == previous["certificate_sha256"]
-    report["signing_migration"] = "Build 16 used an unpreserved runner debug key. Back up data before one-time reinstall; future builds must retain the pinned recoverable key."
-    report["runtime_status"] = "Not device-tested; ART launch and main-menu acceptance remain required"
+    report["update_compatible_with_baseline"] = report["certificate_sha256"] == previous["certificate_sha256"]
+    report["baseline_commit"] = baseline["pr_head"]
+    report["runtime_status"] = "Device acceptance pending: launch, NEXT 27 extended RAM, Close Game, relaunch; ART is a separate CI gate"
     a.report.parent.mkdir(parents=True, exist_ok=True)
     a.report.write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report, indent=2))

@@ -89,3 +89,128 @@ through the splash to the ordinary main menu, open settings, then close
 and relaunch. Do not launch NEXT 27 yet. On failure, reopen the app and
 copy the crash debugger report; optional adb logcat should include AndroidRuntime
 and NCAA_NEXT messages. Installation failures need the exact Android/adb error.
+
+
+## 2026-09-29 — accepted baseline and game-exit candidate
+
+### Baseline review and merge
+
+Reviewed PR #1 at aeb5e9296eebc546f3f4d7df09d9e5c86cfadae9:
+constructor/default/copy repair, 337 call-site migration, structured JSON fields,
+crash debugger, explicit signer, declaration and DEX audits, and resource checks.
+Run 36592876989 passed both jobs, including Settings JVM tests and API 35 ART
+`SETTINGS_ART_SMOKE_OK`. Ten Python audit regression tests also passed locally.
+The user reports successful game launch and NCAA NEXT 27 extended-RAM gameplay.
+This is user device evidence, not an emulator test performed in this chat.
+
+Merged PR #1 using its exact reviewed head; main merge commit:
+`d3b23e8d5f1e41ec947db92a3285c14015d8fe17`.
+Created `codex/game-exit-no-intro` from that updated main.
+`baseline/known-good.json` pins the accepted APK hash, all 15 native-library
+hashes, signer, version, CI run, and commits. A local copy of the accepted artifact
+was downloaded before editing. Historical architecture notes below remain relevant:
+working NEXT 27 does not establish wholesale JDHalfrack core provenance.
+
+### Reproduction and investigation
+
+User reproduction: during gameplay, press Pause to enter the app menu, then
+**Close Game**. No crash report/logcat was available. Consequently, the lifecycle
+races below are confirmed source defects, but their responsibility for this
+particular device crash is NOT yet confirmed.
+
+Traced the pinned upstream f4904cb5 source across these boundaries:
+
+- `EmulationMenuScreen` calls `MainActivityRuntime.closeGame()` -> `stop()`.
+  External-launch preferences may additionally request Activity finish; ordinary
+  library-launched Close Game should not destroy the Activity.
+- Pause/resume use VMControl while shutdown used a separate VMStop executor.
+  A duplicate stop while native was active queued another shutdown. This could
+  target teardown twice or run late against a restarted game.
+- Game and BIOS run-loop `finally` blocks cleared the stop latch independently
+  of the shutdown caller, and both the worker and run-loop could publish STOPPED
+  and perform library cleanup. That opens a restart/cleanup race.
+- Java `NativeApp.vmSetPaused` rejected stale resume but accepted stale pause
+  after STOPPED, allowing a dead session to re-enter PAUSED state.
+- `onDestroy` called shutdown again on the UI thread and then killed the process.
+  Configuration changes already had an exemption, which is retained.
+- JNI shutdown latches stop, changes native state, nudges EE execution, queues
+  RequestVMShutdown, then waits up to five seconds for VMState::Shutdown.
+  Returning from this JNI call is NOT a join of runVMThread.
+- The CPU run loop calls VMManager::Shutdown, which waits for VU/GS, closes SPU2,
+  input, devices, disc and memory cards, and closes GS; CPUThreadShutdown then
+  waits for savestate writes, joins GS/snapshot work, releases CPU providers and
+  SysMemory, and closes native logging. JNI returns only after that path.
+- Surface destruction is routed through onNativeSurfaceDestroyed and the
+  CPU/GS handoff. Frontend STOPPED must not initiate surface/library transitions
+  while the old native run still owns those resources.
+- Native shutdown also touches limiter/core state from its JNI caller. Native
+  teardown and audio/renderer destruction remain possible independent failure
+  sites; no tombstone is available to justify changing the accepted binaries.
+
+### Source repair and diagnostics
+
+Added a tested VmCompletionBarrier used by both game and BIOS paths. It coalesces
+stop requests and permits one UI-thread completion only after both JNI run and
+shutdown callers return. A native timeout never counts as completed teardown.
+Pause/resume/stop now enter through the same Java executor. Closing during boot
+waits for an active VM or a cancelled/failed run instead of losing the stop during
+Initializing. Existing auto-save behavior is retained. Both stale pause and stale
+resume callbacks are rejected while STOPPED. Real Activity destruction requests
+the same asynchronous stop rather than a second shutdown/process kill.
+
+Boundary diagnostics go to Android logcat (`NCAA_NEXT`, `VM_EXIT`) and bounded
+`logs/shutdown.log`: STOP_REQUEST, STOP_COALESCED, WAIT_BOOT, AUTOSAVE_BEGIN/RETURN,
+SHUTDOWN_BEGIN/RETURN, RUN_RETURNED, LIBRARY_READY, RESTART_READY, and exceptions.
+The existing crash report now includes this file and a Continue to game library
+button. Java exceptions remain visible to the original uncaught-crash handler.
+
+Normal BootSplash startup performs the existing crash check and immediately
+forwards to Main. It never creates the intro VideoView or waits on playback.
+Intent data, extras, ClipData and URI permissions are retained. Explicit preview
+from settings remains available. Android's own launch window remains OS-managed.
+
+### Build and validation plan
+
+Candidate: version 0.1.10-game-exit-no-intro / 128016, package unchanged, pinned
+signer unchanged. Fast workflow still reuses Run 6 binaries. In addition to the
+existing native/resource comparisons, validation pins native hashes directly to
+the device-accepted PR #1 and verifies the exact prior APK hash before checking
+update compatibility. The old Build 16 certificate inspection remains separate.
+Settings JVM tests, constructor audit, packaged DEX checks, signing, manifest,
+ZIP alignment, core resources, and API 35 ART remain required. New JVM tests run
+against the actual production barrier, including both completion orders,
+duplicate stop, failed boot, repeated sessions, and concurrent returns.
+
+Local pinned-source patch application and lifecycle integration checks passed.
+CI/build results and device results are recorded separately below when available.
+No physical-device result is claimed by source review or host tests.
+See DEVICE_TESTING.md. This PR must stay unmerged until the required device gate
+passes. If Close Game still crashes, collect the new boundary log plus Android's
+native crash report before choosing a native change.
+
+
+### Candidate CI result — passed
+
+Run https://github.com/antdroidx/ARMSX2-NCAA-NEXT-ANDROID/actions/runs/36601647401
+built commit `1097e9880f212454af8d8446aa329d0095198541` successfully.
+
+- 10 Python audit tests passed.
+- 4 Settings JVM tests and 5 production VM completion-barrier JVM tests passed;
+  downloaded JUnit XML confirms zero failures/errors/skips.
+- Settings compiled declaration audit passed; all 820,584 supported packaged DEX
+  invokes passed the structural audit.
+- API 35 Android ART: `SETTINGS_ART_SMOKE_OK: class verified, defaults/update/round-trip passed`.
+- Package `com.armsx2.ncaanext`, versionCode `128016`, versionName
+  `0.1.10-game-exit-no-intro`, pinned signer `599891bb...ad3a783f`.
+- Signature, ZIP alignment, launcher/manifest, crash/startup markers passed.
+- All 15 native libraries match both Run 6 and accepted PR #1 hashes. All 113
+  core resources match. Downloaded candidate APK was independently compared
+  against the local accepted PR #1 APK as well.
+- Update-compatible with PR #1 (128015); no new signing migration.
+- APK SHA-256: `522d8cfdb7e7c8971aa30c0d64d20fb9a44d85245d10d03ba31a9ad4fdb2bf64`.
+- Artifact: https://github.com/antdroidx/ARMSX2-NCAA-NEXT-ANDROID/actions/runs/36601647401/artifacts/11050380331
+
+The follow-up documentation commit records these results without changing build
+inputs. PR #2 remains draft, unmerged, with no auto-merge. Physical-device
+launch/NEXT 27/Close Game/relaunch acceptance remains pending; the exact crash
+cause cannot be declared confirmed until that test or a crash trace is available.
