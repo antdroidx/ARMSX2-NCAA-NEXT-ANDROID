@@ -191,6 +191,27 @@ jobs:
           cp "$APK" out/ARMSX2-NCAA-NEXT-ANDROID-RUNTIME-PROBE-fast-debug.apk
           sha256sum out/ARMSX2-NCAA-NEXT-ANDROID-RUNTIME-PROBE-fast-debug.apk > out/ARMSX2-NCAA-NEXT-ANDROID-RUNTIME-PROBE-fast-debug.apk.sha256
 
+      - name: Compile standalone ART smoke harness
+        run: |
+          mkdir -p work/art-classes
+          javac --release 8 -d work/art-classes tests/SettingsArtSmoke.java
+          "$ANDROID_HOME/build-tools/36.0.0/d8" --min-api 26 --output work/art-smoke.jar work/art-classes/SettingsArtSmoke.class
+
+      - name: Enable KVM for ART test
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Verify Settings on Android ART
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          target: default
+          disable-animations: true
+          script: bash scripts/run_art_smoke.sh
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
@@ -206,5 +227,7 @@ jobs:
           path: |
             src/platforms/android/app/build/reports/tests/
             src/platforms/android/app/build/test-results/
+            out/art-*.log
+            out/art-logcat.txt
           if-no-files-found: ignore
 

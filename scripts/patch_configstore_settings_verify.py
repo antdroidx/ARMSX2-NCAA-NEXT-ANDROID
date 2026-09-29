@@ -1,5 +1,6 @@
 from pathlib import Path
 import re
+import json
 
 ROOT = Path("platforms/android/app/src/main/java")
 
@@ -227,6 +228,29 @@ from_json = from_json.replace(
     "            // NCAA NEXT Android 17: avoid Kotlin's 256-register synthetic default constructor.\n",
     1,
 )
+# JSONObject.put(Any) does not recursively serialize Kotlin lists/maps on
+# Android. Normalize the two structured fields used by the JSON update path.
+normalization = '''            val rawHosts = json.opt("dev9EthHosts")
+            if (rawHosts is List<*>) {
+                json.put("dev9EthHosts", JSONArray().apply {
+                    rawHosts.forEach { value ->
+                        val host = value as Dev9HostMapping
+                        put(JSONObject().apply {
+                            put("url", host.url)
+                            put("ip", host.ip)
+                            put("enabled", host.enabled)
+                        })
+                    }
+                })
+            }
+            val rawParams = json.opt("shaderChainParams")
+            if (rawParams is Map<*, *>) {
+                @Suppress("UNCHECKED_CAST")
+                val typed = rawParams as Map<String, Map<String, Float>>
+                json.put("shaderChainParams", shaderChainParamsToJson(typed))
+            }
+'''
+from_json = from_json.replace("            return Settings(", normalization + "            return Settings(", 1)
 for name, expr in defaults.items():
     from_json = re.sub(rf"\bdef\.{re.escape(name)}\b", f"({expr})", from_json)
 if re.search(r"\bdef\.", from_json):
@@ -356,6 +380,29 @@ for rel in (
     if "Settings()" in t:
         t = re.sub(r"(?<![A-Za-z0-9_])Settings\(\)", "Settings.fromJson(org.json.JSONObject())", t)
     p.write_text(t)
+
+# These file/count pairs were confirmed by Kotlin type checking after removing
+# Settings.copy. Only named-argument calls whose keys are Settings fields qualify;
+# unrelated state objects and Dev9HostMapping copies must remain untouched.
+counts = json.loads(Path(__file__).with_name("settings_copy_callsite_counts.json").read_text())
+for rel, expected in counts.items():
+    p = ROOT / rel
+    t = p.read_text()
+    edits = []
+    for match in re.finditer(r"\b([\w.]+)\.copy\(", t):
+        open_idx = t.find("(", match.start())
+        end = find_matching_paren(t, open_idx)
+        args = named_args(t[open_idx+1:end])
+        if not args or not all(name in defaults for name, _ in args):
+            continue
+        statements = "; ".join(f'put("{name}", {expr})' for name, expr in args)
+        edits.append((match.start(), end+1, f"{match[1]}.withJson {{ {statements} }}"))
+    if len(edits) != expected:
+        raise RuntimeError(f"{rel}: expected {expected} Settings updates, found {len(edits)}")
+    for start, end, replacement in reversed(edits):
+        t = t[:start] + replacement + t[end:]
+    p.write_text(t)
+print(f"Migrated {sum(counts.values())} compiler-identified Settings UI updates")
 
 # Cover all startup call sites, including MainActivityRuntime's field initializer.
 # This also makes future missed .copy calls compile errors on the regular class.

@@ -36,6 +36,14 @@ Validation so far: source transformation applied to pinned upstream files;
 Python audit regression tests passed. Full Gradle, DEX, APK and device results
 must be recorded after execution. No main-menu or 128 MB runtime claim yet.
 
+First repair CI run 36536652192 caught 337 remaining Settings.copy UI calls.
+Migrated these compiler-identified sites, with per-file counts that fail on
+source drift. Added explicit list/map JSON normalization and a structured-field
+regression test. Added an Android API 35 ART smoke test using a separate
+app_process harness: the old APK must fail with VerifyError, and the repaired
+APK must instantiate/update/round-trip Settings. It does not load ARM JNI or
+claim to exercise the Samsung main menu.
+
 Signing remains dependent on the original Actions cache. Missing cache now
 fails safely. A durable private backup/secret for that SAME key is still needed;
 never publish the keystore as an artifact or generate a replacement silently.

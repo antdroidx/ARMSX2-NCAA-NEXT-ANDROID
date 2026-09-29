@@ -30,6 +30,19 @@ class SettingsFrontendTest {
         assertEquals(changed, Settings.fromJson(changed.toJson()))
     }
 
+    @Test fun structuredFieldsSurviveUpdates() {
+        val initial = Settings.fromJson(JSONObject())
+        val hosts = listOf(Dev9HostMapping("next.example", "192.0.2.1", true))
+        val params = mapOf("shader.slangp" to mapOf("SHARPNESS" to 0.5f))
+        val changed = initial.withJson {
+            put("dev9EthHosts", hosts)
+            put("shaderChainParams", params)
+        }
+        assertEquals(hosts, changed.dev9EthHosts)
+        assertEquals(params, changed.shaderChainParams)
+        assertEquals(changed, Settings.fromJson(changed.toJson()))
+    }
+
     @Test fun unsafeGeneratedMethodsAreAbsent() {
         val constructors = Settings::class.java.declaredConstructors
         assertEquals(1, constructors.size)
