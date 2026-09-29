@@ -47,7 +47,7 @@ class SettingsFrontendTest {
         val constructors = Settings::class.java.declaredConstructors
         assertEquals(1, constructors.size)
         assertEquals(246, constructors.single().parameterCount)
-        assertFalse(Settings::class.java.declaredMethods.any { it.name == "copy$default" })
+        assertFalse(Settings::class.java.declaredMethods.any { it.name == "copy" + '$' + "default" })
         assertFalse(constructors.any { ctor ->
             ctor.parameterTypes.any { it.name.contains("DefaultConstructorMarker") }
         })

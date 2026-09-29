@@ -67,11 +67,11 @@ helper = r'''    private fun showNcaNextCrashReportIfPresent(): Boolean {
                         if (exit != null) {
                             appendLine()
                             appendLine("Last Android process exit:")
-                            appendLine("reason=undefined")
-                            appendLine("status=undefined")
-                            appendLine("importance=undefined")
-                            appendLine("timestamp=undefined")
-                            appendLine("description=undefined")
+                            appendLine("reason=${exit.reason}")
+                            appendLine("status=${exit.status}")
+                            appendLine("importance=${exit.importance}")
+                            appendLine("timestamp=${exit.timestamp}")
+                            appendLine("description=${exit.description}")
                         }
                     }
                 }
