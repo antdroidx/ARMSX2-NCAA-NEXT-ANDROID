@@ -8,6 +8,7 @@ on:
       - '.github/workflows/build-fast-probe.yml'
       - 'scripts/patch_runtime_early_probe.py'
       - 'scripts/patch_crash_debugger.py'
+      - 'scripts/patch_settings_copy_verify_fix.py'
   workflow_dispatch:
 
 permissions:
@@ -82,6 +83,13 @@ jobs:
           test "$COUNT" -ge 15
           ls -lh "$JNI"/*.so
 
+      - name: Fix Settings.copy DEX verifier hazards
+        working-directory: src
+        run: |
+          set -euxo pipefail
+          python3 ../scripts/patch_settings_copy_verify_fix.py
+          grep -n "Settings has >255 constructor fields" platforms/android/app/src/main/java/com/armsx2/runtime/MainActivityRuntime.kt
+
       - name: Apply early MainActivityRuntime probe
         working-directory: src
         run: |
@@ -100,7 +108,7 @@ jobs:
         working-directory: src/platforms/android
         run: |
           set -euxo pipefail
-          ./gradlew :app:assembleGithubDebug             -x ':app:configureCMakeDebug[arm64-v8a]'             -x ':app:buildCMakeDebug[arm64-v8a]'             -Parmsx2.applicationId=com.armsx2.ncaanext             -Parmsx2.versionCode=128010             -Parmsx2.versionName=0.1.5-runtime-crash-debugger-fast             -Parmsx2.hostPageSize=0x1000             -Parmsx2.nativeLibName=emucore_4k             --stacktrace
+          ./gradlew :app:assembleGithubDebug             -x ':app:configureCMakeDebug[arm64-v8a]'             -x ':app:buildCMakeDebug[arm64-v8a]'             -Parmsx2.applicationId=com.armsx2.ncaanext             -Parmsx2.versionCode=128011             -Parmsx2.versionName=0.1.6-settings-copy-verifier-fix-fast             -Parmsx2.hostPageSize=0x1000             -Parmsx2.nativeLibName=emucore_4k             --stacktrace
 
       - name: Verify and collect APK
         run: |
