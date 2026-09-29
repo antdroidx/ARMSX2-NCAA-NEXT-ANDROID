@@ -71,15 +71,6 @@ and byte-for-byte core resource checks. DEX inspection exposed a validator
 text-decoding issue: dexdump emits modified UTF-8 constants. Decode its display
 output with replacement while continuing to inspect original binary DEX data.
 
-Run 36589000696 passed the complete static APK validator. It inspected all
-packaged DEX files and 832,547 invoke instructions, confirmed one explicit
-246-parameter Settings constructor, and produced APK SHA-256
-b4292cfb6f80b00148751ef77a063e836c0741a31d72565e31ab92bf41f8e2f9.
-Its ART stage did not execute the harness because the emulator could not connect
-to ADB port 5037. Split ART into a dependent job so infrastructure retries do
-not rebuild or obscure the statically validated APK; start ADB explicitly
-before launching the emulator.
-
 ## Architecture boundary
 
 This repository is an overlay on ARMSX2-3D
