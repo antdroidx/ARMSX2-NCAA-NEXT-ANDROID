@@ -10,6 +10,7 @@ on:
       - 'scripts/patch_step_resolution_verify.py'
       - 'scripts/patch_settings_copy_verify_fix.py'
       - 'scripts/patch_achievements_settings_verify.py'
+      - 'scripts/patch_configstore_settings_verify.py'
   workflow_dispatch:
 
 permissions:
@@ -98,6 +99,14 @@ jobs:
           python3 ../scripts/patch_achievements_settings_verify.py
           grep -n "Android 17 verifier fix" platforms/android/app/src/main/java/com/armsx2/ui/achievements/AchievementsViewModel.kt
 
+      - name: Fix global Settings/ConfigStore verifier hazards
+        working-directory: src
+        run: |
+          set -euxo pipefail
+          python3 ../scripts/patch_configstore_settings_verify.py
+          grep -n "Android/Dex-safe Settings update path" platforms/android/app/src/main/java/com/armsx2/config/Settings.kt
+          grep -n "Settings.fromJson(JSONObject())" platforms/android/app/src/main/java/com/armsx2/config/ConfigStore.kt | head
+
       - name: Apply verifier-safe stepResolution patch
         working-directory: src
         run: |
@@ -143,7 +152,7 @@ jobs:
         working-directory: src/platforms/android
         run: |
           set -euxo pipefail
-          ./gradlew :app:assembleGithubDebug             -x ':app:configureCMakeDebug[arm64-v8a]'             -x ':app:buildCMakeDebug[arm64-v8a]'             -Parmsx2.applicationId=com.armsx2.ncaanext             -Parmsx2.versionCode=128013             -Parmsx2.versionName=0.1.7-achievements-verifier-fix-stablesign             -Parmsx2.hostPageSize=0x1000             -Parmsx2.nativeLibName=emucore_4k             --stacktrace
+          ./gradlew :app:assembleGithubDebug             -x ':app:configureCMakeDebug[arm64-v8a]'             -x ':app:buildCMakeDebug[arm64-v8a]'             -Parmsx2.applicationId=com.armsx2.ncaanext             -Parmsx2.versionCode=128014             -Parmsx2.versionName=0.1.8-global-settings-verifier-fix-stablesign             -Parmsx2.hostPageSize=0x1000             -Parmsx2.nativeLibName=emucore_4k             --stacktrace
 
       - name: Verify and collect APK
         run: |
