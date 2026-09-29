@@ -11,6 +11,7 @@ on:
       - 'scripts/patch_settings_copy_verify_fix.py'
       - 'scripts/patch_achievements_settings_verify.py'
       - 'scripts/patch_configstore_settings_verify.py'
+      - 'scripts/audit_settings_bytecode.py'
   workflow_dispatch:
 
 permissions:
@@ -153,6 +154,12 @@ jobs:
         run: |
           set -euxo pipefail
           ./gradlew :app:assembleGithubDebug             -x ':app:configureCMakeDebug[arm64-v8a]'             -x ':app:buildCMakeDebug[arm64-v8a]'             -Parmsx2.applicationId=com.armsx2.ncaanext             -Parmsx2.versionCode=128014             -Parmsx2.versionName=0.1.8-global-settings-verifier-fix-stablesign             -Parmsx2.hostPageSize=0x1000             -Parmsx2.nativeLibName=emucore_4k             --stacktrace
+
+      - name: Audit compiled Settings bytecode
+        working-directory: src
+        run: |
+          set -euxo pipefail
+          python3 ../scripts/audit_settings_bytecode.py
 
       - name: Verify and collect APK
         run: |
