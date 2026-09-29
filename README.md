@@ -10,24 +10,18 @@ Android ARMSX2 test/build project for NCAA Football 06 NEXT, focused on:
 
 ## Current status
 
-The active M1 repair and validation status are tracked in
-[DEVELOPMENT_LOG.md](DEVELOPMENT_LOG.md). Use the **Fast ARMSX2 Runtime Probe**
-workflow for the source constructor fix (0.1.9 / 128015). A successful build
-does not establish main-menu acceptance until the device launch test passes.
-The historical status below predates this repair.
+PR #1 is merged into main as the known-good frontend baseline (128015 / 0.1.9).
+The user confirmed successful gameplay including NCAA NEXT 27 extended RAM.
+Closing a game from the app pause menu still crashes in that baseline.
 
-### Working
-- ARMSX2 Android source base compiles on GitHub Actions.
-- 128 MB ARM64 patches compile.
-- JDHalfrack 1.7.4029 texture-hash compatibility patches compile.
-- Both 4 KB and 16 KB emucore variants compile.
-- Universal APK packaging with both native cores is supported.
-- APK installs successfully.
+The `codex/game-exit-no-intro` branch contains a frontend lifecycle repair candidate
+and immediate startup without the intro video (128016 / 0.1.10). It preserves
+all accepted native libraries byte-for-byte. Device testing is still required;
+this is not yet a confirmed fix for the reported crash.
 
-### Current blocker
-The app exits/crashes immediately after the animated boot splash hands off to the main activity.
-
-This happens before a game is launched, so the next investigation is focused on Android/native startup initialization rather than NCAA NEXT game execution.
+See [DEVELOPMENT_LOG.md](DEVELOPMENT_LOG.md) for diagnosis and validation evidence,
+[DEVICE_TESTING.md](DEVICE_TESTING.md) for acceptance steps, and
+[baseline/known-good.json](baseline/known-good.json) for the accepted artifact identity.
 
 ## Build history migrated from NCAANext-TuningApp
 
@@ -54,8 +48,9 @@ JD4029 texture compatibility:
 - Restores JD4029-era full-texture HashTextureLevel behavior.
 - Preserves legacy TCC bit in replacement texture filenames.
 
-## Next debugging step
+## Development gate
 
-The splash activity hands off to Main, and Main touches NativeApp very early. NativeApp's static initializer loads the native emucore library. The next build should isolate that boundary by deferring nonessential NativeApp accesses until after the main Compose UI is alive, while adding explicit startup markers/crash diagnostics.
-
-
+Use the Fast ARMSX2 Runtime Probe workflow for this branch. Do not merge the
+crash/splash PR until device testing confirms normal game launch, NCAA NEXT 27
+extended RAM, Close Game back to the library, and app relaunch. The workflow's
+x86 Android ART test verifies Settings; it does not run the ARM64 emulator core.
