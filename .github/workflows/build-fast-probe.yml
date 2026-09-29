@@ -235,11 +235,8 @@ jobs:
           api-level: 35
           arch: x86_64
           target: default
+          emulator-build: 13823996
           disable-animations: true
-          pre-emulator-launch-script: |
-            adb kill-server || true
-            adb start-server
-            adb version
           script: bash scripts/run_art_smoke.sh
 
       - name: Upload APK artifact
