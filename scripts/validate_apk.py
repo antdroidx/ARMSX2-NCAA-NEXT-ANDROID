@@ -11,6 +11,7 @@ import zipfile
 from audit_dex import audit, SETTINGS
 
 EXPECTED_CERT = "599891bb2245e9c90237c41e7066889cb9c28e11c2f8b5d6af75b10cad3a783f"
+BUILD16_CERT = "a7135416c2a58f51d331e5b0b21b2bcdb6983e53b5f6bd19d3f612ac08ec0ef5"
 PACKAGE = "com.armsx2.ncaanext"
 
 
@@ -18,11 +19,11 @@ def run(*args):
     return subprocess.run(list(map(str, args)), check=True, capture_output=True, text=True).stdout
 
 
-def identity(apk, tools):
+def identity(apk, tools, expected_cert=EXPECTED_CERT):
     signing = run(tools / "apksigner", "verify", "--verbose", "--print-certs", apk)
     certs = re.findall(r"Signer #\d+ certificate SHA-256 digest: ([0-9a-fA-F]+)", signing)
-    if certs != [EXPECTED_CERT]:
-        raise ValueError(f"Signing identity differs from Build #16: {certs}")
+    if certs != [expected_cert]:
+        raise ValueError(f"Signing identity differs from pinned certificate {expected_cert}: {certs}")
     manifest = run(tools / "aapt", "dump", "badging", apk)
     m = re.search(r"package: name='([^']+)' versionCode='(\d+)' versionName='([^']+)'", manifest)
     if not m or m[1] != PACKAGE:
@@ -47,7 +48,7 @@ def main():
     p.add_argument("--report", type=Path, required=True)
     a = p.parse_args()
     report = identity(a.apk, a.build_tools)
-    previous = identity(a.previous, a.build_tools)
+    previous = identity(a.previous, a.build_tools, BUILD16_CERT)
     if report["version_code"] != 128015 or report["version_code"] <= previous["version_code"]:
         raise ValueError("New APK must be versionCode 128015 and upgrade the previous build")
     if report["version_name"] != "0.1.9-settings-source-constructor-fix":
@@ -95,7 +96,9 @@ def main():
                 raise ValueError(f"Crash instrumentation missing: {marker!r}")
         report["core_resource_count"] = len(resources)
     report["apk_sha256"] = hashlib.sha256(a.apk.read_bytes()).hexdigest()
-    report["update_compatible_with"] = previous
+    report["previous_apk"] = previous
+    report["update_compatible_with_build16"] = report["certificate_sha256"] == previous["certificate_sha256"]
+    report["signing_migration"] = "Build 16 used an unpreserved runner debug key. Back up data before one-time reinstall; future builds must retain the pinned recoverable key."
     report["runtime_status"] = "Not device-tested; ART launch and main-menu acceptance remain required"
     a.report.parent.mkdir(parents=True, exist_ok=True)
     a.report.write_text(json.dumps(report, indent=2) + "\n")

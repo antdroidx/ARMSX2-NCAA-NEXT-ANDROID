@@ -14,8 +14,9 @@ Findings:
 - The previous audit changed dots to slashes before matching dotted method
   names, making its hazard checks ineffective. It also ignored declarations.
 - Build 16 used application ID com.armsx2.ncaanext and versionCode 128014.
-- Its successful CI log reports certificate SHA-256
+- Its successful CI log reports a CACHED KEY certificate SHA-256
   599891bb2245e9c90237c41e7066889cb9c28e11c2f8b5d6af75b10cad3a783f.
+  Subsequent APK inspection proved this was NOT the APK's signing certificate.
 
 Repair:
 - Convert Settings to a regular class with no primary-constructor defaults.
@@ -48,6 +49,22 @@ Signing remains dependent on the original Actions cache. Missing cache now
 fails safely. A durable private backup/secret for that SAME key is still needed;
 never publish the keystore as an artifact or generate a replacement silently.
 
+### Actual signing diagnosis
+
+Run 36537937833 passed the build, all four Settings JVM tests, and the compiled
+constructor audit. Packaged APK validation then correctly rejected an unexpected
+runner-generated debug certificate. Copying the cached key to the conventional
+debug.keystore path had not controlled Gradle's actual signer.
+
+Inspection job 109473577980 in run 36588060412 verified Build 16's APK signature:
+a7135416c2a58f51d331e5b0b21b2bcdb6983e53b5f6bd19d3f612ac08ec0ef5.
+This differs from the cached key. Its matching private key has not been recovered
+from the available artifacts. A normal update over Build 16 cannot be promised.
+The repaired workflow explicitly configures Gradle's debug signing to the
+recoverable NCAA NEXT key (599891bb...), keeps com.armsx2.ncaanext, and rejects
+future signer drift. Validation records the one-time Build 16 incompatibility
+rather than claiming it passes. Preserve/back up app data before reinstalling.
+
 ## Architecture boundary
 
 This repository is an overlay on ARMSX2-3D
@@ -60,7 +77,8 @@ as the next M1 build. M3 requires a separate architecture review after M1.
 
 ## Device acceptance for M1
 
-Install the validated 0.1.9 APK over Build 16 without uninstalling. Launch
+If the original Build 16 private key is recovered, reassess update signing first.
+Otherwise back up app data before the one-time reinstall of validated 0.1.9. Launch
 through the splash to the ordinary main menu, open settings, then close
 and relaunch. Do not launch NEXT 27 yet. On failure, reopen the app and
 copy the crash debugger report; optional adb logcat should include AndroidRuntime
