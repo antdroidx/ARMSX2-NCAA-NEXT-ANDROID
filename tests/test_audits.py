@@ -16,6 +16,9 @@ class AuditRegressionTests(unittest.TestCase):
     def test_default_copy_is_rejected(self):
         self.assertTrue(hazards("public static com.armsx2.config.Settings copy$default(...);"))
 
+    def test_companion_marker_constructor_is_allowed(self):
+        self.assertEqual([], hazards('invokespecial #42 // Method com/armsx2/config/Settings$Companion."<init>":(Lkotlin/jvm/internal/DefaultConstructorMarker;)V'))
+
     def test_explicit_constructor_is_allowed(self):
         self.assertEqual([], hazards("public com.armsx2.config.Settings(int, boolean, java.lang.String);"))
 

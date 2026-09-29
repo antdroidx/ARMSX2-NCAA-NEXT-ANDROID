@@ -10,7 +10,9 @@ def hazards(output):
     findings = []
     for line in output.splitlines():
         # Inspect declarations as well as calls. Preserve javap's owner/method dot.
-        if "copy$default" in line or "DefaultConstructorMarker" in line:
+        if "copy$default" in line:
+            findings.append(line.strip())
+        if "com.armsx2.config.Settings(" in line and "DefaultConstructorMarker" in line:
             findings.append(line.strip())
         if re.search(r"public com\.armsx2\.config\.Settings\(\);", line):
             findings.append(line.strip())
