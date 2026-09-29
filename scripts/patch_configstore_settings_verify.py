@@ -302,7 +302,7 @@ while True:
     c = c[:m.start()] + replacement + c[end+1:]
 
 code_no_comments = re.sub(r"/\*.*?\*/|//[^\n]*", "", c, flags=re.S)
-if re.search(r"\bSettings\(\)", code_no_comments):
+if re.search(r"(?<![A-Za-z0-9_])Settings\(\)", code_no_comments):
     raise RuntimeError("ConfigStore still contains Settings()")
 if ".copy(" in code_no_comments:
     raise RuntimeError("ConfigStore still contains active .copy(")
