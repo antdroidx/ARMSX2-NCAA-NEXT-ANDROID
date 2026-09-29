@@ -28,8 +28,7 @@ def inspect_javap(label: str, out: str):
         if "Method com/armsx2/config/Settings.copy$default:" in normalized:
             hazards.append((label, line.strip()))
         if (
-            "Method com/armsx2/config/Settings" in normalized
-            and '"<init>"' in line
+            'Method com/armsx2/config/Settings."<init>":' in normalized
             and "DefaultConstructorMarker" in line
         ):
             hazards.append((label, line.strip()))
