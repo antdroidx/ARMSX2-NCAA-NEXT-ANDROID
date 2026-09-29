@@ -9,6 +9,7 @@ on:
       - 'scripts/patch_crash_debugger.py'
       - 'scripts/patch_step_resolution_verify.py'
       - 'scripts/patch_settings_copy_verify_fix.py'
+      - 'scripts/patch_achievements_settings_verify.py'
   workflow_dispatch:
 
 permissions:
@@ -90,6 +91,13 @@ jobs:
           python3 ../scripts/patch_settings_copy_verify_fix.py
           grep -n "Settings has >255 constructor fields" platforms/android/app/src/main/java/com/armsx2/runtime/MainActivityRuntime.kt
 
+      - name: Fix Achievements Settings.copy verifier hazards
+        working-directory: src
+        run: |
+          set -euxo pipefail
+          python3 ../scripts/patch_achievements_settings_verify.py
+          grep -n "Android 17 verifier fix" platforms/android/app/src/main/java/com/armsx2/ui/achievements/AchievementsViewModel.kt
+
       - name: Apply verifier-safe stepResolution patch
         working-directory: src
         run: |
@@ -104,11 +112,38 @@ jobs:
           python3 ../scripts/patch_crash_debugger.py
           grep -n "NCAA NEXT CRASH DEBUGGER" platforms/android/app/src/main/java/com/armsx2/BootSplashActivity.kt
 
+      - name: Restore stable debug signing key
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/ncaa-next-debug.jks
+          key: ncaa-next-debug-signing-v1
+
+      - name: Prepare stable debug signing key
+        run: |
+          set -euxo pipefail
+          mkdir -p "$HOME/.android"
+          if [[ ! -f "$HOME/.android/ncaa-next-debug.jks" ]]; then
+            keytool -genkeypair -v \
+              -keystore "$HOME/.android/ncaa-next-debug.jks" \
+              -storepass android \
+              -alias androiddebugkey \
+              -keypass android \
+              -dname "CN=NCAA NEXT Android Debug,O=NCAA NEXT,C=US" \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000
+          fi
+          cp -f "$HOME/.android/ncaa-next-debug.jks" "$HOME/.android/debug.keystore"
+          keytool -list -v \
+            -keystore "$HOME/.android/debug.keystore" \
+            -storepass android \
+            -alias androiddebugkey | grep -E "SHA256:|Owner:"
+
       - name: Build APK without recompiling native core
         working-directory: src/platforms/android
         run: |
           set -euxo pipefail
-          ./gradlew :app:assembleGithubDebug             -x ':app:configureCMakeDebug[arm64-v8a]'             -x ':app:buildCMakeDebug[arm64-v8a]'             -Parmsx2.applicationId=com.armsx2.ncaanext             -Parmsx2.versionCode=128012             -Parmsx2.versionName=0.1.6-settings-copy-verifier-fix-fast             -Parmsx2.hostPageSize=0x1000             -Parmsx2.nativeLibName=emucore_4k             --stacktrace
+          ./gradlew :app:assembleGithubDebug             -x ':app:configureCMakeDebug[arm64-v8a]'             -x ':app:buildCMakeDebug[arm64-v8a]'             -Parmsx2.applicationId=com.armsx2.ncaanext             -Parmsx2.versionCode=128013             -Parmsx2.versionName=0.1.7-achievements-verifier-fix-stablesign             -Parmsx2.hostPageSize=0x1000             -Parmsx2.nativeLibName=emucore_4k             --stacktrace
 
       - name: Verify and collect APK
         run: |
