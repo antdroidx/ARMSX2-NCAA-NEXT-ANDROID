@@ -65,6 +65,12 @@ recoverable NCAA NEXT key (599891bb...), keeps com.armsx2.ncaanext, and rejects
 future signer drift. Validation records the one-time Build 16 incompatibility
 rather than claiming it passes. Preserve/back up app data before reinstalling.
 
+Run 36588272952 passed compilation, Settings JVM tests, declaration audit,
+explicit signing identity, package/version, alignment, native ABI/inventory,
+and byte-for-byte core resource checks. DEX inspection exposed a validator
+text-decoding issue: dexdump emits modified UTF-8 constants. Decode its display
+output with replacement while continuing to inspect original binary DEX data.
+
 ## Architecture boundary
 
 This repository is an overlay on ARMSX2-3D

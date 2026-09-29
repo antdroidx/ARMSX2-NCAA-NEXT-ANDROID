@@ -84,7 +84,11 @@ def main():
             target = Path(td) / name
             target.write_bytes(data)
             result = subprocess.run([str(a.build_tools / "dexdump"), "-d", str(target)],
-                                    check=True, capture_output=True, text=True)
+                                    check=True, capture_output=True, text=True,
+                                    encoding="utf-8", errors="replace")
+            # dexdump prints DEX modified UTF-8 string constants verbatim.
+            # Replace non-UTF-8 display bytes only; audit() reads actual method
+            # prototypes/counts from the original binary, not displayed strings.
             if re.search(r"\b(ERROR|invalid|failed)\b", result.stderr, re.I):
                 raise ValueError(f"dexdump diagnostics for {name}: {result.stderr}")
             report["dex"][name] = audit(data, result.stdout)
