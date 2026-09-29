@@ -21,6 +21,28 @@ permissions:
   actions: read
 
 jobs:
+  inspect-previous-signing:
+    name: Inspect Build 16 APK signer
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: build-tools;36.0.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: ARMSX2-NCAA-NEXT-ANDROID-fast-probe-apk
+          path: previous
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: 36528955257
+      - name: Inspect actual Build 16 certificate
+        run: |
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$(find previous -name '*.apk' -print -quit)"
+
   build-fast-probe:
     name: Build Fast Runtime Probe APK
     runs-on: ubuntu-24.04
@@ -160,6 +182,10 @@ jobs:
             -keystore "$HOME/.android/debug.keystore" \
             -storepass android \
             -alias androiddebugkey | grep -E "SHA256:|Owner:"
+
+      - name: Bind Gradle to the restored signing key
+        working-directory: src
+        run: python3 ../scripts/patch_android_signing.py
 
       - name: Stage Settings frontend regression tests
         run: |
