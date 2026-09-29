@@ -277,6 +277,39 @@ if ".copy(" in code_no_comments:
 if "val def = Settings()" in s:
     raise RuntimeError("Settings.fromJson still uses Settings()")
 
+# Remove the generated methods themselves, not just their call sites. ART can
+# verify an unused no-arg constructor when the Settings class is loaded.
+ctor_start = s.index("data class Settings(")
+ctor_end = s.index("\n) {", ctor_start)
+ctor = s[ctor_start:ctor_end]
+fields = re.findall(r"(?m)^\s*val\s+(\w+)\s*:\s*(.+?)\s*=", ctor)
+if len(fields) != 246 or any(t not in {
+    "Boolean", "Float", "Int", "String", "List<Dev9HostMapping>",
+    "Map<String, Map<String, Float>>",
+} for _, t in fields):
+    raise RuntimeError("Settings constructor shape changed; review JVM/DEX word counts")
+ctor, removed = re.subn(r"(?m)^(\s*val\s+\w+\s*:\s*.+?)\s*=\s*.+?,\s*(?://[^\n]*)?$", r"\1,", ctor)
+if removed != 246:
+    raise RuntimeError(f"Expected to remove 246 defaults, removed {removed}")
+ctor = ctor.replace("data class Settings(", "class Settings(", 1)
+s = s[:ctor_start] + ctor + s[ctor_end:]
+
+# Keep data-class equality semantics (including Float NaN and signed zero).
+equalities = [
+    f"java.lang.Float.compare({n}, other.{n}) == 0" if t == "Float"
+    else f"{n} == other.{n}" for n, t in fields
+]
+semantics = (
+    "    override fun equals(other: Any?): Boolean {\n"
+    "        if (this === other) return true\n"
+    "        if (other !is Settings) return false\n"
+    "        return " + " &&\n            ".join(equalities) + "\n    }\n\n"
+    "    override fun hashCode(): Int {\n"
+    f"        var result = {fields[0][0]}.hashCode()\n" +
+    "".join(f"        result = 31 * result + {n}.hashCode()\n" for n, _ in fields[1:]) +
+    "        return result\n    }\n\n"
+)
+s = s.replace(tojson_marker, semantics + tojson_marker, 1)
 sp.write_text(s)
 
 # ---------------------------------------------------------------------------
@@ -324,5 +357,14 @@ for rel in (
         t = re.sub(r"(?<![A-Za-z0-9_])Settings\(\)", "Settings.fromJson(org.json.JSONObject())", t)
     p.write_text(t)
 
-print("Applied global Settings default/copy DEX verifier fix")
+# Cover all startup call sites, including MainActivityRuntime's field initializer.
+# This also makes future missed .copy calls compile errors on the regular class.
+for p in ROOT.rglob("*.kt"):
+    t = p.read_text()
+    t = re.sub(r"(?<![A-Za-z0-9_.])Settings\(\)", "Settings.fromJson(org.json.JSONObject())", t)
+    t = t.replace("com.armsx2.config.Settings()", "com.armsx2.config.Settings.fromJson(org.json.JSONObject())")
+    p.write_text(t)
+
+print("Applied source-level Settings constructor/default/copy DEX verifier fix")
 print(f"Parsed {len(defaults)} Settings defaults")
+

@@ -131,3 +131,4 @@ for marker in ("NCAA NEXT CRASH DEBUGGER", "DIAG_CRASH_REPORT_SHOWN", "REASON_CR
         raise SystemExit(f"missing crash debugger marker: {marker}")
 
 print("Applied on-device crash report debugger")
+

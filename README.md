@@ -10,6 +10,12 @@ Android ARMSX2 test/build project for NCAA Football 06 NEXT, focused on:
 
 ## Current status
 
+The active M1 repair and validation status are tracked in
+[DEVELOPMENT_LOG.md](DEVELOPMENT_LOG.md). Use the **Fast ARMSX2 Runtime Probe**
+workflow for the source constructor fix (0.1.9 / 128015). A successful build
+does not establish main-menu acceptance until the device launch test passes.
+The historical status below predates this repair.
+
 ### Working
 - ARMSX2 Android source base compiles on GitHub Actions.
 - 128 MB ARM64 patches compile.
@@ -51,4 +57,5 @@ JD4029 texture compatibility:
 ## Next debugging step
 
 The splash activity hands off to Main, and Main touches NativeApp very early. NativeApp's static initializer loads the native emucore library. The next build should isolate that boundary by deferring nonessential NativeApp accesses until after the main Compose UI is alive, while adding explicit startup markers/crash diagnostics.
+
 
