@@ -284,7 +284,7 @@ sp.write_text(s)
 # ---------------------------------------------------------------------------
 cp = ROOT / "com/armsx2/config/ConfigStore.kt"
 c = cp.read_text()
-c = c.replace("Settings()", "Settings.fromJson(JSONObject())")
+c = re.sub(r"(?<![A-Za-z0-9_])Settings\\(\\)", "Settings.fromJson(JSONObject())", c)
 
 # Every .copy in ConfigStore is a com.armsx2.config.Settings copy in this pinned tree.
 while True:
@@ -320,7 +320,7 @@ for rel in (
     p = ROOT / rel
     t = p.read_text()
     if "Settings()" in t:
-        t = t.replace("Settings()", "Settings.fromJson(org.json.JSONObject())")
+        t = re.sub(r"(?<![A-Za-z0-9_])Settings\\(\\)", "Settings.fromJson(org.json.JSONObject())", t)
     p.write_text(t)
 
 print("Applied global Settings default/copy DEX verifier fix")
