@@ -106,7 +106,7 @@ This is user device evidence, not an emulator test performed in this chat.
 Merged PR #1 using its exact reviewed head; main merge commit:
 `d3b23e8d5f1e41ec947db92a3285c14015d8fe17`.
 Created `codex/game-exit-no-intro` from that updated main.
-`baseline/known-good.json` pins the accepted APK hash, all 17 native-library
+`baseline/known-good.json` pins the accepted APK hash, all 15 native-library
 hashes, signer, version, CI run, and commits. A local copy of the accepted artifact
 was downloaded before editing. Historical architecture notes below remain relevant:
 working NEXT 27 does not establish wholesale JDHalfrack core provenance.
@@ -187,3 +187,30 @@ No physical-device result is claimed by source review or host tests.
 See DEVICE_TESTING.md. This PR must stay unmerged until the required device gate
 passes. If Close Game still crashes, collect the new boundary log plus Android's
 native crash report before choosing a native change.
+
+
+### Candidate CI result — passed
+
+Run https://github.com/antdroidx/ARMSX2-NCAA-NEXT-ANDROID/actions/runs/36601647401
+built commit `1097e9880f212454af8d8446aa329d0095198541` successfully.
+
+- 10 Python audit tests passed.
+- 4 Settings JVM tests and 5 production VM completion-barrier JVM tests passed;
+  downloaded JUnit XML confirms zero failures/errors/skips.
+- Settings compiled declaration audit passed; all 820,584 supported packaged DEX
+  invokes passed the structural audit.
+- API 35 Android ART: `SETTINGS_ART_SMOKE_OK: class verified, defaults/update/round-trip passed`.
+- Package `com.armsx2.ncaanext`, versionCode `128016`, versionName
+  `0.1.10-game-exit-no-intro`, pinned signer `599891bb...ad3a783f`.
+- Signature, ZIP alignment, launcher/manifest, crash/startup markers passed.
+- All 15 native libraries match both Run 6 and accepted PR #1 hashes. All 113
+  core resources match. Downloaded candidate APK was independently compared
+  against the local accepted PR #1 APK as well.
+- Update-compatible with PR #1 (128015); no new signing migration.
+- APK SHA-256: `522d8cfdb7e7c8971aa30c0d64d20fb9a44d85245d10d03ba31a9ad4fdb2bf64`.
+- Artifact: https://github.com/antdroidx/ARMSX2-NCAA-NEXT-ANDROID/actions/runs/36601647401/artifacts/11050380331
+
+The follow-up documentation commit records these results without changing build
+inputs. PR #2 remains draft, unmerged, with no auto-merge. Physical-device
+launch/NEXT 27/Close Game/relaunch acceptance remains pending; the exact crash
+cause cannot be declared confirmed until that test or a crash trace is available.
