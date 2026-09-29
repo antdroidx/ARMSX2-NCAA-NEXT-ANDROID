@@ -316,6 +316,7 @@ for rel in (
     "com/armsx2/ui/emulation/EmulationMenuViewModel.kt",
     "com/armsx2/ui/patches/PatchManagerViewModel.kt",
     "com/armsx2/ui/textures/TextureManagerViewModel.kt",
+    "com/armsx2/ui/settingshub/SettingsResetFields.kt",
 ):
     p = ROOT / rel
     t = p.read_text()
