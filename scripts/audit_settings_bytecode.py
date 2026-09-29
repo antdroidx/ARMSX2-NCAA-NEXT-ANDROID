@@ -1,99 +1,40 @@
 #!/usr/bin/env python3
+"""Fail closed on unsafe Settings declarations, including unused constructors."""
 from pathlib import Path
+import re
 import subprocess
 import sys
-import zipfile
 
-# Scan compiled Kotlin/JVM bytecode for calls which are known to overflow DEX's
-# 8-bit invoke/range register-count field for com.armsx2.config.Settings.
-#
-# Settings has 246 primary-constructor fields. Kotlin's generated copy$default
-# and default-argument constructor add receiver/mask/marker registers and reach
-# 256 registers. D8 can emit invoke-range count=0 for these calls, which
-# Android 17 ART rejects with VerifyError.
 
-build_root = Path("platforms/android/app/build")
-if not build_root.exists():
-    raise SystemExit(f"Build output directory not found: {build_root}")
+def hazards(output):
+    findings = []
+    for line in output.splitlines():
+        # Inspect declarations as well as calls. Preserve javap's owner/method dot.
+        if "copy$default" in line:
+            findings.append(line.strip())
+        if "com.armsx2.config.Settings(" in line and "DefaultConstructorMarker" in line:
+            findings.append(line.strip())
+        if re.search(r"public com\.armsx2\.config\.Settings\(\);", line):
+            findings.append(line.strip())
+    return findings
 
-hazards = []
-scanned = 0
-seen = set()
 
-def inspect_javap(label: str, out: str):
-    global scanned
-    scanned += 1
-    for line in out.splitlines():
-        normalized = line.replace(".", "/")
-        if "Method com/armsx2/config/Settings.copy$default:" in normalized:
-            hazards.append((label, line.strip()))
-        if (
-            'Method com/armsx2/config/Settings."<init>":' in normalized
-            and "DefaultConstructorMarker" in line
-        ):
-            hazards.append((label, line.strip()))
+def main():
+    root = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("platforms/android/app/build")
+    classes = list(root.rglob("com/armsx2/config/Settings.class"))
+    if not classes:
+        raise SystemExit("Settings.class missing: cannot audit compiled constructor")
+    for cls in classes:
+        result = subprocess.run(["javap", "-c", "-p", str(cls)],
+                                check=True, capture_output=True, text=True)
+        if "public com.armsx2.config.Settings(" not in result.stdout:
+            raise SystemExit(f"Settings constructor not found in javap output: {cls}")
+        errors = hazards(result.stdout)
+        if errors:
+            raise SystemExit(f"Unsafe Settings bytecode in {cls}:\n" + "\n".join(errors))
+    print(f"Settings declaration audit passed ({len(classes)} compiled copies)")
 
-# Gradle/Kotlin output layout changes between plugin versions. Discover .class
-# files anywhere under app/build instead of relying on one hard-coded directory.
-for cls in build_root.rglob("*.class"):
-    p = str(cls)
-    if "com/armsx2/" not in p.replace("\\", "/"):
-        continue
-    key = ("class", p)
-    if key in seen:
-        continue
-    seen.add(key)
-    out = subprocess.run(
-        ["javap", "-c", "-p", p],
-        check=False,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.DEVNULL,
-        text=True,
-    ).stdout
-    inspect_javap(p, out)
 
-# Some AGP/Kotlin versions package compiled classes directly into intermediate
-# jars. Scan those too so the audit survives build-layout changes.
-for jar in build_root.rglob("*.jar"):
-    try:
-        with zipfile.ZipFile(jar) as zf:
-            entries = [
-                n for n in zf.namelist()
-                if n.startswith("com/armsx2/") and n.endswith(".class")
-            ]
-    except zipfile.BadZipFile:
-        continue
+if __name__ == "__main__":
+    main()
 
-    for entry in entries:
-        class_name = entry[:-6].replace("/", ".")
-        key = (str(jar), class_name)
-        if key in seen:
-            continue
-        seen.add(key)
-        out = subprocess.run(
-            ["javap", "-c", "-p", "-classpath", str(jar), class_name],
-            check=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-            text=True,
-        ).stdout
-        inspect_javap(f"{jar}!/{entry}", out)
-
-if scanned == 0:
-    # Print discovery info so a future AGP layout change is diagnosable from CI
-    # without another device test.
-    print("No com.armsx2 compiled classes found. Build outputs discovered:")
-    for p in sorted(build_root.rglob("*")):
-        if p.is_file() and p.suffix in {".jar", ".class", ".dex"}:
-            print(f"  {p}")
-    raise SystemExit("No compiled com.armsx2 classes found for verifier audit")
-
-if hazards:
-    print("ERROR: Settings DEX verifier hazards remain:")
-    for label, line in hazards:
-        print(f"  {label}")
-        print(f"    {line}")
-    print(f"Total hazardous invocations: {len(hazards)}")
-    sys.exit(1)
-
-print(f"Settings verifier audit passed across {scanned} compiled com.armsx2 classes")

@@ -1,0 +1,19 @@
+{
+  "com/armsx2/SecondScreen.kt": 1,
+  "com/armsx2/ui/bios/BiosManagerViewModel.kt": 2,
+  "com/armsx2/ui/common/DriverManagerSection.kt": 1,
+  "com/armsx2/ui/emulation/EmulationMenuScreen.kt": 67,
+  "com/armsx2/ui/emulation/EmulationMenuViewModel.kt": 17,
+  "com/armsx2/ui/memorycards/MemoryCardViewModel.kt": 6,
+  "com/armsx2/ui/patches/PatchManagerScreen.kt": 8,
+  "com/armsx2/ui/patches/PatchManagerViewModel.kt": 1,
+  "com/armsx2/ui/settings/AudioTab.kt": 10,
+  "com/armsx2/ui/settings/FixesTab.kt": 84,
+  "com/armsx2/ui/settings/NetworkTab.kt": 28,
+  "com/armsx2/ui/settings/OverlayTab.kt": 17,
+  "com/armsx2/ui/settings/PerformanceTab.kt": 31,
+  "com/armsx2/ui/settings/RendererBackendSection.kt": 3,
+  "com/armsx2/ui/settings/RendererTab.kt": 48,
+  "com/armsx2/ui/textures/TextureManagerScreen.kt": 12,
+  "com/armsx2/ui/textures/TextureManagerViewModel.kt": 1
+}

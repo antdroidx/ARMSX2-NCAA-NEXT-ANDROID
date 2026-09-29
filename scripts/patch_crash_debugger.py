@@ -67,11 +67,11 @@ helper = r'''    private fun showNcaNextCrashReportIfPresent(): Boolean {
                         if (exit != null) {
                             appendLine()
                             appendLine("Last Android process exit:")
-                            appendLine("reason=undefined")
-                            appendLine("status=undefined")
-                            appendLine("importance=undefined")
-                            appendLine("timestamp=undefined")
-                            appendLine("description=undefined")
+                            appendLine("reason=${exit.reason}")
+                            appendLine("status=${exit.status}")
+                            appendLine("importance=${exit.importance}")
+                            appendLine("timestamp=${exit.timestamp}")
+                            appendLine("description=${exit.description}")
                         }
                     }
                 }
@@ -131,3 +131,4 @@ for marker in ("NCAA NEXT CRASH DEBUGGER", "DIAG_CRASH_REPORT_SHOWN", "REASON_CR
         raise SystemExit(f"missing crash debugger marker: {marker}")
 
 print("Applied on-device crash report debugger")
+

@@ -1,5 +1,6 @@
 from pathlib import Path
 import re
+import json
 
 ROOT = Path("platforms/android/app/src/main/java")
 
@@ -227,6 +228,29 @@ from_json = from_json.replace(
     "            // NCAA NEXT Android 17: avoid Kotlin's 256-register synthetic default constructor.\n",
     1,
 )
+# JSONObject.put(Any) does not recursively serialize Kotlin lists/maps on
+# Android. Normalize the two structured fields used by the JSON update path.
+normalization = '''            val rawHosts = json.opt("dev9EthHosts")
+            if (rawHosts is List<*>) {
+                json.put("dev9EthHosts", JSONArray().apply {
+                    rawHosts.forEach { value ->
+                        val host = value as Dev9HostMapping
+                        put(JSONObject().apply {
+                            put("url", host.url)
+                            put("ip", host.ip)
+                            put("enabled", host.enabled)
+                        })
+                    }
+                })
+            }
+            val rawParams = json.opt("shaderChainParams")
+            if (rawParams is Map<*, *>) {
+                @Suppress("UNCHECKED_CAST")
+                val typed = rawParams as Map<String, Map<String, Float>>
+                json.put("shaderChainParams", shaderChainParamsToJson(typed))
+            }
+'''
+from_json = from_json.replace("            return Settings(", normalization + "            return Settings(", 1)
 for name, expr in defaults.items():
     from_json = re.sub(rf"\bdef\.{re.escape(name)}\b", f"({expr})", from_json)
 if re.search(r"\bdef\.", from_json):
@@ -277,6 +301,39 @@ if ".copy(" in code_no_comments:
 if "val def = Settings()" in s:
     raise RuntimeError("Settings.fromJson still uses Settings()")
 
+# Remove the generated methods themselves, not just their call sites. ART can
+# verify an unused no-arg constructor when the Settings class is loaded.
+ctor_start = s.index("data class Settings(")
+ctor_end = s.index("\n) {", ctor_start)
+ctor = s[ctor_start:ctor_end]
+fields = re.findall(r"(?m)^\s*val\s+(\w+)\s*:\s*(.+?)\s*=", ctor)
+if len(fields) != 246 or any(t not in {
+    "Boolean", "Float", "Int", "String", "List<Dev9HostMapping>",
+    "Map<String, Map<String, Float>>",
+} for _, t in fields):
+    raise RuntimeError("Settings constructor shape changed; review JVM/DEX word counts")
+ctor, removed = re.subn(r"(?m)^(\s*val\s+\w+\s*:\s*.+?)\s*=\s*.+?,\s*(?://[^\n]*)?$", r"\1,", ctor)
+if removed != 246:
+    raise RuntimeError(f"Expected to remove 246 defaults, removed {removed}")
+ctor = ctor.replace("data class Settings(", "class Settings(", 1)
+s = s[:ctor_start] + ctor + s[ctor_end:]
+
+# Keep data-class equality semantics (including Float NaN and signed zero).
+equalities = [
+    f"java.lang.Float.compare({n}, other.{n}) == 0" if t == "Float"
+    else f"{n} == other.{n}" for n, t in fields
+]
+semantics = (
+    "    override fun equals(other: Any?): Boolean {\n"
+    "        if (this === other) return true\n"
+    "        if (other !is Settings) return false\n"
+    "        return " + " &&\n            ".join(equalities) + "\n    }\n\n"
+    "    override fun hashCode(): Int {\n"
+    f"        var result = {fields[0][0]}.hashCode()\n" +
+    "".join(f"        result = 31 * result + {n}.hashCode()\n" for n, _ in fields[1:]) +
+    "        return result\n    }\n\n"
+)
+s = s.replace(tojson_marker, semantics + tojson_marker, 1)
 sp.write_text(s)
 
 # ---------------------------------------------------------------------------
@@ -324,5 +381,37 @@ for rel in (
         t = re.sub(r"(?<![A-Za-z0-9_])Settings\(\)", "Settings.fromJson(org.json.JSONObject())", t)
     p.write_text(t)
 
-print("Applied global Settings default/copy DEX verifier fix")
+# These file/count pairs were confirmed by Kotlin type checking after removing
+# Settings.copy. Only named-argument calls whose keys are Settings fields qualify;
+# unrelated state objects and Dev9HostMapping copies must remain untouched.
+counts = json.loads(Path(__file__).with_name("settings_copy_callsite_counts.json").read_text())
+for rel, expected in counts.items():
+    p = ROOT / rel
+    t = p.read_text()
+    edits = []
+    for match in re.finditer(r"\b([\w.]+)\.copy\(", t):
+        open_idx = t.find("(", match.start())
+        end = find_matching_paren(t, open_idx)
+        args = named_args(t[open_idx+1:end])
+        if not args or not all(name in defaults for name, _ in args):
+            continue
+        statements = "; ".join(f'put("{name}", {expr})' for name, expr in args)
+        edits.append((match.start(), end+1, f"{match[1]}.withJson {{ {statements} }}"))
+    if len(edits) != expected:
+        raise RuntimeError(f"{rel}: expected {expected} Settings updates, found {len(edits)}")
+    for start, end, replacement in reversed(edits):
+        t = t[:start] + replacement + t[end:]
+    p.write_text(t)
+print(f"Migrated {sum(counts.values())} compiler-identified Settings UI updates")
+
+# Cover all startup call sites, including MainActivityRuntime's field initializer.
+# This also makes future missed .copy calls compile errors on the regular class.
+for p in ROOT.rglob("*.kt"):
+    t = p.read_text()
+    t = re.sub(r"(?<![A-Za-z0-9_.])Settings\(\)", "Settings.fromJson(org.json.JSONObject())", t)
+    t = t.replace("com.armsx2.config.Settings()", "com.armsx2.config.Settings.fromJson(org.json.JSONObject())")
+    p.write_text(t)
+
+print("Applied source-level Settings constructor/default/copy DEX verifier fix")
 print(f"Parsed {len(defaults)} Settings defaults")
+

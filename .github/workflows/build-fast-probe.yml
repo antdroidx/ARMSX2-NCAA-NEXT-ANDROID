@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - codex/settings-source-repair
     paths:
       - '.github/workflows/build-fast-probe.yml'
       - 'scripts/patch_crash_debugger.py'
@@ -11,7 +12,8 @@ on:
       - 'scripts/patch_settings_copy_verify_fix.py'
       - 'scripts/patch_achievements_settings_verify.py'
       - 'scripts/patch_configstore_settings_verify.py'
-      - 'scripts/audit_settings_bytecode.py'
+      - 'scripts/**'
+      - 'tests/**'
   workflow_dispatch:
 
 permissions:
@@ -19,6 +21,28 @@ permissions:
   actions: read
 
 jobs:
+  inspect-previous-signing:
+    name: Inspect Build 16 APK signer
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: build-tools;36.0.0
+      - uses: actions/download-artifact@v4
+        with:
+          name: ARMSX2-NCAA-NEXT-ANDROID-fast-probe-apk
+          path: previous
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: 36528955257
+      - name: Inspect actual Build 16 certificate
+        run: |
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$(find previous -name '*.apk' -print -quit)"
+
   build-fast-probe:
     name: Build Fast Runtime Probe APK
     runs-on: ubuntu-24.04
@@ -38,6 +62,21 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           packages: platform-tools
+
+      - name: Test validation scripts
+        run: python3 -m unittest discover -s tests -v
+
+      - name: Install pinned APK inspection tools
+        run: sdkmanager "build-tools;36.0.0"
+
+      - name: Download Build 16 for update compatibility validation
+        uses: actions/download-artifact@v4
+        with:
+          name: ARMSX2-NCAA-NEXT-ANDROID-fast-probe-apk
+          path: previous
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: 36528955257
 
       - name: Download ARMSX2 source
         run: |
@@ -123,7 +162,7 @@ jobs:
           grep -n "NCAA NEXT CRASH DEBUGGER" platforms/android/app/src/main/java/com/armsx2/BootSplashActivity.kt
 
       - name: Restore stable debug signing key
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: ~/.android/ncaa-next-debug.jks
           key: ncaa-next-debug-signing-v1
@@ -133,27 +172,31 @@ jobs:
           set -euxo pipefail
           mkdir -p "$HOME/.android"
           if [[ ! -f "$HOME/.android/ncaa-next-debug.jks" ]]; then
-            keytool -genkeypair -v \
-              -keystore "$HOME/.android/ncaa-next-debug.jks" \
-              -storepass android \
-              -alias androiddebugkey \
-              -keypass android \
-              -dname "CN=NCAA NEXT Android Debug,O=NCAA NEXT,C=US" \
-              -keyalg RSA \
-              -keysize 2048 \
-              -validity 10000
+            echo "::error::Build 16 signing key unavailable. Restore the original key; do not generate a replacement."
+            exit 1
           fi
+          CERT="$(keytool -exportcert -keystore "$HOME/.android/ncaa-next-debug.jks" -storepass android -alias androiddebugkey | sha256sum | cut -d' ' -f1)"
+          test "$CERT" = "599891bb2245e9c90237c41e7066889cb9c28e11c2f8b5d6af75b10cad3a783f"
           cp -f "$HOME/.android/ncaa-next-debug.jks" "$HOME/.android/debug.keystore"
           keytool -list -v \
             -keystore "$HOME/.android/debug.keystore" \
             -storepass android \
             -alias androiddebugkey | grep -E "SHA256:|Owner:"
 
+      - name: Bind Gradle to the restored signing key
+        working-directory: src
+        run: python3 ../scripts/patch_android_signing.py
+
+      - name: Stage Settings frontend regression tests
+        run: |
+          mkdir -p src/platforms/android/app/src/test/java/com/armsx2/config
+          cp tests/SettingsFrontendTest.kt src/platforms/android/app/src/test/java/com/armsx2/config/
+
       - name: Build APK without recompiling native core
         working-directory: src/platforms/android
         run: |
           set -euxo pipefail
-          ./gradlew :app:assembleGithubDebug             -x ':app:configureCMakeDebug[arm64-v8a]'             -x ':app:buildCMakeDebug[arm64-v8a]'             -Parmsx2.applicationId=com.armsx2.ncaanext             -Parmsx2.versionCode=128014             -Parmsx2.versionName=0.1.8-global-settings-verifier-fix-stablesign             -Parmsx2.hostPageSize=0x1000             -Parmsx2.nativeLibName=emucore_4k             --stacktrace
+          ./gradlew :app:assembleGithubDebug :app:testGithubDebugUnitTest --tests com.armsx2.config.SettingsFrontendTest             -x ':app:configureCMakeDebug[arm64-v8a]'             -x ':app:buildCMakeDebug[arm64-v8a]'             -Parmsx2.applicationId=com.armsx2.ncaanext             -Parmsx2.versionCode=128015             -Parmsx2.versionName=0.1.9-settings-source-constructor-fix             -Parmsx2.hostPageSize=0x1000             -Parmsx2.nativeLibName=emucore_4k             --stacktrace
 
       - name: Audit compiled Settings bytecode
         working-directory: src
@@ -166,11 +209,35 @@ jobs:
           set -euxo pipefail
           APK="src/platforms/android/app/build/outputs/apk/github/debug/app-github-debug.apk"
           test -f "$APK"
-          unzip -l "$APK" "lib/arm64-v8a/libemucore_4k.so"
-          unzip -l "$APK" "lib/arm64-v8a/libemucore_16k.so"
-          mkdir -p out
+          python3 scripts/validate_apk.py "$APK" \
+            --previous "$(find previous -name '*.apk' -print -quit)" \
+            --native-base "$(find prebuilt -name '*.apk' -print -quit)" \
+            --build-tools "$ANDROID_HOME/build-tools/36.0.0" \
+            --report out/validation-report.json
           cp "$APK" out/ARMSX2-NCAA-NEXT-ANDROID-RUNTIME-PROBE-fast-debug.apk
           sha256sum out/ARMSX2-NCAA-NEXT-ANDROID-RUNTIME-PROBE-fast-debug.apk > out/ARMSX2-NCAA-NEXT-ANDROID-RUNTIME-PROBE-fast-debug.apk.sha256
+
+      - name: Compile standalone ART smoke harness
+        run: |
+          mkdir -p work/art-classes
+          javac --release 8 -d work/art-classes tests/SettingsArtSmoke.java
+          "$ANDROID_HOME/build-tools/36.0.0/d8" --min-api 26 --output work/art-smoke.jar work/art-classes/SettingsArtSmoke.class
+
+      - name: Enable KVM for ART test
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Verify Settings on Android ART
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          target: default
+          emulator-build: 13823996
+          disable-animations: true
+          script: bash scripts/run_art_smoke.sh
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
@@ -178,3 +245,16 @@ jobs:
           name: ARMSX2-NCAA-NEXT-ANDROID-fast-probe-apk
           path: out/*
           if-no-files-found: error
+
+      - name: Upload test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: settings-frontend-test-results
+          path: |
+            src/platforms/android/app/build/reports/tests/
+            src/platforms/android/app/build/test-results/
+            out/art-*.log
+            out/art-logcat.txt
+          if-no-files-found: ignore
+
