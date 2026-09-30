@@ -1,7 +1,20 @@
 name: Full ARMSX2 NCAA NEXT Native Build
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      enhancements:
+        description: 'Isolated test variant (baseline first)'
+        type: choice
+        default: none
+        options:
+          - none
+          - cpu
+          - cpu-audio
+      validate_only:
+        description: 'Run source/host checks without compiling an APK'
+        type: boolean
+        default: false
   push:
     branches:
       - 'codex/memcard-hash-upstream-audit'
@@ -410,16 +423,34 @@ jobs:
           grep -n "0x00000007FFF00000ULL" pcsx2/GS/Renderers/HW/GSTextureCache.cpp
 
       - name: Fetch shaderc third-party deps
+        if: inputs.validate_only != true
         working-directory: src/platforms/android
         run: python3 app/src/main/cpp/3rdparty/shaderc/utils/git-sync-deps
 
+      - name: Apply optional selective enhancements
+        if: inputs.enhancements == 'cpu' || inputs.enhancements == 'cpu-audio'
+        working-directory: src
+        env:
+          ENHANCEMENTS: ${{ inputs.enhancements }}
+        run: |
+          set -euo pipefail
+          git apply --check ../patches/arm64-selective.patch
+          git apply ../patches/arm64-selective.patch
+          if [ "$ENHANCEMENTS" = cpu-audio ]; then
+            git apply --check ../patches/oboe-safe-bursts.patch
+            git apply ../patches/oboe-safe-bursts.patch
+            python3 ../scripts/test_selective_source.py
+          fi
+
       - name: Build fast 4K development APK
+        if: inputs.validate_only != true
         working-directory: src/platforms/android
         env:
           CCACHE_DIR: ${{ github.workspace }}/.ccache
           CCACHE_MAXSIZE: 2G
           CMAKE_C_COMPILER_LAUNCHER: ccache
           CMAKE_CXX_COMPILER_LAUNCHER: ccache
+          ENHANCEMENTS: ${{ inputs.enhancements || 'none' }}
         run: |
           set -euxo pipefail
           mkdir -p "$PWD/../../../out"
@@ -427,16 +458,24 @@ jobs:
           ccache --zero-stats
           BUILD_START=$(date +%s)
 
+          case "$ENHANCEMENTS" in
+            none) VERSION_CODE=128103; VERSION_NAME=0.2.3-next128-mc64-stopcpu; VARIANT=STOPCPU ;;
+            cpu) VERSION_CODE=128104; VERSION_NAME=0.2.4-next128-mc64-cpu; VARIANT=CPU ;;
+            cpu-audio) VERSION_CODE=128105; VERSION_NAME=0.2.5-next128-mc64-cpu-audio; VARIANT=CPU-AUDIO ;;
+            *) exit 1 ;;
+          esac
+          printf 'commit=%s\nvariant=%s\nversionCode=%s\nversionName=%s\n' "$GITHUB_SHA" "$VARIANT" "$VERSION_CODE" "$VERSION_NAME" > "$PWD/../../../out/build-info.txt"
+
           ./gradlew :app:assembleGithubDebug \
             -Parmsx2.applicationId=com.armsx2.ncaanext \
-            -Parmsx2.versionCode=128103 \
-            -Parmsx2.versionName=0.2.3-next128-mc64-stopcpu \
+            -Parmsx2.versionCode="$VERSION_CODE" \
+            -Parmsx2.versionName="$VERSION_NAME" \
             -Parmsx2.hostPageSize=0x1000 \
             -Parmsx2.nativeLibName=emucore_4k \
             --stacktrace
 
           BUILT_APK="$PWD/app/build/outputs/apk/github/debug/app-github-debug.apk"
-          FINAL_APK="$PWD/../../../out/ARMSX2-NCAA-NEXT-ANDROID-FAST4K-debug.apk"
+          FINAL_APK="$PWD/../../../out/ARMSX2-NCAA-NEXT-ANDROID-${VARIANT}-4K-debug.apk"
           test -f "$BUILT_APK"
           cp -f "$BUILT_APK" "$FINAL_APK"
           APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner | sort -V | tail -1)
@@ -449,15 +488,17 @@ jobs:
           sha256sum "$FINAL_APK" > "$FINAL_APK.sha256"
 
       - name: Collect APK
+        if: inputs.validate_only != true
         run: |
           set -euxo pipefail
           ls -lh out/
-          test -f out/ARMSX2-NCAA-NEXT-ANDROID-FAST4K-debug.apk
-          test -f out/ARMSX2-NCAA-NEXT-ANDROID-FAST4K-debug.apk.sha256
+          test "$(find out -maxdepth 1 -name '*.apk' | wc -l)" -eq 1
+          test "$(find out -maxdepth 1 -name '*.apk.sha256' | wc -l)" -eq 1
 
       - name: Upload APK artifact
+        if: inputs.validate_only != true
         uses: actions/upload-artifact@v4
         with:
-          name: ARMSX2-NCAA-NEXT-ANDROID-test-apk
+          name: ARMSX2-NCAA-NEXT-ANDROID-${{ inputs.enhancements || 'none' }}-test-apk
           path: out/*
           if-no-files-found: error
