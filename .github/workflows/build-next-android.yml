@@ -434,11 +434,11 @@ jobs:
           ENHANCEMENTS: ${{ inputs.enhancements }}
         run: |
           set -euo pipefail
-          git apply --check ../patches/arm64-selective.patch
-          git apply ../patches/arm64-selective.patch
+          git -C .. apply --check --directory=src patches/arm64-selective.patch
+          git -C .. apply --verbose --directory=src patches/arm64-selective.patch
           if [ "$ENHANCEMENTS" = cpu-audio ]; then
-            git apply --check ../patches/oboe-safe-bursts.patch
-            git apply ../patches/oboe-safe-bursts.patch
+            git -C .. apply --check --directory=src patches/oboe-safe-bursts.patch
+            git -C .. apply --verbose --directory=src patches/oboe-safe-bursts.patch
             python3 ../scripts/test_selective_source.py
           fi
 
