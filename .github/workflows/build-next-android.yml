@@ -40,6 +40,40 @@ jobs:
           unzip -q armsx2.zip
           mv ARMSX2-3D-f4904cb5e3b322178e3815683e221f3ab9354d2e src
 
+      - name: Restore known-good frontend fixes
+        working-directory: src
+        run: |
+          set -euxo pipefail
+          python3 ../scripts/patch_settings_copy_verify_fix.py
+          python3 ../scripts/patch_achievements_settings_verify.py
+          python3 ../scripts/patch_configstore_settings_verify.py
+          python3 ../scripts/patch_step_resolution_verify.py
+          python3 ../scripts/patch_crash_debugger.py
+          python3 ../scripts/patch_game_exit.py
+          python3 ../scripts/patch_no_intro.py
+          python3 ../scripts/verify_lifecycle_source.py
+          grep -n "Android/Dex-safe Settings update path" platforms/android/app/src/main/java/com/armsx2/config/Settings.kt
+          grep -n "NCAA NEXT CRASH DEBUGGER" platforms/android/app/src/main/java/com/armsx2/BootSplashActivity.kt
+
+      - name: Restore stable NCAA NEXT signing key
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.android/ncaa-next-debug.jks
+          key: ncaa-next-debug-signing-v1
+
+      - name: Prepare stable NCAA NEXT signing key
+        run: |
+          set -euxo pipefail
+          mkdir -p "$HOME/.android"
+          test -f "$HOME/.android/ncaa-next-debug.jks"
+          CERT="$(keytool -exportcert -keystore "$HOME/.android/ncaa-next-debug.jks" -storepass android -alias androiddebugkey | sha256sum | cut -d' ' -f1)"
+          test "$CERT" = "599891bb2245e9c90237c41e7066889cb9c28e11c2f8b5d6af75b10cad3a783f"
+          cp -f "$HOME/.android/ncaa-next-debug.jks" "$HOME/.android/debug.keystore"
+
+      - name: Bind Gradle to stable signing key
+        working-directory: src
+        run: python3 ../scripts/patch_android_signing.py
+
       - name: Apply NEXT 128MB ARM64 patch
         working-directory: src
         run: |
@@ -386,8 +420,8 @@ jobs:
             ./gradlew :app:cleanCxx
             ./gradlew :app:assembleGithubDebug \
               -Parmsx2.applicationId=com.armsx2.ncaanext \
-              -Parmsx2.versionCode=128100 \
-              -Parmsx2.versionName=0.2.0-next128-jd4029-full \
+              -Parmsx2.versionCode=128101 \
+              -Parmsx2.versionName=0.2.1-next128-mc64-frontendfix \
               -Parmsx2.hostPageSize="$page_size" \
               -Parmsx2.nativeLibName="$lib_name" \
               --stacktrace
