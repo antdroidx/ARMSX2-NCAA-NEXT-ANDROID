@@ -2,6 +2,22 @@ name: Full ARMSX2 NCAA NEXT Native Build
 
 on:
   workflow_dispatch:
+    inputs:
+      enhancements:
+        description: 'Isolated test variant (baseline first)'
+        type: choice
+        default: none
+        options:
+          - none
+          - cpu
+          - cpu-audio
+      validate_only:
+        description: 'Run source/host checks without compiling an APK'
+        type: boolean
+        default: false
+  push:
+    branches:
+      - 'codex/memcard-hash-upstream-audit'
 
 jobs:
   build-android:
@@ -19,6 +35,9 @@ jobs:
           distribution: temurin
           java-version: '21'
 
+      - name: Test native stop ownership
+        run: python3 -m unittest discover -s tests -v
+
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
@@ -30,12 +49,60 @@ jobs:
       - name: Install Rust Android target
         run: rustup target add aarch64-linux-android
 
+      - name: Install ccache
+        run: sudo apt-get update -qq && sudo apt-get install -y ccache
+
+      - name: Restore native compiler cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.ccache
+          key: ccache-v2-${{ runner.os }}-armsx2-f4904cb5-4k-${{ github.run_id }}
+          restore-keys: |
+            ccache-v2-${{ runner.os }}-armsx2-f4904cb5-4k-
+
       - name: Download ARMSX2 source
         run: |
           set -euxo pipefail
           curl -L "https://github.com/SgtBilko76/ARMSX2-3D/archive/f4904cb5e3b322178e3815683e221f3ab9354d2e.zip" -o armsx2.zip
           unzip -q armsx2.zip
           mv ARMSX2-3D-f4904cb5e3b322178e3815683e221f3ab9354d2e src
+
+      - name: Restore known-good frontend fixes
+        working-directory: src
+        run: |
+          set -euxo pipefail
+          python3 ../scripts/patch_settings_copy_verify_fix.py
+          python3 ../scripts/patch_achievements_settings_verify.py
+          python3 ../scripts/patch_configstore_settings_verify.py
+          python3 ../scripts/patch_step_resolution_verify.py
+          python3 ../scripts/patch_crash_debugger.py
+          python3 ../scripts/patch_game_exit.py
+          python3 ../scripts/patch_no_intro.py
+          python3 ../scripts/verify_lifecycle_source.py
+          python3 ../scripts/patch_native_stop.py
+          grep -n "Android/Dex-safe Settings update path" platforms/android/app/src/main/java/com/armsx2/config/Settings.kt
+          grep -n "NCAA NEXT CRASH DEBUGGER" platforms/android/app/src/main/java/com/armsx2/BootSplashActivity.kt
+
+      - name: Restore stable NCAA NEXT signing key
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.android/ncaa-next-debug.jks
+          key: ncaa-next-debug-signing-v1
+
+      - name: Prepare stable NCAA NEXT signing key
+        run: |
+          set -euxo pipefail
+          mkdir -p "$HOME/.android"
+          test -f "$HOME/.android/ncaa-next-debug.jks"
+          CERT="$(keytool -exportcert -keystore "$HOME/.android/ncaa-next-debug.jks" -storepass android -alias androiddebugkey | sha256sum | cut -d' ' -f1)"
+          test "$CERT" = "599891bb2245e9c90237c41e7066889cb9c28e11c2f8b5d6af75b10cad3a783f"
+          cp -f "$HOME/.android/ncaa-next-debug.jks" "$HOME/.android/debug.keystore"
+
+      - name: Bind Gradle to stable signing key
+        working-directory: src
+        run: |
+          python3 ../scripts/patch_android_signing.py
+          python3 ../scripts/patch_ccache.py
 
       - name: Apply NEXT 128MB ARM64 patch
         working-directory: src
@@ -154,6 +221,13 @@ jobs:
           grep -n "Ps2MemSize::MainRam" pcsx2/arm64/iR5900-arm64.cpp && exit 1 || true
           grep -n "not supported by the ARM64 EE recompiler" pcsx2/Memory.cpp && exit 1 || true
 
+
+      - name: Apply 64MB folder memory card geometry
+        working-directory: src
+        run: |
+          set -euxo pipefail
+          python3 ../scripts/patch_folder_memcard_64mb.py
+          grep -n "NCAA_NEXT_FOLDER_CARD_MB = 64" pcsx2/SIO/Memcard/MemoryCardFolder.cpp
 
       - name: Apply JD4029 texture hash compatibility
         working-directory: src
@@ -349,106 +423,82 @@ jobs:
           grep -n "0x00000007FFF00000ULL" pcsx2/GS/Renderers/HW/GSTextureCache.cpp
 
       - name: Fetch shaderc third-party deps
+        if: inputs.validate_only != true
         working-directory: src/platforms/android
         run: python3 app/src/main/cpp/3rdparty/shaderc/utils/git-sync-deps
 
-      - name: Build universal 4K + 16K APK
+      - name: Apply optional selective enhancements
+        if: inputs.enhancements == 'cpu' || inputs.enhancements == 'cpu-audio'
+        working-directory: src
+        env:
+          ENHANCEMENTS: ${{ inputs.enhancements }}
+        run: |
+          set -euo pipefail
+          git -C .. apply --check --directory=src patches/arm64-selective.patch
+          git -C .. apply --verbose --directory=src patches/arm64-selective.patch
+          if [ "$ENHANCEMENTS" = cpu-audio ]; then
+            git -C .. apply --check --directory=src patches/oboe-safe-bursts.patch
+            git -C .. apply --verbose --directory=src patches/oboe-safe-bursts.patch
+            python3 ../scripts/test_selective_source.py
+          fi
+
+      - name: Build fast 4K development APK
+        if: inputs.validate_only != true
         working-directory: src/platforms/android
+        env:
+          CCACHE_DIR: ${{ github.workspace }}/.ccache
+          CCACHE_MAXSIZE: 2G
+          CMAKE_C_COMPILER_LAUNCHER: ccache
+          CMAKE_CXX_COMPILER_LAUNCHER: ccache
+          ENHANCEMENTS: ${{ inputs.enhancements || 'none' }}
         run: |
           set -euxo pipefail
+          mkdir -p "$PWD/../../../out"
+          mkdir -p "$CCACHE_DIR"
+          ccache --zero-stats
+          BUILD_START=$(date +%s)
 
-          WORK_DIR="$PWD/app/build/next128-universal"
-          BASE_APK="$WORK_DIR/base-4k.apk"
-          APK_16K="$WORK_DIR/base-16k.apk"
-          UNSIGNED_APK="$WORK_DIR/universal-unsigned.apk"
-          ALIGNED_APK="$WORK_DIR/universal-aligned.apk"
-          LIB_STAGE="$WORK_DIR/lib-stage"
-          FINAL_APK="$PWD/../../../out/ARMSX2-NCAA-NEXT-ANDROID-UNIVERSAL-debug.apk"
+          case "$ENHANCEMENTS" in
+            none) VERSION_CODE=128103; VERSION_NAME=0.2.3-next128-mc64-stopcpu; VARIANT=STOPCPU ;;
+            cpu) VERSION_CODE=128104; VERSION_NAME=0.2.4-next128-mc64-cpu; VARIANT=CPU ;;
+            cpu-audio) VERSION_CODE=128105; VERSION_NAME=0.2.5-next128-mc64-cpu-audio; VARIANT=CPU-AUDIO ;;
+            *) exit 1 ;;
+          esac
+          printf 'commit=%s\nvariant=%s\nversionCode=%s\nversionName=%s\n' "$GITHUB_SHA" "$VARIANT" "$VERSION_CODE" "$VERSION_NAME" > "$PWD/../../../out/build-info.txt"
 
-          rm -rf "$WORK_DIR"
-          mkdir -p "$WORK_DIR" "$LIB_STAGE/lib/arm64-v8a" "$PWD/../../../out"
+          ./gradlew :app:assembleGithubDebug \
+            -Parmsx2.applicationId=com.armsx2.ncaanext \
+            -Parmsx2.versionCode="$VERSION_CODE" \
+            -Parmsx2.versionName="$VERSION_NAME" \
+            -Parmsx2.hostPageSize=0x1000 \
+            -Parmsx2.nativeLibName=emucore_4k \
+            --stacktrace
 
-          build_core() {
-            local page_size="$1"
-            local lib_name="$2"
-            local out_apk="$3"
-
-            ./gradlew :app:cleanCxx
-            ./gradlew :app:assembleGithubDebug \
-              -Parmsx2.applicationId=com.armsx2.ncaanext \
-              -Parmsx2.versionCode=128100 \
-              -Parmsx2.versionName=0.2.0-next128-jd4029-full \
-              -Parmsx2.hostPageSize="$page_size" \
-              -Parmsx2.nativeLibName="$lib_name" \
-              --stacktrace
-
-            local built_apk="$PWD/app/build/outputs/apk/github/debug/app-github-debug.apk"
-            test -f "$built_apk"
-            unzip -l "$built_apk" "lib/arm64-v8a/lib${lib_name}.so"
-            cp -f "$built_apk" "$out_apk"
-          }
-
-          echo "Building 4K core..."
-          build_core 0x1000 emucore_4k "$BASE_APK"
-
-          echo "Building 16K core..."
-          build_core 0x4000 emucore_16k "$APK_16K"
-
-          unzip -p "$BASE_APK" "lib/arm64-v8a/libemucore_4k.so" > "$LIB_STAGE/lib/arm64-v8a/libemucore_4k.so"
-          unzip -p "$APK_16K" "lib/arm64-v8a/libemucore_16k.so" > "$LIB_STAGE/lib/arm64-v8a/libemucore_16k.so"
-
-          cp -f "$BASE_APK" "$UNSIGNED_APK"
-          zip -qd "$UNSIGNED_APK" "META-INF/*" >/dev/null 2>&1 || true
-          zip -qd "$UNSIGNED_APK" "lib/arm64-v8a/libemucore_4k.so" "lib/arm64-v8a/libemucore_16k.so" >/dev/null 2>&1 || true
-          (cd "$LIB_STAGE" && zip -qr -0 "$UNSIGNED_APK" lib)
-
-          BUILD_TOOLS_DIR="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort | tail -n 1)"
-          ZIPALIGN="$BUILD_TOOLS_DIR/zipalign"
-          APKSIGNER="$BUILD_TOOLS_DIR/apksigner"
-          DEBUG_KEYSTORE="$HOME/.android/debug.keystore"
-
-          test -x "$ZIPALIGN"
-          test -x "$APKSIGNER"
-
-          if [[ ! -f "$DEBUG_KEYSTORE" ]]; then
-            mkdir -p "$(dirname "$DEBUG_KEYSTORE")"
-            keytool -genkeypair -v \
-              -keystore "$DEBUG_KEYSTORE" \
-              -storepass android \
-              -alias androiddebugkey \
-              -keypass android \
-              -dname "CN=Android Debug,O=Android,C=US" \
-              -keyalg RSA \
-              -keysize 2048 \
-              -validity 10000
-          fi
-          test -f "$DEBUG_KEYSTORE"
-
-          "$ZIPALIGN" -f -P 16 4 "$UNSIGNED_APK" "$ALIGNED_APK"
-          "$APKSIGNER" sign \
-            --ks "$DEBUG_KEYSTORE" \
-            --ks-key-alias androiddebugkey \
-            --ks-pass pass:android \
-            --key-pass pass:android \
-            --out "$FINAL_APK" \
-            "$ALIGNED_APK"
-
-          "$APKSIGNER" verify --verbose "$FINAL_APK"
-          "$ZIPALIGN" -c -P 16 4 "$FINAL_APK"
-          unzip -l "$FINAL_APK" "lib/arm64-v8a/libemucore_4k.so"
-          unzip -l "$FINAL_APK" "lib/arm64-v8a/libemucore_16k.so"
+          BUILT_APK="$PWD/app/build/outputs/apk/github/debug/app-github-debug.apk"
+          FINAL_APK="$PWD/../../../out/ARMSX2-NCAA-NEXT-ANDROID-${VARIANT}-4K-debug.apk"
+          test -f "$BUILT_APK"
+          cp -f "$BUILT_APK" "$FINAL_APK"
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner | sort -V | tail -1)
+          "$APKSIGNER" verify --verbose --print-certs "$FINAL_APK" | tee "$PWD/../../../out/apk-signature.txt"
+          grep -q '599891bb2245e9c90237c41e7066889cb9c28e11c2f8b5d6af75b10cad3a783f' "$PWD/../../../out/apk-signature.txt"
+          echo "Build seconds: $(($(date +%s) - BUILD_START))" | tee "$PWD/../../../out/build-time.txt"
+          ccache --show-stats --verbose | tee "$PWD/../../../out/ccache-stats.txt"
+          find app/.cxx -name CMakeCache.txt -exec grep -H 'CMAKE_.*_COMPILER_LAUNCHER' {} \; | tee "$PWD/../../../out/compiler-launchers.txt"
+          test -s "$PWD/../../../out/compiler-launchers.txt"
           sha256sum "$FINAL_APK" > "$FINAL_APK.sha256"
 
       - name: Collect APK
+        if: inputs.validate_only != true
         run: |
           set -euxo pipefail
           ls -lh out/
-          test -f out/ARMSX2-NCAA-NEXT-ANDROID-UNIVERSAL-debug.apk
-          test -f out/ARMSX2-NCAA-NEXT-ANDROID-UNIVERSAL-debug.apk.sha256
+          test "$(find out -maxdepth 1 -name '*.apk' | wc -l)" -eq 1
+          test "$(find out -maxdepth 1 -name '*.apk.sha256' | wc -l)" -eq 1
 
       - name: Upload APK artifact
+        if: inputs.validate_only != true
         uses: actions/upload-artifact@v4
         with:
-          name: ARMSX2-NCAA-NEXT-ANDROID-test-apk
+          name: ARMSX2-NCAA-NEXT-ANDROID-${{ inputs.enhancements || 'none' }}-test-apk
           path: out/*
           if-no-files-found: error

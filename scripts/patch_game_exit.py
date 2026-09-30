@@ -135,7 +135,7 @@ s = replace_body(s, '        fun stop(saveAutosave: Boolean = false, restartAfte
                         waited += 10
                         if (waited % 5000 == 0) shutdownTrace("WAIT_BOOT ms=$waited")
                     }
-                    if (vmRunLoopActive) {
+                    if (vmRunLoopActive && NativeApp.hasActiveVM()) {
                         if (doAutosave) {
                             shutdownTrace("AUTOSAVE_BEGIN")
                             val saved = NativeApp.saveAutosaveState()
@@ -144,6 +144,8 @@ s = replace_body(s, '        fun stop(saveAutosave: Boolean = false, restartAfte
                         shutdownTrace("SHUTDOWN_BEGIN")
                         NativeApp.shutdown()
                         shutdownTrace("SHUTDOWN_RETURN running=$vmRunLoopActive")
+                    } else {
+                        shutdownTrace("SHUTDOWN_SKIP active=false running=$vmRunLoopActive")
                     }
                 } catch (error: Throwable) {
                     shutdownTrace("SHUTDOWN_EXCEPTION ${error.javaClass.name}: ${error.message}")
