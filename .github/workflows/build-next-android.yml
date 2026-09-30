@@ -158,7 +158,14 @@ jobs:
           grep -n "not supported by the ARM64 EE recompiler" pcsx2/Memory.cpp && exit 1 || true
 
 
-      - name: Apply 64MB folder memory card geometry\n        working-directory: src\n        run: |\n          set -euxo pipefail\n          python3 ../scripts/patch_folder_memcard_64mb.py\n          grep -n "NCAA_NEXT_FOLDER_CARD_MB = 64" pcsx2/SIO/Memcard/MemoryCardFolder.cpp\n\n      - name: Apply JD4029 texture hash compatibility
+      - name: Apply 64MB folder memory card geometry
+        working-directory: src
+        run: |
+          set -euxo pipefail
+          python3 ../scripts/patch_folder_memcard_64mb.py
+          grep -n "NCAA_NEXT_FOLDER_CARD_MB = 64" pcsx2/SIO/Memcard/MemoryCardFolder.cpp
+
+      - name: Apply JD4029 texture hash compatibility
         working-directory: src
         run: |
           set -euxo pipefail
