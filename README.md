@@ -23,14 +23,6 @@ See [DEVELOPMENT_LOG.md](DEVELOPMENT_LOG.md) for diagnosis and validation eviden
 [DEVICE_TESTING.md](DEVICE_TESTING.md) for acceptance steps, and
 [baseline/known-good.json](baseline/known-good.json) for the accepted artifact identity.
 
-## Build history migrated from NCAANext-TuningApp
-
-- Build 41: wholesale JD4029 desktop-core overlay onto Android scaffold. Failed with widespread PCSX2 generation/ABI mismatches. This approach is retired.
-- Build 42: switched to coherent ARMSX2 Android core + targeted JD4029 texture hash patch. Patch script failed before compilation due a whitespace-sensitive edit.
-- Build 43: patch fixed; APK compiled successfully. Installed, but crashed immediately after the intro splash.
-- Build 44: added universal 4K + 16K native cores. Both cores compiled; final APK signing step failed because the runner had no debug keystore.
-- Build 45: signing flow fixed. Universal APK installs but still crashes immediately after the intro splash.
-
 ## Architecture
 
 Base source:
