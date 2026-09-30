@@ -1,0 +1,83 @@
+commit 426adcd2441706b62b68c4868d67df1b347b18b9
+Author:     Brian Degenhardt <bmd@bmdhacks.com>
+AuthorDate: Sat Sep 5 11:07:33 2026 +0200
+Commit:     Brian Degenhardt <bmd@bmdhacks.com>
+CommitDate: Mon Sep 21 20:55:15 2026 -0700
+
+    EE rec: fold the load/store base into the offset add
+    
+    recComputeAddr moved the base register into w9 and added the immediate
+    to it there. _eeGetGPRSourceReg hands back the pin or the allocator slot
+    the base already occupies, so the add can take it as its source and the
+    copy goes.
+    Idea from @pstef
+
+diff --git a/pcsx2/arm64/recVTLB-arm64.cpp b/pcsx2/arm64/recVTLB-arm64.cpp
+index 13780baeef..cc774a67d3 100644
+--- a/pcsx2/arm64/recVTLB-arm64.cpp
++++ b/pcsx2/arm64/recVTLB-arm64.cpp
+@@ -368,11 +368,16 @@ static void recComputeAddr()
+ 	{
+ 		armAsm->Mov(a64::w9, g_cpuConstRegs[_Rs_].UL[0] + _Imm_);
+ 	}
++	else if (_Imm_ != 0)
++	{
++		// The base is read where it already lives, so the offset add doubles
++		// as the move into w9.
++		const a64::Register base = _eeGetGPRSourceReg(a64::w9, _Rs_);
++		armAsm->Add(a64::w9, base, _Imm_);
++	}
+ 	else
+ 	{
+ 		_eeMoveGPRtoR(a64::w9, _Rs_);
+-		if (_Imm_ != 0)
+-			armAsm->Add(a64::w9, a64::w9, _Imm_);
+ 	}
+ }
+ 
+commit 4bce28f6baeac8488da59d4604f9e859a4ded3a2
+Author:     Brian Degenhardt <bmd@bmdhacks.com>
+AuthorDate: Sat Sep 5 11:08:14 2026 +0200
+Commit:     Brian Degenhardt <bmd@bmdhacks.com>
+CommitDate: Mon Sep 21 20:55:15 2026 -0700
+
+    mVU: one instruction for the VU1 address wrap
+    
+    The quadword mask and the shift to bytes are a single UBFIZ.
+    Idea from @pstef
+
+diff --git a/pcsx2/arm64/microVU_Misc-arm64.inl b/pcsx2/arm64/microVU_Misc-arm64.inl
+index 6dfc2a4f27..40f827fba7 100644
+--- a/pcsx2/arm64/microVU_Misc-arm64.inl
++++ b/pcsx2/arm64/microVU_Misc-arm64.inl
+@@ -321,8 +321,7 @@ __fi void mVUaddrFix(mV, const a64::Register& gprReg)
+ 	if (isVU1)
+ 	{
+ 		// VU1: mask to 0x3FF quadwords, shift left 4 (x16 bytes)
+-		armAsm->And(gprReg.W(), gprReg.W(), 0x3ff);
+-		armAsm->Lsl(gprReg.W(), gprReg.W(), 4);
++		armAsm->Ubfiz(gprReg.W(), gprReg.W(), 4, 10);
+ 	}
+ 	else
+ 	{
+commit e1bbcfc4143c08351fd34e1dad2daa31f538df4b
+Author:     chaoticgd <43898262+chaoticgd@users.noreply.github.com>
+AuthorDate: Sun Aug 16 19:26:56 2026 +0100
+Commit:     lightningterror <18107717+lightningterror@users.noreply.github.com>
+CommitDate: Sun Sep 13 08:41:13 2026 +0200
+
+    VIF: Fix out of bounds read caused by broken alignment logic
+
+diff --git a/pcsx2/Vif_Unpack.cpp b/pcsx2/Vif_Unpack.cpp
+index 7326a96c94..878a63c821 100644
+--- a/pcsx2/Vif_Unpack.cpp
++++ b/pcsx2/Vif_Unpack.cpp
+@@ -361,7 +361,7 @@ _vifT int nVifUnpack(const u8* data)
+ 				_nVifUnpack(idx, data, vifRegs.mode, isFill);
+ 		}
+ 		else
+-			vu1Thread.VifUnpack(vif, vifRegs, (u8*)data, (size + 4) & ~0x3);
++			vu1Thread.VifUnpack(vif, vifRegs, (u8*)data, size);
+ 
+ 		vif.pass     = 0;
+ 		vif.tag.size = 0;
