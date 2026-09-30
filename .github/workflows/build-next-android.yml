@@ -33,6 +33,17 @@ jobs:
       - name: Install Rust Android target
         run: rustup target add aarch64-linux-android
 
+      - name: Install ccache
+        run: sudo apt-get update -qq && sudo apt-get install -y ccache
+
+      - name: Restore native compiler cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ccache
+          key: ccache-${{ runner.os }}-armsx2-f4904cb5-${{ github.ref_name }}
+          restore-keys: |
+            ccache-${{ runner.os }}-armsx2-f4904cb5-
+
       - name: Download ARMSX2 source
         run: |
           set -euxo pipefail
@@ -396,99 +407,38 @@ jobs:
         working-directory: src/platforms/android
         run: python3 app/src/main/cpp/3rdparty/shaderc/utils/git-sync-deps
 
-      - name: Build universal 4K + 16K APK
+      - name: Build fast 4K development APK
         working-directory: src/platforms/android
+        env:
+          CCACHE_DIR: ~/.cache/ccache
+          CMAKE_C_COMPILER_LAUNCHER: ccache
+          CMAKE_CXX_COMPILER_LAUNCHER: ccache
         run: |
           set -euxo pipefail
+          mkdir -p "$PWD/../../../out"
+          ccache --zero-stats || true
 
-          WORK_DIR="$PWD/app/build/next128-universal"
-          BASE_APK="$WORK_DIR/base-4k.apk"
-          APK_16K="$WORK_DIR/base-16k.apk"
-          UNSIGNED_APK="$WORK_DIR/universal-unsigned.apk"
-          ALIGNED_APK="$WORK_DIR/universal-aligned.apk"
-          LIB_STAGE="$WORK_DIR/lib-stage"
-          FINAL_APK="$PWD/../../../out/ARMSX2-NCAA-NEXT-ANDROID-UNIVERSAL-debug.apk"
+          ./gradlew :app:assembleGithubDebug \
+            -Parmsx2.applicationId=com.armsx2.ncaanext \
+            -Parmsx2.versionCode=128102 \
+            -Parmsx2.versionName=0.2.2-next128-mc64-fast4k \
+            -Parmsx2.hostPageSize=0x1000 \
+            -Parmsx2.nativeLibName=emucore_4k \
+            --stacktrace
 
-          rm -rf "$WORK_DIR"
-          mkdir -p "$WORK_DIR" "$LIB_STAGE/lib/arm64-v8a" "$PWD/../../../out"
-
-          build_core() {
-            local page_size="$1"
-            local lib_name="$2"
-            local out_apk="$3"
-
-            ./gradlew :app:cleanCxx
-            ./gradlew :app:assembleGithubDebug \
-              -Parmsx2.applicationId=com.armsx2.ncaanext \
-              -Parmsx2.versionCode=128101 \
-              -Parmsx2.versionName=0.2.1-next128-mc64-frontendfix \
-              -Parmsx2.hostPageSize="$page_size" \
-              -Parmsx2.nativeLibName="$lib_name" \
-              --stacktrace
-
-            local built_apk="$PWD/app/build/outputs/apk/github/debug/app-github-debug.apk"
-            test -f "$built_apk"
-            unzip -l "$built_apk" "lib/arm64-v8a/lib${lib_name}.so"
-            cp -f "$built_apk" "$out_apk"
-          }
-
-          echo "Building 4K core..."
-          build_core 0x1000 emucore_4k "$BASE_APK"
-
-          echo "Building 16K core..."
-          build_core 0x4000 emucore_16k "$APK_16K"
-
-          unzip -p "$BASE_APK" "lib/arm64-v8a/libemucore_4k.so" > "$LIB_STAGE/lib/arm64-v8a/libemucore_4k.so"
-          unzip -p "$APK_16K" "lib/arm64-v8a/libemucore_16k.so" > "$LIB_STAGE/lib/arm64-v8a/libemucore_16k.so"
-
-          cp -f "$BASE_APK" "$UNSIGNED_APK"
-          zip -qd "$UNSIGNED_APK" "META-INF/*" >/dev/null 2>&1 || true
-          zip -qd "$UNSIGNED_APK" "lib/arm64-v8a/libemucore_4k.so" "lib/arm64-v8a/libemucore_16k.so" >/dev/null 2>&1 || true
-          (cd "$LIB_STAGE" && zip -qr -0 "$UNSIGNED_APK" lib)
-
-          BUILD_TOOLS_DIR="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort | tail -n 1)"
-          ZIPALIGN="$BUILD_TOOLS_DIR/zipalign"
-          APKSIGNER="$BUILD_TOOLS_DIR/apksigner"
-          DEBUG_KEYSTORE="$HOME/.android/debug.keystore"
-
-          test -x "$ZIPALIGN"
-          test -x "$APKSIGNER"
-
-          if [[ ! -f "$DEBUG_KEYSTORE" ]]; then
-            mkdir -p "$(dirname "$DEBUG_KEYSTORE")"
-            keytool -genkeypair -v \
-              -keystore "$DEBUG_KEYSTORE" \
-              -storepass android \
-              -alias androiddebugkey \
-              -keypass android \
-              -dname "CN=Android Debug,O=Android,C=US" \
-              -keyalg RSA \
-              -keysize 2048 \
-              -validity 10000
-          fi
-          test -f "$DEBUG_KEYSTORE"
-
-          "$ZIPALIGN" -f -P 16 4 "$UNSIGNED_APK" "$ALIGNED_APK"
-          "$APKSIGNER" sign \
-            --ks "$DEBUG_KEYSTORE" \
-            --ks-key-alias androiddebugkey \
-            --ks-pass pass:android \
-            --key-pass pass:android \
-            --out "$FINAL_APK" \
-            "$ALIGNED_APK"
-
-          "$APKSIGNER" verify --verbose "$FINAL_APK"
-          "$ZIPALIGN" -c -P 16 4 "$FINAL_APK"
-          unzip -l "$FINAL_APK" "lib/arm64-v8a/libemucore_4k.so"
-          unzip -l "$FINAL_APK" "lib/arm64-v8a/libemucore_16k.so"
+          BUILT_APK="$PWD/app/build/outputs/apk/github/debug/app-github-debug.apk"
+          FINAL_APK="$PWD/../../../out/ARMSX2-NCAA-NEXT-ANDROID-FAST4K-debug.apk"
+          test -f "$BUILT_APK"
+          cp -f "$BUILT_APK" "$FINAL_APK"
+          ccache --show-stats || true
           sha256sum "$FINAL_APK" > "$FINAL_APK.sha256"
 
       - name: Collect APK
         run: |
           set -euxo pipefail
           ls -lh out/
-          test -f out/ARMSX2-NCAA-NEXT-ANDROID-UNIVERSAL-debug.apk
-          test -f out/ARMSX2-NCAA-NEXT-ANDROID-UNIVERSAL-debug.apk.sha256
+          test -f out/ARMSX2-NCAA-NEXT-ANDROID-FAST4K-debug.apk
+          test -f out/ARMSX2-NCAA-NEXT-ANDROID-FAST4K-debug.apk.sha256
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
