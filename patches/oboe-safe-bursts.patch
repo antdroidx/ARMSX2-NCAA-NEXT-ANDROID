@@ -1,0 +1,110 @@
+commit cdc8180b02799e6c8f85aabaa7ed9fb66c8bc4e1
+Author:     Brian Degenhardt <bmd@bmdhacks.com>
+AuthorDate: Sun Sep 27 10:15:40 2026 -0700
+Commit:     Brian Degenhardt <bmd@bmdhacks.com>
+CommitDate: Sun Sep 27 10:15:40 2026 -0700
+
+    Audio/Oboe: open the stream with the expansion mode's channel count
+    
+    The builder asked for stereo when the output had two channels and mono
+    for every other count, but ReadFrames() writes the full output channel
+    count per frame. Any expansion mode (2.1, quad, 5.1, 7.1) got a mono
+    stream whose callback buffer is a third to an eighth of what ReadFrames
+    fills, so it wrote past the end of it. Request the real count, and
+    refuse a stream that comes back with a different one.
+
+diff --git a/pcsx2/Host/OboeAudioStream.cpp b/pcsx2/Host/OboeAudioStream.cpp
+index 1ca6ee5d20..728f98d482 100644
+--- a/pcsx2/Host/OboeAudioStream.cpp
++++ b/pcsx2/Host/OboeAudioStream.cpp
+@@ -225,7 +225,7 @@ bool OboeAudioStream::Open()
+ 	builder.setSharingMode(oboe::SharingMode::Shared);
+ 	builder.setFormat(oboe::AudioFormat::Float);
+ 	builder.setSampleRate(m_sample_rate);
+-	builder.setChannelCount(m_output_channels == 2 ? oboe::ChannelCount::Stereo : oboe::ChannelCount::Mono);
++	builder.setChannelCount(m_output_channels);
+ 	builder.setDeviceId(oboe::kUnspecified);
+ 	builder.setBufferCapacityInFrames(2048 * 2);
+ 	builder.setFramesPerDataCallback(2048);
+@@ -239,6 +239,14 @@ bool OboeAudioStream::Open()
+ 		Console.Error("(Oboe) openStream() failed: %d", result);
+ 		return false;
+ 	}
++	// ReadFrames() writes m_output_channels samples per frame into the callback buffer.
++	if (m_stream->getChannelCount() != m_output_channels)
++	{
++		Console.Error("(Oboe) Stream opened with %d channels, need %d", m_stream->getChannelCount(), static_cast<int>(m_output_channels));
++		m_stream->close();
++		m_stream.reset();
++		return false;
++	}
+ 	return true;
+ }
+ 
+commit ae766e068c9a6bb0c8f536ba2aff1795915a22f0
+Author:     Brian Degenhardt <bmd@bmdhacks.com>
+AuthorDate: Sun Sep 27 10:16:33 2026 -0700
+Commit:     Brian Degenhardt <bmd@bmdhacks.com>
+CommitDate: Sun Sep 27 10:16:33 2026 -0700
+
+    Audio/Oboe: read at the device's burst size instead of 2048 frames
+    
+    The stream asked Oboe for 2048 frames per data callback. When that does
+    not match the device's burst, Oboe puts a block adapter in front of the
+    callback that takes all 2048 frames (about 43 ms at 48 kHz) from the
+    ring buffer in one call and hands them out a burst at a time. The ring
+    buffer targets 50 ms by default, so each of those reads nearly empties
+    it. The phone speaker pulls at a steady rate and the ring refills in
+    time. Bluetooth (A2DP) routes pull in large, irregular bursts, so two of
+    those 2048-frame reads can land close together, the second one finds the
+    ring short, and ReadFrames() pads the gap by stretching or silence,
+    which is the crackle and dropout users hear.
+    
+    Let the callback run at the native burst size, so the ring drains at the
+    rate the device actually consumes. This also removes the adapter's up to
+    2048 frames of extra latency on every route. ReadFrames() allocas in
+    proportion to its request, so a callback larger than 2048 frames is read
+    in 2048-frame pieces.
+
+diff --git a/pcsx2/Host/OboeAudioStream.cpp b/pcsx2/Host/OboeAudioStream.cpp
+index 728f98d482..244d927a96 100644
+--- a/pcsx2/Host/OboeAudioStream.cpp
++++ b/pcsx2/Host/OboeAudioStream.cpp
+@@ -10,6 +10,7 @@
+ 
+ #include "oboe/Oboe.h"
+ 
++#include <algorithm>
+ #include <atomic>
+ #include <chrono>
+ #include <mutex>
+@@ -120,8 +121,15 @@ oboe::DataCallbackResult OboeAudioStream::onAudioReady(oboe::AudioStream* p_audi
+ 	}
+ #endif
+ 
+-	if (p_audioData != nullptr)
+-		ReadFrames(reinterpret_cast<SampleType*>(p_audioData), p_numFrames);
++	// ReadFrames() allocas up to the request size, so keep each read bounded.
++	SampleType* out = static_cast<SampleType*>(p_audioData);
++	for (u32 left = (out != nullptr) ? static_cast<u32>(p_numFrames) : 0; left > 0;)
++	{
++		const u32 frames = std::min<u32>(left, 2048);
++		ReadFrames(out, frames);
++		out += frames * m_output_channels;
++		left -= frames;
++	}
+ 	return oboe::DataCallbackResult::Continue;
+ }
+ 
+@@ -227,8 +235,10 @@ bool OboeAudioStream::Open()
+ 	builder.setSampleRate(m_sample_rate);
+ 	builder.setChannelCount(m_output_channels);
+ 	builder.setDeviceId(oboe::kUnspecified);
++	// No fixed callback size: Oboe's block adapter would drain 2048 frames (~43 ms) from a ring
++	// that targets 50 ms in one go, and Bluetooth routes pull in irregular bursts, so two such
++	// drains close together run the ring dry. Native bursts drain it as the device consumes.
+ 	builder.setBufferCapacityInFrames(2048 * 2);
+-	builder.setFramesPerDataCallback(2048);
+ 	builder.setDataCallback(this);
+ 	builder.setErrorCallback(this);
+ 
