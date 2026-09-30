@@ -1,10 +1,10 @@
 name: Full ARMSX2 NCAA NEXT Native Build
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: {}
   push:
     branches:
-      - codex/memcard-hash-upstream-audit
+      - 'codex/memcard-hash-upstream-audit'
 
 jobs:
   build-android:
