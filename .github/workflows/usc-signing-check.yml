@@ -1,0 +1,19 @@
+name: Check USC Diagnostic Signing Cache
+on:
+  workflow_dispatch:
+  push:
+    branches: ['codex/usc-number-diagnostic']
+    paths: ['.github/workflows/usc-signing-check.yml']
+permissions:
+  actions: read
+  contents: read
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: List signing cache metadata only
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/actions/caches?key=ncaa-next-debug-signing-v1&per_page=100" --jq '{total_count, caches: [.actions_caches[] | {id,key,ref,last_accessed_at,created_at}]}'
