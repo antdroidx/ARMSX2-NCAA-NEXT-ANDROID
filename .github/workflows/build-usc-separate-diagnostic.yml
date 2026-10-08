@@ -1,0 +1,509 @@
+name: USC Separate Diagnostic APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'codex/usc-number-diagnostic'
+    paths:
+      - '.github/workflows/build-usc-separate-diagnostic.yml'
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+
+    steps:
+      - name: Check out project
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Test native stop ownership
+        run: python3 -m unittest discover -s tests -v
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+
+      - name: Install Android NDK and CMake
+        run: yes | sdkmanager "ndk;28.2.13676358" "cmake;3.22.1" "cmake;3.31.6" >/dev/null || true
+
+      - name: Install Rust Android target
+        run: rustup target add aarch64-linux-android
+
+      - name: Install ccache
+        run: sudo apt-get update -qq && sudo apt-get install -y ccache
+
+      - name: Wait for approved native validation and its compiler cache
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run watch 37804531420 --repo "$GITHUB_REPOSITORY" --exit-status --interval 60
+
+      - name: Restore native compiler cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.ccache
+          key: ccache-v2-${{ runner.os }}-armsx2-f4904cb5-4k-${{ github.run_id }}
+          restore-keys: |
+            ccache-v2-${{ runner.os }}-armsx2-f4904cb5-4k-
+
+      - name: Download ARMSX2 source
+        run: |
+          set -euxo pipefail
+          curl -L "https://github.com/SgtBilko76/ARMSX2-3D/archive/f4904cb5e3b322178e3815683e221f3ab9354d2e.zip" -o armsx2.zip
+          unzip -q armsx2.zip
+          mv ARMSX2-3D-f4904cb5e3b322178e3815683e221f3ab9354d2e src
+
+      - name: Restore known-good frontend fixes
+        working-directory: src
+        run: |
+          set -euxo pipefail
+          python3 ../scripts/patch_settings_copy_verify_fix.py
+          python3 ../scripts/patch_achievements_settings_verify.py
+          python3 ../scripts/patch_configstore_settings_verify.py
+          python3 ../scripts/patch_step_resolution_verify.py
+          python3 ../scripts/patch_crash_debugger.py
+          python3 ../scripts/patch_game_exit.py
+          python3 ../scripts/patch_no_intro.py
+          python3 ../scripts/verify_lifecycle_source.py
+          python3 ../scripts/patch_native_stop.py
+          grep -n "Android/Dex-safe Settings update path" platforms/android/app/src/main/java/com/armsx2/config/Settings.kt
+          grep -n "NCAA NEXT CRASH DEBUGGER" platforms/android/app/src/main/java/com/armsx2/BootSplashActivity.kt
+
+      - name: Restore separate diagnostic signing key
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/usc-diagnostic.jks
+          key: usc-separate-debug-signing-v1
+
+      - name: Prepare separate diagnostic signing key
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.android"
+          if [ ! -f "$HOME/.android/usc-diagnostic.jks" ]; then
+          keytool -genkeypair -keystore "$HOME/.android/usc-diagnostic.jks" \
+            -storepass android -keypass android -alias androiddebugkey \
+            -dname "CN=USC Separate Diagnostic" -keyalg RSA -keysize 2048 -validity 3650
+          fi
+          cp "$HOME/.android/usc-diagnostic.jks" "$HOME/.android/ncaa-next-debug.jks"
+          keytool -exportcert -keystore "$HOME/.android/ncaa-next-debug.jks" \
+            -storepass android -alias androiddebugkey | sha256sum | cut -d' ' -f1 > "$RUNNER_TEMP/usc-diag-cert.sha256"
+
+      - name: Bind Gradle to separate diagnostic key
+        working-directory: src
+        run: |
+          python3 ../scripts/patch_android_signing.py
+          python3 ../scripts/patch_ccache.py
+
+      - name: Apply NEXT 128MB ARM64 patch
+        working-directory: src
+        run: |
+          set -euxo pipefail
+          cat > /tmp/patch_next128.py <<'PY'
+          from pathlib import Path
+          import re
+
+          def edit(path, fn):
+              p = Path(path)
+              s = p.read_text()
+              ns = fn(s)
+              if ns == s:
+                  raise SystemExit(f"No change made to {path}")
+              p.write_text(ns)
+
+          def repl(s, old, new, label):
+              if old not in s:
+                  raise SystemExit(f"Missing block for {label}")
+              return s.replace(old, new, 1)
+
+          def patch_ir5900(s):
+              s = repl(s,
+                  "static u16 manual_page[Ps2MemSize::MainRam / 4096] = {};\nstatic u8 manual_counter[Ps2MemSize::MainRam / 4096] = {};",
+                  "static u16 manual_page[Ps2MemSize::TotalRam / 4096] = {};\nstatic u8 manual_counter[Ps2MemSize::TotalRam / 4096] = {};",
+                  "manual SMC arrays")
+              s = repl(s,
+                  "recLutEntries = (Ps2MemSize::MainRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) / 4;",
+                  "recLutEntries = (Ps2MemSize::ExposedRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2) / 4;",
+                  "recLutEntries")
+              s = repl(s,
+                  "curpos += (Ps2MemSize::MainRam / 4);",
+                  "curpos += (Ps2MemSize::ExposedRam / 4);",
+                  "recRAM advance")
+              s = re.sub(
+                  r"\n\t// MainRam, deliberately .*?\n\tif \(recRAMCopy\.size\(\) != Ps2MemSize::MainRam\)\n\t\trecRAMCopy\.resize\(Ps2MemSize::MainRam\);",
+                  "\n\t// Keep the ARM64 snapshot/LUT span synchronized with the amount of EE RAM\n"
+                  "\t// exposed to the guest. This mirrors the x86 recompiler and is required for\n"
+                  "\t// executing blocks from the 32-128MB devkit region.\n"
+                  "\tif (recRAMCopy.size() != Ps2MemSize::ExposedRam)\n"
+                  "\t\trecRAMCopy.resize(Ps2MemSize::ExposedRam);",
+                  s,
+                  count=1,
+                  flags=re.S)
+              s = repl(s,
+                  "iopClearRecLUT(recLutReserve_RAM.data(),\n\t\tPs2MemSize::MainRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2);",
+                  "iopClearRecLUT(recLutReserve_RAM.data(),\n\t\tPs2MemSize::ExposedRam + Ps2MemSize::Rom + Ps2MemSize::Rom1 + Ps2MemSize::Rom2);",
+                  "clear recLUT size")
+              old_map = ("\t// Map EE RAM (32MB, mirrored)\n"
+                  "\tfor (int i = 0; i < 0x200; i++)\n"
+                  "\t{\n"
+                  "\t\tu32 mask = (Ps2MemSize::MainRam / _64kb) - 1;\n"
+                  "\t\trecLUT_SetPage(recLUT, hwLUT, recRAM, 0x0000, i, i & mask);\n"
+                  "\t\trecLUT_SetPage(recLUT, hwLUT, recRAM, 0x2000, i, i & mask);\n"
+                  "\t\trecLUT_SetPage(recLUT, hwLUT, recRAM, 0x3000, i, i & mask);\n"
+                  "\t\trecLUT_SetPage(recLUT, hwLUT, recRAM, 0x8000, i, i & mask);\n"
+                  "\t\trecLUT_SetPage(recLUT, hwLUT, recRAM, 0xa000, i, i & mask);\n"
+                  "\t\trecLUT_SetPage(recLUT, hwLUT, recRAM, 0xb000, i, i & mask);\n"
+                  "\t\trecLUT_SetPage(recLUT, hwLUT, recRAM, 0xc000, i, i & mask);\n"
+                  "\t\trecLUT_SetPage(recLUT, hwLUT, recRAM, 0xd000, i, i & mask);\n"
+                  "\t}\n")
+              new_map = ("\t// Map all exposed EE RAM (32MB retail or 128MB devkit), mirrored.\n"
+                  "\tfor (int i = 0; i < static_cast<int>(Ps2MemSize::ExposedRam / _64kb); i++)\n"
+                  "\t{\n"
+                  "\t\trecLUT_SetPage(recLUT, hwLUT, recRAM, 0x0000, i, i);\n"
+                  "\t\trecLUT_SetPage(recLUT, hwLUT, recRAM, 0x2000, i, i);\n"
+                  "\t\trecLUT_SetPage(recLUT, hwLUT, recRAM, 0x3000, i, i);\n"
+                  "\t\trecLUT_SetPage(recLUT, hwLUT, recRAM, 0x8000, i, i);\n"
+                  "\t\trecLUT_SetPage(recLUT, hwLUT, recRAM, 0xa000, i, i);\n"
+                  "\t\trecLUT_SetPage(recLUT, hwLUT, recRAM, 0xb000, i, i);\n"
+                  "\t\trecLUT_SetPage(recLUT, hwLUT, recRAM, 0xc000, i, i);\n"
+                  "\t\trecLUT_SetPage(recLUT, hwLUT, recRAM, 0xd000, i, i);\n"
+                  "\t}\n")
+              s = repl(s, old_map, new_map, "EE RAM recLUT mapping")
+              s = repl(s, "if (HWADDR(pc) <= Ps2MemSize::MainRam)", "if (HWADDR(pc) <= Ps2MemSize::ExposedRam)", "overlap walk bound")
+              s = repl(s, "Ps2MemSize::MainRam - oldBlock->startpc", "Ps2MemSize::ExposedRam - oldBlock->startpc", "snapshot clamp")
+              if "Ps2MemSize::MainRam" in s:
+                  raise SystemExit("iR5900-arm64.cpp still contains Ps2MemSize::MainRam")
+              return s
+          edit("pcsx2/arm64/iR5900-arm64.cpp", patch_ir5900)
+
+          def patch_memory(s):
+              s = repl(s, "u32 ExposedRam = MainRam;", "u32 ExposedRam = TotalRam;", "default ExposedRam")
+              s = repl(s, "u32 ExposedIopRam = IopRam;", "u32 ExposedIopRam = TotalIopRam;", "default ExposedIopRam")
+              s = repl(s, "static bool s_extra_memory = false;", "static bool s_extra_memory = true;", "default extra memory")
+              s = re.sub(
+                  r"void memSetExtraMemMode\(bool mode\)\n\{.*?\n\ts_extra_memory = mode;",
+                  "void memSetExtraMemMode(bool mode)\n{\n\t// NEXT 27 test build: hard-enable devkit RAM even if settings contain false.\n\tmode = true;\n\ts_extra_memory = mode;",
+                  s,
+                  count=1,
+                  flags=re.S)
+              if "not supported by the ARM64 EE recompiler" in s:
+                  raise SystemExit("ARM64 extra-memory refusal guard still present")
+              return s
+          edit("pcsx2/Memory.cpp", patch_memory)
+          edit("pcsx2/Pcsx2Config.cpp", lambda s: repl(s, "ExtraMemory = false;", "ExtraMemory = true;", "CPU default ExtraMemory"))
+
+          # Diagnostic build #2: keep the ARM64 EE recompiler enabled, but force
+          # all EE memory ops through VTLB softmem. This isolates the remaining
+          # 128MB problem from the 4GB ARM64 fastmem mapping/backpatch path.
+          edit("pcsx2/Config.h", lambda s: repl(
+              s,
+              "#define CHECK_FASTMEM (EmuConfig.Cpu.Recompiler.EnableEE && EmuConfig.Cpu.Recompiler.EnableFastmem)",
+              "#define CHECK_FASTMEM (false)",
+              "force EE softmem"))
+          edit("pcsx2/Pcsx2Config.cpp", lambda s: repl(
+              s, "EnableFastmem = true;", "EnableFastmem = false;", "default fastmem off"))
+
+          gradle = Path("platforms/android/app/build.gradle.kts")
+          txt = gradle.read_text().replace('version = "3.22.1"', 'version = "3.31.6"')
+          gradle.write_text(txt)
+          PY
+          python3 /tmp/patch_next128.py
+
+          grep -n "Ps2MemSize::MainRam" pcsx2/arm64/iR5900-arm64.cpp && exit 1 || true
+          grep -n "not supported by the ARM64 EE recompiler" pcsx2/Memory.cpp && exit 1 || true
+
+
+      - name: Apply 64MB folder memory card geometry
+        working-directory: src
+        run: |
+          set -euxo pipefail
+          python3 ../scripts/patch_folder_memcard_64mb.py
+          grep -n "NCAA_NEXT_FOLDER_CARD_MB = 64" pcsx2/SIO/Memcard/MemoryCardFolder.cpp
+
+      - name: Apply JD4029 texture hash compatibility
+        working-directory: src
+        run: |
+          set -euxo pipefail
+          cat > /tmp/patch_jd4029_hash.py <<'PY'
+          from pathlib import Path
+
+          def replace_function(src, signature, replacement):
+              start = src.find(signature)
+              if start < 0:
+                  raise SystemExit(f"Missing function signature: {signature}")
+              brace = src.find("{", start)
+              if brace < 0:
+                  raise SystemExit(f"Missing opening brace: {signature}")
+              depth = 0
+              end = None
+              for i in range(brace, len(src)):
+                  ch = src[i]
+                  if ch == "{":
+                      depth += 1
+                  elif ch == "}":
+                      depth -= 1
+                      if depth == 0:
+                          end = i + 1
+                          break
+              if end is None:
+                  raise SystemExit(f"Unbalanced function: {signature}")
+              return src[:start] + replacement + src[end:]
+
+          tc_path = Path("pcsx2/GS/Renderers/HW/GSTextureCache.cpp")
+          tc = tc_path.read_text()
+
+          tc = replace_function(
+              tc,
+              "GSTextureCache::SourceRegion GSTextureCache::SourceRegion::Create(GIFRegTEX0 TEX0, GIFRegCLAMP CLAMP)",
+              r'''GSTextureCache::SourceRegion GSTextureCache::SourceRegion::Create(GIFRegTEX0 TEX0, GIFRegCLAMP CLAMP)
+          {
+              // JDHalfrack 1.7.4029 predates region-texture hashing. Disable the
+              // newer region optimization so replacement keys describe the full texture.
+              (void)TEX0;
+              (void)CLAMP;
+              return {};
+          }''')
+
+          tc = replace_function(
+              tc,
+              "static void HashTextureLevel(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, GSTextureCache::SourceRegion region, BlockHashState& hash_st, u8* temp)",
+              r'''static void HashTextureLevel(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, GSTextureCache::SourceRegion region, BlockHashState& hash_st, u8* temp)
+          {
+              // Exact JDHalfrack v1.7.4029 hashing behavior, adapted only for the
+              // modern SourceRegion argument and GS_BLOCK_SIZE constant.
+              (void)region;
+              const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
+              const GSVector2i& bs = psm.bs;
+              const int tw = 1 << TEX0.TW;
+              const int th = 1 << TEX0.TH;
+
+              const GSVector4i rect(0, 0, tw, th);
+              const GSVector4i block_rect(rect.ralign<Align_Outside>(bs));
+              GSLocalMemory& mem = g_gs_renderer->m_mem;
+              const GSOffset off = mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
+
+              if (tw < bs.x || th < bs.y || psm.fmsk != 0xFFFFFFFFu)
+              {
+                  const u32 pitch = Common::AlignUpPow2(static_cast<u32>(block_rect.z), 32);
+                  const u32 row_size = static_cast<u32>(tw);
+                  const GSLocalMemory::readTexture rtx = psm.rtxP;
+
+                  rtx(mem, off, block_rect, temp, pitch, TEXA);
+
+                  u8* ptr = temp;
+                  if (pitch == row_size)
+                  {
+                      BlockHashAccumulate(hash_st, ptr, pitch * static_cast<u32>(th));
+                  }
+                  else
+                  {
+                      for (int y = 0; y < th; y++, ptr += pitch)
+                          BlockHashAccumulate(hash_st, ptr, row_size);
+                  }
+              }
+              else
+              {
+                  // 1.7.4029 intentionally resets here before hashing raw GS blocks.
+                  BlockHashReset(hash_st);
+
+                  GSOffset::BNHelper bn = off.bnMulti(block_rect.left, block_rect.top);
+                  const int right = block_rect.right >> off.blockShiftX();
+                  const int bottom = block_rect.bottom >> off.blockShiftY();
+                  const int xAdd = (1 << off.blockShiftX()) * (psm.bpp / 8);
+
+                  for (; bn.blkY() < bottom; bn.nextBlockY())
+                  {
+                      for (int x = 0; bn.blkX() < right; bn.nextBlockX(), x += xAdd)
+                      {
+                          BlockHashAccumulate(hash_st, mem.BlockPtr(bn.value()));
+                      }
+                  }
+              }
+          }''')
+
+          tc = replace_function(
+              tc,
+              "GSTextureCache::HashCacheKey GSTextureCache::HashCacheKey::Create(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const u32* clut, const GSVector2i* lod, SourceRegion region)",
+              r'''GSTextureCache::HashCacheKey GSTextureCache::HashCacheKey::Create(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const u32* clut, const GSVector2i* lod, SourceRegion region)
+          {
+              const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
+              (void)region;
+
+              HashCacheKey ret;
+              // JD4029 includes TEX0.TCC in the serialized texture key.
+              ret.TEX0.U64 = TEX0.U64 & 0x00000007FFF00000ULL;
+              ret.TEXA.U64 = (psm.pal == 0 && psm.fmt > 0) ? (TEXA.U64 & 0x000000FF000080FFULL) : 0;
+              ret.CLUTHash = clut ? GSTextureCache::PaletteKeyHash{}({clut, psm.pal}) : 0;
+              ret.region_width = 0;
+              ret.region_height = 0;
+
+              BlockHashState hash_st;
+              BlockHashReset(hash_st);
+
+              HashTextureLevel(TEX0, TEXA, {}, hash_st, s_unswizzle_buffer);
+
+              if (lod)
+              {
+                  const int basemip = lod->x;
+                  const int nmips = lod->y - lod->x + 1;
+                  for (int i = 1; i < nmips; i++)
+                  {
+                      const GIFRegTEX0 MIP_TEX0{g_gs_renderer->GetTex0Layer(basemip + i)};
+                      HashTextureLevel(MIP_TEX0, TEXA, {}, hash_st, s_unswizzle_buffer);
+                  }
+              }
+
+              ret.TEX0Hash = FinishBlockHash(hash_st);
+              return ret;
+          }''')
+
+          tc_path.write_text(tc)
+
+          tr_path = Path("pcsx2/GS/Renderers/HW/GSTextureReplacements.cpp")
+          tr = tr_path.read_text()
+
+          old = "u32 unused0 : 1; // was TCC"
+          if old not in tr:
+              raise SystemExit("TextureName legacy bit field not found")
+          tr = tr.replace(old, "u32 TEX0_TCC : 1; // JD4029 compatibility", 1)
+
+          # After renaming unused0 -> TEX0_TCC above, preserve the bit when parsing
+          # legacy JD4029 replacement filenames instead of clearing it.
+          old = "unused0 = 0;"
+          if old in tr:
+              tr = tr.replace(old, "(void)TEX0_TCC;", 1)
+          elif "(void)TEX0_TCC;" not in tr:
+              raise SystemExit("RemoveUnusedBits assignment not found")
+
+          old = "name.TEX0_TH = hash.TEX0.TH;\n"
+          if old not in tr:
+              raise SystemExit("CreateTextureName TH assignment not found")
+          tr = tr.replace(old, old + "\tname.TEX0_TCC = hash.TEX0.TCC;\n", 1)
+
+          old = "key.TEX0.TH = tn.TEX0_TH;\n"
+          if old not in tr:
+              raise SystemExit("HashCacheKeyFromTextureName TH assignment not found")
+          tr = tr.replace(old, old + "\tkey.TEX0.TCC = tn.TEX0_TCC;\n", 1)
+
+          tr_path.write_text(tr)
+
+          # Guardrails: fail before compiling if any compatibility marker is missing.
+          checks = {
+              tc_path: [
+                  "0x00000007FFF00000ULL",
+                  "const GSLocalMemory::readTexture rtx = psm.rtxP;",
+                  "return {};",
+              ],
+              tr_path: [
+                  "u32 TEX0_TCC : 1; // JD4029 compatibility",
+                  "name.TEX0_TCC = hash.TEX0.TCC;",
+                  "key.TEX0.TCC = tn.TEX0_TCC;",
+              ],
+          }
+          for path, needles in checks.items():
+              data = path.read_text()
+              for needle in needles:
+                  if needle not in data:
+                      raise SystemExit(f"Missing JD4029 compatibility marker in {path}: {needle}")
+
+          print("Applied JDHalfrack v1.7.4029 texture-hash compatibility")
+          PY
+          python3 /tmp/patch_jd4029_hash.py
+
+          grep -n "JD4029 compatibility" pcsx2/GS/Renderers/HW/GSTextureReplacements.cpp
+          grep -n "0x00000007FFF00000ULL" pcsx2/GS/Renderers/HW/GSTextureCache.cpp
+
+      - name: Apply logging-only USC diagnostics
+        working-directory: src
+        run: |
+          set -euo pipefail
+          git -C .. apply --check --directory=src patches/usc-number-diagnostic.patch
+          git -C .. apply --verbose --directory=src patches/usc-number-diagnostic.patch
+
+      - name: Fetch shaderc third-party deps
+        working-directory: src/platforms/android
+        run: python3 app/src/main/cpp/3rdparty/shaderc/utils/git-sync-deps
+
+      - name: Apply optional selective enhancements
+        working-directory: src
+        env:
+          ENHANCEMENTS: cpu-audio
+        run: |
+          set -euo pipefail
+          git -C .. apply --check --directory=src patches/arm64-selective.patch
+          git -C .. apply --verbose --directory=src patches/arm64-selective.patch
+          if [ "$ENHANCEMENTS" = cpu-audio ]; then
+            git -C .. apply --check --directory=src patches/oboe-safe-bursts.patch
+            git -C .. apply --verbose --directory=src patches/oboe-safe-bursts.patch
+            python3 ../scripts/test_selective_source.py
+          fi
+
+      - name: Build fast 4K development APK
+        working-directory: src/platforms/android
+        env:
+          CCACHE_DIR: ${{ github.workspace }}/.ccache
+          CCACHE_MAXSIZE: 2G
+          CMAKE_C_COMPILER_LAUNCHER: ccache
+          CMAKE_CXX_COMPILER_LAUNCHER: ccache
+          ENHANCEMENTS: cpu-audio
+        run: |
+          set -euxo pipefail
+          mkdir -p "$PWD/../../../out"
+          mkdir -p "$CCACHE_DIR"
+          ccache --zero-stats
+          BUILD_START=$(date +%s)
+
+          case "$ENHANCEMENTS" in
+            none) VERSION_CODE=128103; VERSION_NAME=0.2.3-next128-mc64-stopcpu; VARIANT=STOPCPU ;;
+            cpu) VERSION_CODE=128104; VERSION_NAME=0.2.4-next128-mc64-cpu; VARIANT=CPU ;;
+            cpu-audio) VERSION_CODE=128106; VERSION_NAME=0.2.6-next128-mc64-usc-diag; VARIANT=USC-DIAG-SEPARATE ;;
+            *) exit 1 ;;
+          esac
+          printf 'commit=%s\nvariant=%s\nversionCode=%s\nversionName=%s\n' "$GITHUB_SHA" "$VARIANT" "$VERSION_CODE" "$VERSION_NAME" > "$PWD/../../../out/build-info.txt"
+
+          ./gradlew :app:assembleGithubDebug \
+            -Parmsx2.applicationId=com.armsx2.ncaanext.uscdiag \
+            "-Parmsx2.appLabel=NCAA NEXT USC Diagnostic" \
+            -Parmsx2.versionCode="$VERSION_CODE" \
+            -Parmsx2.versionName="$VERSION_NAME" \
+            -Parmsx2.hostPageSize=0x1000 \
+            -Parmsx2.nativeLibName=emucore_4k \
+            --stacktrace
+
+          BUILT_APK="$PWD/app/build/outputs/apk/github/debug/app-github-debug.apk"
+          FINAL_APK="$PWD/../../../out/ARMSX2-NCAA-NEXT-ANDROID-${VARIANT}-4K-debug.apk"
+          test -f "$BUILT_APK"
+          cp -f "$BUILT_APK" "$FINAL_APK"
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner | sort -V | tail -1)
+          "$APKSIGNER" verify --verbose --print-certs "$FINAL_APK" | tee "$PWD/../../../out/apk-signature.txt"
+          grep -q "$(cat "$RUNNER_TEMP/usc-diag-cert.sha256")" "$PWD/../../../out/apk-signature.txt"
+          echo "Build seconds: $(($(date +%s) - BUILD_START))" | tee "$PWD/../../../out/build-time.txt"
+          ccache --show-stats --verbose | tee "$PWD/../../../out/ccache-stats.txt"
+          find app/.cxx -name CMakeCache.txt -exec grep -H 'CMAKE_.*_COMPILER_LAUNCHER' {} \; | tee "$PWD/../../../out/compiler-launchers.txt"
+          test -s "$PWD/../../../out/compiler-launchers.txt"
+          sha256sum "$FINAL_APK" > "$FINAL_APK.sha256"
+
+      - name: Collect APK
+        run: |
+          set -euxo pipefail
+          ls -lh out/
+          test "$(find out -maxdepth 1 -name '*.apk' | wc -l)" -eq 1
+          test "$(find out -maxdepth 1 -name '*.apk.sha256' | wc -l)" -eq 1
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ARMSX2-NCAA-NEXT-ANDROID-USC-DIAG-SEPARATE-128106-test-apk
+          path: out/*
+          if-no-files-found: error
