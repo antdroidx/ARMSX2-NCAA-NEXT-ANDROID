@@ -1,0 +1,132 @@
+--- a/pcsx2/GS/Renderers/HW/GSTextureCache.h
++++ b/pcsx2/GS/Renderers/HW/GSTextureCache.h
+@@ -326,6 +326,12 @@
+ 
+ 	public:
+ 		HashCacheEntry* m_from_hash_cache = nullptr;
++		// Diagnostic metadata only; never used in rendering decisions.
++		u64 m_usc_hash = 0;
++		u64 m_usc_clut_hash = 0;
++		unsigned m_usc_draw_logs = 0;
++		unsigned m_usc_replacement_logs = 0;
++
+ 		std::shared_ptr<Palette> m_palette_obj;
+ 		std::unique_ptr<u32[]> m_valid; // each u32 bits map to the 32 blocks of that page
+ 		GSTexture* m_palette = nullptr;
+--- a/pcsx2/GS/Renderers/HW/GSTextureCache.cpp
++++ b/pcsx2/GS/Renderers/HW/GSTextureCache.cpp
+@@ -6303,6 +6303,30 @@
+ 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
+ 	Source* src = new Source(TEX0, TEXA);
+ 
++	// Read-only source tagging catches both replacement and original number draws.
++	// Only small PSMT4 atlases are hashed; no cache/render policy is changed.
++	if (!dst && TEX0.PSM == PSMT4 && TEX0.TW == TEX0.TH && (TEX0.TW == 7 || TEX0.TW == 8))
++	{
++		const u32* clut = static_cast<const u32*>(g_gs_renderer->m_mem.m_clut);
++		const HashCacheKey key = HashCacheKey::Create(TEX0, TEXA, clut, lod, region);
++		if (key.TEX0Hash == 0x8be535660878868dULL ||
++		key.TEX0Hash == 0x0fd2f8fface1b473ULL ||
++		key.TEX0Hash == 0xb1ab915d19fe1b9aULL ||
++		key.TEX0Hash == 0x2734ba81529c23b3ULL ||
++		key.TEX0Hash == 0x3925edba8d75885eULL ||
++		key.TEX0Hash == 0xf09753a478248cbfULL ||
++		key.TEX0Hash == 0xb255bb1294f62073ULL ||
++		key.TEX0Hash == 0xb25b9a4dd3060c61ULL)
++		{
++			src->m_usc_hash = key.TEX0Hash;
++			src->m_usc_clut_hash = key.CLUTHash;
++			Console.WriteLnFmt("USC-DIAG source hash={:016x} clut={:016x} TEX0={:016x} TEXA={:016x}",
++				key.TEX0Hash, key.CLUTHash, TEX0.U64, TEXA.U64);
++			for (unsigned i = 0; i < 16; i++)
++				Console.WriteLnFmt("USC-DIAG original CLUT hash={:016x} i={} rgba32={:08x}", key.TEX0Hash, i, clut[i]);
++		}
++	}
++
+ 	// For debugging, we have an option to force copies instead of sampling the target directly.
+ 	static constexpr bool force_target_copy = false;
+ 
+--- a/pcsx2/GS/Renderers/HW/GSTextureReplacements.cpp
++++ b/pcsx2/GS/Renderers/HW/GSTextureReplacements.cpp
+@@ -844,6 +844,43 @@
+ 	}
+ 
+ 	SetReplacementTextureAlphaMinMax(rtex);
++	const auto& key = name;
++	if (key.TEX0Hash == 0x8be535660878868dULL ||
++		key.TEX0Hash == 0x0fd2f8fface1b473ULL ||
++		key.TEX0Hash == 0xb1ab915d19fe1b9aULL ||
++		key.TEX0Hash == 0x2734ba81529c23b3ULL ||
++		key.TEX0Hash == 0x3925edba8d75885eULL ||
++		key.TEX0Hash == 0xf09753a478248cbfULL ||
++		key.TEX0Hash == 0xb255bb1294f62073ULL ||
++		key.TEX0Hash == 0xb25b9a4dd3060c61ULL)
++	{
++		Console.WriteLnFmt("USC-DIAG PNG file={} size={}x{} pitch={} format={} alpha={}-{}",
++			filename, rtex.width, rtex.height, rtex.pitch, static_cast<unsigned>(rtex.format),
++			rtex.alpha_minmax.first, rtex.alpha_minmax.second);
++		if (rtex.format == GSTexture::Format::Color)
++		{
++			u32 alpha0 = 0, alpha128 = 0, alpha255 = 0, alpha_other = 0;
++			bool logged_opaque = false;
++			for (u32 y = 0; y < rtex.height; y++)
++			{
++				const u8* row = rtex.data.data() + y * rtex.pitch;
++				for (u32 x = 0; x < rtex.width; x++)
++				{
++					const u8* p = row + x * 4;
++					if (p[3] == 0) alpha0++;
++					else if (p[3] == 128) alpha128++;
++					else if (p[3] == 255) alpha255++;
++					else alpha_other++;
++					if (p[3] == 255 && !logged_opaque)
++					{
++						Console.WriteLnFmt("USC-DIAG PNG opaque file={} x={} y={} rgba={},{},{},{}", filename, x, y, p[0], p[1], p[2], p[3]);
++						logged_opaque = true;
++					}
++				}
++			}
++			Console.WriteLnFmt("USC-DIAG PNG alpha-count file={} zero={} half={} full={} other={}", filename, alpha0, alpha128, alpha255, alpha_other);
++		}
++	}
+ 
+ 	return rtex;
+ }
+--- a/pcsx2/GS/Renderers/HW/GSRendererHW.cpp
++++ b/pcsx2/GS/Renderers/HW/GSRendererHW.cpp
+@@ -10810,6 +10810,35 @@
+ 
+ 	// Completes the row opened at the top of Draw() with the backend view, which only
+ 	// exists here.
++	// Capture the final backend configuration, after all renderer adjustments.
++	// A per-source budget cannot be consumed by unrelated menu replacement draws.
++	if (tex && tex->m_usc_hash)
++	{
++		const auto* cache = tex->m_from_hash_cache;
++		unsigned& logs = (cache && cache->is_replacement) ? tex->m_usc_replacement_logs : tex->m_usc_draw_logs;
++		if (logs < 128)
++		{
++		logs++;
++		Console.WriteLnFmt("USC-DIAG draw hash={:016x} clut={:016x} n={} tex={} replacement={} palette={} target={} source-alpha={}-{} valid={} cache-alpha={}-{} cache-valid={}",
++			tex->m_usc_hash, tex->m_usc_clut_hash, logs, static_cast<const void*>(tex->m_texture),
++			cache && cache->is_replacement, tex->m_palette != nullptr, tex->m_target,
++			tex->m_alpha_minmax.first, tex->m_alpha_minmax.second, tex->m_valid_alpha_minmax,
++			cache ? cache->alpha_minmax.first : 0, cache ? cache->alpha_minmax.second : 0,
++			cache && cache->valid_alpha_minmax);
++		Console.WriteLnFmt("USC-DIAG GS TEX0={:016x} TEXA={:016x} ALPHA={:016x} FRAME={:016x} TEST={:016x}",
++			m_cached_ctx.TEX0.U64, m_cached_ctx.TEXA.U64, m_context->ALPHA.U64, m_cached_ctx.FRAME.U64, m_cached_ctx.TEST.U64);
++		Console.WriteLnFmt("USC-DIAG final ps={:016x}:{:016x} blend={:08x} TFX={} TCC={} AEM_FMT={} PAL_FMT={} blend-hw={} blend-mix={} blend-abcd={},{},{},{} rt-alpha={}-{} rt-scale={}",
++			m_conf.ps.key_hi, m_conf.ps.key_lo, m_conf.blend.key,
++			static_cast<unsigned>(m_conf.ps.tfx), static_cast<unsigned>(m_conf.ps.tcc),
++			static_cast<unsigned>(m_conf.ps.aem_fmt), static_cast<unsigned>(m_conf.ps.pal_fmt),
++			static_cast<unsigned>(m_conf.ps.blend_hw), static_cast<unsigned>(m_conf.ps.blend_mix),
++			static_cast<unsigned>(m_conf.ps.blend_a), static_cast<unsigned>(m_conf.ps.blend_b),
++			static_cast<unsigned>(m_conf.ps.blend_c), static_cast<unsigned>(m_conf.ps.blend_d),
++			rt ? rt->m_alpha_min : 0, rt ? rt->m_alpha_max : 0, rt && rt->m_rt_alpha_scale);
++		for (u32 i = 0; m_conf.verts && i < std::min<u32>(m_conf.nverts, 4); i++)
++			Console.WriteLnFmt("USC-DIAG final vertex i={} rgba32={:08x}", i, m_conf.verts[i].RGBAQ.U32[0]);
++		}
++	}
+ 	GSDrawLog::EndDraw(m_conf, static_cast<u8>(m_prim_overlap));
+ 
+ 	if (!m_channel_shuffle_width)
