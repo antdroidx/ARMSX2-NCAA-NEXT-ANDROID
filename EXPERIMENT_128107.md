@@ -9,8 +9,12 @@ texture folder as usual. Avoid simultaneously opening the same memory card in tw
 
 ## Controls
 
-Create `next128107.txt` in the configured **textures root folder** (the directory
-containing `SLUS-21214`, not the replacements folder). With no file, both tests
+Create a small text file with the controls below, then open **Texture Packs** and
+tap **🧪 Import 128107 test controls** to select it. The app copies it to its actual
+textures root as `next128107.txt`; no Android folder access workaround is needed.
+The **0 Restore 128107 control** action resets both teams to original rendering.
+You can also place the file directly in the configured **textures root folder**
+(the directory containing `SLUS-21214`, not replacements). With no file, both tests
 use the original renderer. Fully stop and restart the experimental app after each
 edit so decoded replacement and source caches are rebuilt. Do not change the file
 mid-game. Only NCAA Football 06 serial `SLUS-21214` is eligible.
