@@ -130,6 +130,18 @@ void GSTextureReplacements::Initialize()''')
 		src->m_ncaa_key = HashCacheKey::Create(TEX0, TEXA, clut, lod, region);
 		src->m_ncaa_experiment = GSTextureReplacements::NCAAExperimentMode(src->m_ncaa_key);
 	}''')
+    edit(base + "GSRendererHW.cpp", "void GSRendererHW::Draw()", r'''static bool NCAAHasControlAlpha(const GSHWDrawConfig& conf)
+{
+	// DECAL and MODULATE have identical alpha only when TCC ignores texture alpha,
+	// or every vertex has neutral GS alpha 128. Otherwise keep the RGB test on control.
+	if (!conf.ps.tcc) return true;
+	if (!conf.verts || !conf.nverts) return false;
+	for (u32 i = 0; i < conf.nverts; i++)
+		if ((conf.verts[i].RGBAQ.U32[0] >> 24) != 128) return false;
+	return true;
+}
+
+void GSRendererHW::Draw()''')
     edit(base + "GSRendererHW.cpp", "\tGSDrawLog::EndDraw(m_conf, static_cast<u8>(m_prim_overlap));", r'''
 	// Late draw-only experiments. Complex/multi-pass paths retain the control.
 	// Source pixels, GS registers, vertex buffers, and persistent cache state stay intact.
@@ -142,7 +154,7 @@ void GSTextureReplacements::Initialize()''')
 			!m_conf.ps.IsSWBlending() && !m_conf.ps.blend_hw && !m_conf.ps.blend_mix &&
 			!m_conf.ps.IsFeedbackLoopRT() && !m_channel_shuffle && !m_texture_shuffle;
 		bool applied = false;
-		if (simple && tex->m_ncaa_experiment == 2 && m_conf.ps.tfx == 0)
+		if (simple && tex->m_ncaa_experiment == 2 && m_conf.ps.tfx == 0 && NCAAHasControlAlpha(m_conf))
 		{
 			m_conf.ps.tfx = 1; // DECAL: replacement RGB instead of vertex-modulated RGB.
 			applied = true;

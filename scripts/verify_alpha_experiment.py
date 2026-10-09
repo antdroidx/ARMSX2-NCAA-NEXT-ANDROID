@@ -23,6 +23,8 @@ usc = function(source, 'bool NCAAIsUSC(')
 loader = function(source, 'void LoadNCAAExperiment(')
 alpha = function(source, 'auto scale_alpha = ')
 renderer = (base / 'GSRendererHW.cpp').read_text()
+control_alpha = function(renderer, 'static bool NCAAHasControlAlpha(')
+assert 'm_conf.ps.tfx == 0 && NCAAHasControlAlpha(m_conf)' in renderer
 assert '!m_conf.alpha_second_pass.enable && !m_conf.blend_multi_pass.enable' in renderer
 assert '!m_conf.ps.IsSWBlending()' in renderer
 assert 'tex->m_from_hash_cache->is_replacement' in renderer
@@ -74,12 +76,29 @@ namespace Path { std::string Combine(const std::string& a,const std::string& b) 
 std::optional<std::string> fake_file;
 namespace FileSystem { std::optional<std::string> ReadFileToString(const char*) { return fake_file; } }
 struct ConsoleStub { template<typename... T> void WriteLnFmt(const char*, T...) {} } Console;
+struct TestVertex { struct { u32 U32[1]; } RGBAQ; };
+struct GSHWDrawConfig {
+ struct { unsigned tcc=1; } ps;
+ const TestVertex* verts=nullptr;
+ u32 nverts=0;
+};
 unsigned s_ncaa_wsu_mode=0, s_ncaa_usc_mode=0;
 std::optional<GSTextureCache::HashCacheKey> s_ncaa_wsu_key;
 // USC
 // LOADER
 // SELECTOR
+// CONTROL_ALPHA
 int main() {
+ GSHWDrawConfig conf;
+ assert(!NCAAHasControlAlpha(conf));
+ conf.ps.tcc=0; assert(NCAAHasControlAlpha(conf));
+ TestVertex verts[2]{};
+ verts[0].RGBAQ.U32[0]=0x80abcdef; verts[1].RGBAQ.U32[0]=0x80fedcba;
+ conf.ps.tcc=1; conf.verts=verts; conf.nverts=2;
+ assert(NCAAHasControlAlpha(conf));
+ verts[1].RGBAQ.U32[0]=0x7ffedcba;
+ assert(!NCAAHasControlAlpha(conf));
+ assert(verts[0].RGBAQ.U32[0]==0x80abcdef && verts[1].RGBAQ.U32[0]==0x7ffedcba);
  GSTextureCache::HashCacheKey wsu; wsu.TEX0Hash=123; wsu.CLUTHash=456;
  wsu.TEX0.PSM=PSMT4; wsu.TEX0.TW=wsu.TEX0.TH=7;
  auto usc=wsu; usc.TEX0Hash=0xb1ab915d19fe1b9aULL;
@@ -123,7 +142,7 @@ int main() {
  std::vector<u8> mip={11,22,33,255}; assert(scale_alpha(mip,1,1,4));
  assert((mip==std::vector<u8>{11,22,33,128}));
 }
-'''.replace('// USC', usc).replace('// LOADER', loader).replace('// SELECTOR', selector).replace('// ALPHA', alpha + ';')
+'''.replace('// USC', usc).replace('// LOADER', loader).replace('// SELECTOR', selector).replace('// CONTROL_ALPHA', control_alpha).replace('// ALPHA', alpha + ';')
 with tempfile.TemporaryDirectory() as tmp:
     cpp = Path(tmp) / 'experiment.cpp'
     exe = Path(tmp) / 'experiment'

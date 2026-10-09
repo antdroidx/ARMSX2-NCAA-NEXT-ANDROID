@@ -40,7 +40,7 @@ Each team has an independent mode:
 | --- | --- |
 | 0 | Original rendering control. |
 | 1 | Rescale decoded RGBA8 replacement alpha from 0–255 to 0–128, preserving RGB and disk PNGs. Includes supplied mip levels and recalculates alpha bounds. Compressed textures are logged and skipped. |
-| 2 | On simple MODULATE draws, use DECAL RGB to isolate vertex color modulation. Texture alpha selection remains unchanged. |
+| 2 | On simple MODULATE draws, use DECAL RGB to isolate vertex color modulation. Requires TCC=0 or all vertex alphas=128 so the control alpha result is preserved; otherwise skips. |
 | 3 | On simple draws with hardware blending enabled, disable that blending to isolate destination color contribution. A draw with no hardware blending is logged as unapplied. |
 
 Modes 2 and 3 leave multipass, software/mixed blending, feedback, and shuffle
