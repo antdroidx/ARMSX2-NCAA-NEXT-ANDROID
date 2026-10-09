@@ -38,7 +38,7 @@ namespace
 	{
 		s_ncaa_wsu_mode = s_ncaa_usc_mode = 0;
 		s_ncaa_wsu_key.reset();
-		if (s_current_serial != "SLUS-21214")
+		if (GSTextureReplacements::s_current_serial != "SLUS-21214")
 			return;
 		const std::string path = Path::Combine(EmuFolders::Textures, "next128107.txt");
 		const auto data = FileSystem::ReadFileToString(path.c_str());

@@ -20,6 +20,7 @@ base = Path('pcsx2/GS/Renderers/HW')
 source = (base / 'GSTextureReplacements.cpp').read_text()
 selector = function(source, 'unsigned GSTextureReplacements::NCAAExperimentMode(')
 usc = function(source, 'bool NCAAIsUSC(')
+loader = function(source, 'void LoadNCAAExperiment(')
 alpha = function(source, 'auto scale_alpha = ')
 renderer = (base / 'GSRendererHW.cpp').read_text()
 assert '!m_conf.alpha_second_pass.enable && !m_conf.blend_multi_pass.enable' in renderer
@@ -52,11 +53,30 @@ struct GSTextureCache {
   }
  };
 };
-namespace GSTextureReplacements { unsigned NCAAExperimentMode(const GSTextureCache::HashCacheKey&); }
-std::string s_current_serial="SLUS-21214";
+namespace GSTextureReplacements {
+ unsigned NCAAExperimentMode(const GSTextureCache::HashCacheKey&);
+ std::string s_current_serial="SLUS-21214";
+ struct TextureName { u64 TEX0Hash; };
+ std::optional<TextureName> ParseReplacementName(const std::string& name) {
+  if (name=="123-456-00001dd4.png") return TextureName{123};
+  if (name=="b1ab915d19fe1b9a-456-00001dd4.png") return TextureName{0xb1ab915d19fe1b9aULL};
+  return {};
+ }
+ GSTextureCache::HashCacheKey HashCacheKeyFromTextureName(TextureName name) {
+  GSTextureCache::HashCacheKey key; key.TEX0Hash=name.TEX0Hash;
+  key.CLUTHash=456; key.TEX0.PSM=PSMT4; key.TEX0.TW=key.TEX0.TH=7;
+  return key;
+ }
+}
+namespace EmuFolders { std::string Textures="textures"; }
+namespace Path { std::string Combine(const std::string& a,const std::string& b) { return a+"/"+b; } }
+std::optional<std::string> fake_file;
+namespace FileSystem { std::optional<std::string> ReadFileToString(const char*) { return fake_file; } }
+struct ConsoleStub { template<typename... T> void WriteLnFmt(const char*, T...) {} } Console;
 unsigned s_ncaa_wsu_mode=0, s_ncaa_usc_mode=0;
 std::optional<GSTextureCache::HashCacheKey> s_ncaa_wsu_key;
 // USC
+// LOADER
 // SELECTOR
 int main() {
  GSTextureCache::HashCacheKey wsu; wsu.TEX0Hash=123; wsu.CLUTHash=456;
@@ -73,11 +93,25 @@ int main() {
   other=wsu; other.TEX0.TCC++;
   assert(GSTextureReplacements::NCAAExperimentMode(other)==0);
  }
- s_current_serial="OTHER";
+ GSTextureReplacements::s_current_serial="OTHER";
  assert(GSTextureReplacements::NCAAExperimentMode(wsu)==0);
  assert(GSTextureReplacements::NCAAExperimentMode(usc)==0);
- s_current_serial="SLUS-21214"; usc.TEX0.TH=6;
+ GSTextureReplacements::s_current_serial="SLUS-21214"; usc.TEX0.TH=6;
  assert(GSTextureReplacements::NCAAExperimentMode(usc)==0);
+ fake_file="wsu=2\r\nusc=3\r\nwsu_file=123-456-00001dd4.png\r\n";
+ LoadNCAAExperiment();
+ assert(GSTextureReplacements::NCAAExperimentMode(wsu)==2);
+ usc.TEX0.TH=7;
+ assert(GSTextureReplacements::NCAAExperimentMode(usc)==3);
+ fake_file="wsu=1\nwsu_file=b1ab915d19fe1b9a-456-00001dd4.png\n";
+ LoadNCAAExperiment(); assert(!s_ncaa_wsu_key);
+ assert(GSTextureReplacements::NCAAExperimentMode(wsu)==0);
+ assert(GSTextureReplacements::NCAAExperimentMode(usc)==0);
+ fake_file="wsu=9\nusc=invalid\nwsu_file=bad.png\n";
+ LoadNCAAExperiment(); assert(!s_ncaa_wsu_key);
+ assert(s_ncaa_wsu_mode==0 && s_ncaa_usc_mode==0);
+ fake_file.reset(); LoadNCAAExperiment();
+ assert(s_ncaa_wsu_mode==0 && s_ncaa_usc_mode==0 && !s_ncaa_wsu_key);
  // ALPHA
  std::vector<u8> pixels={1,2,3,0, 4,5,6,128, 7,8,9,255, 99,99,99,99};
  assert(scale_alpha(pixels,3,1,16));
@@ -88,7 +122,7 @@ int main() {
  std::vector<u8> mip={11,22,33,255}; assert(scale_alpha(mip,1,1,4));
  assert((mip==std::vector<u8>{11,22,33,128}));
 }
-'''.replace('// USC', usc).replace('// SELECTOR', selector).replace('// ALPHA', alpha + ';')
+'''.replace('// USC', usc).replace('// LOADER', loader).replace('// SELECTOR', selector).replace('// ALPHA', alpha + ';')
 with tempfile.TemporaryDirectory() as tmp:
     cpp = Path(tmp) / 'experiment.cpp'
     exe = Path(tmp) / 'experiment'
