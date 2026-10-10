@@ -49,7 +49,11 @@ namespace
 			while (std::getline(lines, line))
 			{
 				if (!line.empty() && line.back() == '\r') line.pop_back();
-				if (line == "global=1") s_ncaa_global_mode = 1;\n\t\t\t\telse if (line == "global=2") s_ncaa_global_mode = 2;\n\t\t\t\telse if (line == "global=3") s_ncaa_global_mode = 3;\n\t\t\t\telse if (line == "global=0") s_ncaa_global_mode = 0;\n\t\t\t\telse if (line == "wsu=1") s_ncaa_wsu_mode = 1;
+				if (line == "global=1") s_ncaa_global_mode = 1;
+				else if (line == "global=2") s_ncaa_global_mode = 2;
+				else if (line == "global=3") s_ncaa_global_mode = 3;
+				else if (line == "global=0") s_ncaa_global_mode = 0;
+				else if (line == "wsu=1") s_ncaa_wsu_mode = 1;
 				else if (line == "wsu=2") s_ncaa_wsu_mode = 2;
 				else if (line == "wsu=3") s_ncaa_wsu_mode = 3;
 				else if (line == "wsu=0") s_ncaa_wsu_mode = 0;
