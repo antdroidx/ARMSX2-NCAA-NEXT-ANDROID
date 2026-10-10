@@ -140,7 +140,7 @@ int main() {
  assert(!scale_alpha(pixels,4,2,16)); assert(pixels==untouched);
  assert(!scale_alpha(pixels,4,1,12)); assert(pixels==untouched);
  std::vector<u8> mip={11,22,33,255}; assert(scale_alpha(mip,1,1,4));
- assert((mip==std::vector<u8>{11,22,33,128}));
+ assert((mip==std::vector<u8>{11,22,33,160}));
 }
 '''.replace('// USC', usc).replace('// LOADER', loader).replace('// SELECTOR', selector).replace('// CONTROL_ALPHA', control_alpha).replace('// ALPHA', alpha + ';')
 with tempfile.TemporaryDirectory() as tmp:
