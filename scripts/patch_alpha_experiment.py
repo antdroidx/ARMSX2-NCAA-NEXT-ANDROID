@@ -203,11 +203,13 @@ void GSRendererHW::Draw()''')
                         String(bytes, 0, count, Charsets.UTF_8)
                     } ?: error("Could not read control file.")
                     val valid = Regex("(?:wsu|usc|global)=[0-3]|wsu_file=[0-9a-fA-F]{1,16}(?:-[0-9a-fA-F]{1,16})?-[0-9a-fA-F]{8}\\.png")
-                    require(text.lineSequence().all { it.isEmpty() || valid.matches(it) }) {
-                        "Use wsu=0..3, usc=0..3, and an exact wsu_file=hash-CLUT-bits.png filename."
+                    val normalized = text.removePrefix("\uFEFF").lineSequence().map { it.trim() }.filter { it.isNotEmpty() }.toList()
+                    val invalid = normalized.firstOrNull { !valid.matches(it) }
+                    require(invalid == null) {
+                        "Invalid control line: '$invalid'. Use global=0..3, wsu=0..3, usc=0..3, or exact wsu_file=hash-CLUT-bits.png."
                     }
                     textureRoot().mkdirs()
-                    File(textureRoot(), "next128107.txt").writeText(text)
+                    File(textureRoot(), "next128107.txt").writeText(normalized.joinToString("\n", postfix = "\n"))
                 }
             }
             state.value = if (result.isSuccess) state.value.copy(
