@@ -23,7 +23,7 @@ def main():
 namespace
 {
 	unsigned s_ncaa_wsu_mode = 0;
-	unsigned s_ncaa_usc_mode = 0;
+	unsigned s_ncaa_usc_mode = 0;\n\tunsigned s_ncaa_global_mode = 0;
 	std::optional<GSTextureCache::HashCacheKey> s_ncaa_wsu_key;
 
 	bool NCAAIsUSC(u64 hash)
@@ -36,7 +36,7 @@ namespace
 
 	void LoadNCAAExperiment()
 	{
-		s_ncaa_wsu_mode = s_ncaa_usc_mode = 0;
+		s_ncaa_wsu_mode = s_ncaa_usc_mode = s_ncaa_global_mode = 0;
 		s_ncaa_wsu_key.reset();
 		if (GSTextureReplacements::s_current_serial != "SLUS-21214")
 			return;
@@ -49,7 +49,7 @@ namespace
 			while (std::getline(lines, line))
 			{
 				if (!line.empty() && line.back() == '\r') line.pop_back();
-				if (line == "wsu=1") s_ncaa_wsu_mode = 1;
+				if (line == "global=1") s_ncaa_global_mode = 1;\n\t\t\t\telse if (line == "global=2") s_ncaa_global_mode = 2;\n\t\t\t\telse if (line == "global=3") s_ncaa_global_mode = 3;\n\t\t\t\telse if (line == "global=0") s_ncaa_global_mode = 0;\n\t\t\t\telse if (line == "wsu=1") s_ncaa_wsu_mode = 1;
 				else if (line == "wsu=2") s_ncaa_wsu_mode = 2;
 				else if (line == "wsu=3") s_ncaa_wsu_mode = 3;
 				else if (line == "wsu=0") s_ncaa_wsu_mode = 0;
@@ -78,7 +78,7 @@ namespace
 
 bool GSTextureReplacements::NCAAExperimentEnabled()
 {
-	return s_ncaa_wsu_key.has_value() || s_ncaa_usc_mode != 0;
+	return s_ncaa_global_mode != 0 || s_ncaa_wsu_key.has_value() || s_ncaa_usc_mode != 0;
 }
 
 unsigned GSTextureReplacements::NCAAExperimentMode(const GSTextureCache::HashCacheKey& key)
@@ -95,13 +95,13 @@ void GSTextureReplacements::Initialize()''')
     edit(base + "GSTextureReplacements.cpp", "\tSyncWorkerThread();\n\tScopedGuard startup_complete_guard", "\tSyncWorkerThread();\n\tLoadNCAAExperiment();\n\tScopedGuard startup_complete_guard")
     edit(base + "GSTextureReplacements.cpp", "\tSetReplacementTextureAlphaMinMax(rtex);", r'''
 	const unsigned experiment = NCAAExperimentMode(HashCacheKeyFromTextureName(name));
-	if (experiment == 1)
+	if (experiment == 1 || experiment >= 4)
 	{
 		// Test a PNG/GS alpha-range hypothesis in private decoded CPU buffers only.
 		// Do not modify disk images, RGB, hashes, or unrelated replacement textures.
 		if (rtex.format == GSTexture::Format::Color)
 		{
-			auto scale_alpha = [](std::vector<u8>& bytes, u32 width, u32 height, u32 pitch)
+			const unsigned alpha_max = experiment == 4 ? 128 : experiment == 6 ? 192 : 160;\n\t\t\tauto scale_alpha = [alpha_max](std::vector<u8>& bytes, u32 width, u32 height, u32 pitch)
 			{
 				if (pitch < static_cast<u64>(width) * 4 || bytes.size() < static_cast<u64>(pitch) * height)
 					return false;
@@ -115,7 +115,7 @@ void GSTextureReplacements::Initialize()''')
 			};
 			const bool applied = scale_alpha(rtex.data, rtex.width, rtex.height, rtex.pitch);
 			for (auto& mip : rtex.mips) scale_alpha(mip.data, mip.width, mip.height, mip.pitch);
-			Console.WriteLnFmt("NEXT128107 alpha file={} applied={} range=0-160", filename, applied);
+			Console.WriteLnFmt("NEXT128107 alpha file={} applied={} range=0-{}", filename, applied, alpha_max);
 		}
 		else Console.WriteLnFmt("NEXT128107 alpha skipped compressed file={}", filename);
 	}
@@ -196,7 +196,7 @@ void GSRendererHW::Draw()''')
                         require(count <= 4096) { "Control file must be at most 4 KB." }
                         String(bytes, 0, count, Charsets.UTF_8)
                     } ?: error("Could not read control file.")
-                    val valid = Regex("(?:wsu|usc)=[0-3]|wsu_file=[0-9a-fA-F]{1,16}(?:-[0-9a-fA-F]{1,16})?-[0-9a-fA-F]{8}\\.png")
+                    val valid = Regex("(?:wsu|usc|global)=[0-3]|wsu_file=[0-9a-fA-F]{1,16}(?:-[0-9a-fA-F]{1,16})?-[0-9a-fA-F]{8}\\.png")
                     require(text.lineSequence().all { it.isEmpty() || valid.matches(it) }) {
                         "Use wsu=0..3, usc=0..3, and an exact wsu_file=hash-CLUT-bits.png filename."
                     }
