@@ -1,10 +1,10 @@
-name: NEXT 128107 Independent Alpha Experiments
+name: NEXT 128108 USC Alpha 160 Experiment
 
 on:
   workflow_dispatch:
   push:
     branches:
-      - 'codex/wsu-alpha-experiment-128107'
+      - 'codex/usc-alpha-160-test-128108'
     paths:
       - '.github/workflows/build-alpha-experiment-128107.yml'
       - 'scripts/patch_alpha_experiment.py'
@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   build-android:
-    if: github.ref == 'refs/heads/codex/wsu-alpha-experiment-128107'
+    if: github.ref == 'refs/heads/codex/usc-alpha-160-test-128108'
     name: Build Android APK
     runs-on: ubuntu-24.04
     timeout-minutes: 180
