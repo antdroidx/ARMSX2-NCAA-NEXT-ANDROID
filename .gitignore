@@ -8,5 +8,6 @@ __pycache__/
 /analysis-tools/
 /classic-decoded/
 /classic-clean/
+/classic-2.2n-decoded/
 /diagnostics/*-armsx2/
 /diagnostics/*-classic/

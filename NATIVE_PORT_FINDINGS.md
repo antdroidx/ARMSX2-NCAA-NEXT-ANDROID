@@ -2,6 +2,14 @@
 
 No native changes applied; no new APK produced in this investigation. Existing control remains stock Classic emucore. This report records native evidence rather than claiming a completed port.
 
+## User-supplied 2.2n target
+
+Downloaded https://github.com/Trixarian/NetherSX2-classic/releases/download/2.2n/NetherSX2-v2.2n-3668.apk and decoded it separately. APK SHA256 is 8b502b31ce797d5a162bc6b9300b5f02351b0b6b290b8dc1390b8dfb826673ab. Native SHA256 is 4e378da548984dc0208ff2240aae003942ae9c5a6eec3a36c838c65ac6a37a63.
+
+Both versions' native files are 12,094,744 bytes. They differ at only 45 byte positions, grouped into three version-label strings in .rodata at offsets 0xcdcba, 0xdac5e and 0xff022. Every executable ELF section is byte-for-byte identical. All remaining file bytes are identical as well. Therefore the earlier native instruction addresses also apply to this exact 2.2n input; the newer APK does not provide a different native RAM implementation. Android code/assets may differ and were not claimed identical.
+
+Use 2.2n as the selected native patch base going forward. The deliverable must include substantive libemucore.so changes and verified NEXT behavior; another relabeled APK would not satisfy the request. Input, byte-range comparison and complete section comparison are saved in diagnostics/classic-2.2n-input.json, classic-native-version-diff.json and classic-native-section-diff.json. No native patch has yet been produced.
+
 ## Exact native input
 
 Official Classic 2.1 / 3668 libemucore.so SHA256:

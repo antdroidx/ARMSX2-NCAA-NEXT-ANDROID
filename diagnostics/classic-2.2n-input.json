@@ -1,0 +1,7 @@
+{
+  "apk_sha256": "8b502b31ce797d5a162bc6b9300b5f02351b0b6b290b8dc1390b8dfb826673ab",
+  "native_sha256": {
+    "lib/arm64-v8a/libemucore.so": "4e378da548984dc0208ff2240aae003942ae9c5a6eec3a36c838c65ac6a37a63"
+  },
+  "native_identical_to_2_1": false
+}

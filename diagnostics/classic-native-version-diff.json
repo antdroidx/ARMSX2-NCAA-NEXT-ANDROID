@@ -1,0 +1,22 @@
+{
+  "size_2_1": 12094744,
+  "size_2_2n": 12094744,
+  "differing_bytes": 45,
+  "ranges": [
+    {
+      "start": "0xcdcba",
+      "end": "0xcdccb",
+      "length": 17
+    },
+    {
+      "start": "0xdac5e",
+      "end": "0xdac6f",
+      "length": 17
+    },
+    {
+      "start": "0xff022",
+      "end": "0xff033",
+      "length": 17
+    }
+  ]
+}
