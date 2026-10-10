@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - 'codex/usc-alpha-160-test-128108'
+      - 'codex/global-alpha-diagnostic-128109'
     paths:
       - '.github/workflows/build-alpha-experiment-128107.yml'
       - 'scripts/patch_alpha_experiment.py'
@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   build-android:
-    if: github.ref == 'refs/heads/codex/usc-alpha-160-test-128108'
+    if: github.ref == 'refs/heads/codex/global-alpha-diagnostic-128109'
     name: Build Android APK
     runs-on: ubuntu-24.04
     timeout-minutes: 180
