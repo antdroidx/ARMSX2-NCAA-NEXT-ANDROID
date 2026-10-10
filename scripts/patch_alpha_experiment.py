@@ -23,7 +23,8 @@ def main():
 namespace
 {
 	unsigned s_ncaa_wsu_mode = 0;
-	unsigned s_ncaa_usc_mode = 0;\n\tunsigned s_ncaa_global_mode = 0;
+	unsigned s_ncaa_usc_mode = 0;
+	unsigned s_ncaa_global_mode = 0;
 	std::optional<GSTextureCache::HashCacheKey> s_ncaa_wsu_key;
 
 	bool NCAAIsUSC(u64 hash)
@@ -105,7 +106,8 @@ void GSTextureReplacements::Initialize()''')
 		// Do not modify disk images, RGB, hashes, or unrelated replacement textures.
 		if (rtex.format == GSTexture::Format::Color)
 		{
-			const unsigned alpha_max = experiment == 4 ? 128 : experiment == 6 ? 192 : 160;\n\t\t\tauto scale_alpha = [alpha_max](std::vector<u8>& bytes, u32 width, u32 height, u32 pitch)
+			const unsigned alpha_max = experiment == 4 ? 128 : experiment == 6 ? 192 : 160;
+			auto scale_alpha = [alpha_max](std::vector<u8>& bytes, u32 width, u32 height, u32 pitch)
 			{
 				if (pitch < static_cast<u64>(width) * 4 || bytes.size() < static_cast<u64>(pitch) * height)
 					return false;
