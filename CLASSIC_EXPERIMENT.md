@@ -52,3 +52,5 @@ Matching GS-path evidence should include texture/CLUT key and hit/miss, decoded/
 ## Remaining blockers
 
 A feature-complete port needs 3668 native source or a separately scoped, verified native binary engineering effort for extended RAM/hash/card/lifecycle changes. The control APK only isolates stock Classic behavior. Connected hardware, licensed local game/BIOS and exact scene inputs are required to complete launch and graphical A/B verification.
+
+Subsequent native inspection is recorded in NATIVE_PORT_FINDINGS.md. Folder-card code was identified in the actual target binary; its capacity remains unverified. A published partial LGPL source/relink package was also inspected, but has not been established as matching 3668.

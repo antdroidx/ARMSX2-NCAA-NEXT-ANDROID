@@ -5,6 +5,7 @@ __pycache__/
 *.jks
 *.log
 /framework/
+/analysis-tools/
 /classic-decoded/
 /classic-clean/
 /diagnostics/*-armsx2/

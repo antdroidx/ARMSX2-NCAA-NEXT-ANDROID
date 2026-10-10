@@ -1,0 +1,378 @@
+{
+  "sha256": "e0cb61cb15bbb14f04faed8b1587def75558c15b0e5a43c5313f5406d5810deb",
+  "machine": "EM_AARCH64",
+  "symbol_counts": {
+    ".dynsym": 2706
+  },
+  "sections": [
+    {
+      "name": "",
+      "address": "0x0",
+      "size": 0,
+      "offset": "0x0"
+    },
+    {
+      "name": ".note.android.ident",
+      "address": "0x238",
+      "size": 152,
+      "offset": "0x238"
+    },
+    {
+      "name": ".note.gnu.build-id",
+      "address": "0x2d0",
+      "size": 36,
+      "offset": "0x2d0"
+    },
+    {
+      "name": ".dynsym",
+      "address": "0x2f8",
+      "size": 64944,
+      "offset": "0x2f8"
+    },
+    {
+      "name": ".gnu.version",
+      "address": "0x100a8",
+      "size": 5412,
+      "offset": "0x100a8"
+    },
+    {
+      "name": ".gnu.version_r",
+      "address": "0x115cc",
+      "size": 112,
+      "offset": "0x115cc"
+    },
+    {
+      "name": ".gnu.hash",
+      "address": "0x11640",
+      "size": 15936,
+      "offset": "0x11640"
+    },
+    {
+      "name": ".dynstr",
+      "address": "0x15480",
+      "size": 118869,
+      "offset": "0x15480"
+    },
+    {
+      "name": ".rela.dyn",
+      "address": "0x324d8",
+      "size": 517920,
+      "offset": "0x324d8"
+    },
+    {
+      "name": ".rela.plt",
+      "address": "0xb0bf8",
+      "size": 16464,
+      "offset": "0xb0bf8"
+    },
+    {
+      "name": ".rodata",
+      "address": "0xb4c80",
+      "size": 973632,
+      "offset": "0xb4c80"
+    },
+    {
+      "name": ".gcc_except_table",
+      "address": "0x1a27c0",
+      "size": 119840,
+      "offset": "0x1a27c0"
+    },
+    {
+      "name": ".eh_frame_hdr",
+      "address": "0x1bfbe0",
+      "size": 115276,
+      "offset": "0x1bfbe0"
+    },
+    {
+      "name": ".eh_frame",
+      "address": "0x1dbe30",
+      "size": 481284,
+      "offset": "0x1dbe30"
+    },
+    {
+      "name": ".text",
+      "address": "0x260000",
+      "size": 9335324,
+      "offset": "0x260000"
+    },
+    {
+      "name": ".plt",
+      "address": "0xb47220",
+      "size": 11008,
+      "offset": "0xb47220"
+    },
+    {
+      "name": ".data.rel.ro",
+      "address": "0xb4ad40",
+      "size": 226296,
+      "offset": "0xb49d40"
+    },
+    {
+      "name": ".fini_array",
+      "address": "0xb82138",
+      "size": 16,
+      "offset": "0xb81138"
+    },
+    {
+      "name": ".init_array",
+      "address": "0xb82148",
+      "size": 664,
+      "offset": "0xb81148"
+    },
+    {
+      "name": ".dynamic",
+      "address": "0xb823e0",
+      "size": 512,
+      "offset": "0xb813e0"
+    },
+    {
+      "name": ".got",
+      "address": "0xb825e0",
+      "size": 4568,
+      "offset": "0xb815e0"
+    },
+    {
+      "name": ".got.plt",
+      "address": "0xb837b8",
+      "size": 5512,
+      "offset": "0xb827b8"
+    },
+    {
+      "name": ".data",
+      "address": "0xb85d40",
+      "size": 18336,
+      "offset": "0xb83d40"
+    },
+    {
+      "name": ".bss",
+      "address": "0xb8b000",
+      "size": 196293984,
+      "offset": "0xb884e0"
+    },
+    {
+      "name": ".comment",
+      "address": "0x0",
+      "size": 177,
+      "offset": "0xb884e0"
+    },
+    {
+      "name": ".shstrtab",
+      "address": "0x0",
+      "size": 260,
+      "offset": "0xb88591"
+    }
+  ],
+  "matching_symbols": [
+    {
+      "name": "Java_xyz_aethersx2_android_NativeLibrary_getAvailableMemoryCards",
+      "address": "0x835cb0",
+      "size": 584,
+      "table": ".dynsym"
+    },
+    {
+      "name": "Java_xyz_aethersx2_android_NativeLibrary_getMemoryCardInfo",
+      "address": "0x835f00",
+      "size": 468,
+      "table": ".dynsym"
+    },
+    {
+      "name": "Java_xyz_aethersx2_android_NativeLibrary_createMemoryCard",
+      "address": "0x8360e0",
+      "size": 232,
+      "table": ".dynsym"
+    }
+  ],
+  "matching_strings": [
+    {
+      "offset": "0x19480",
+      "address": "0x19480",
+      "text": "Java_xyz_aethersx2_android_NativeLibrary_getAvailableMemoryCards"
+    },
+    {
+      "offset": "0x194c1",
+      "address": "0x194c1",
+      "text": "Java_xyz_aethersx2_android_NativeLibrary_getMemoryCardInfo"
+    },
+    {
+      "offset": "0x194fc",
+      "address": "0x194fc",
+      "text": "Java_xyz_aethersx2_android_NativeLibrary_createMemoryCard"
+    },
+    {
+      "offset": "0xb79c7",
+      "address": "0xb79c7",
+      "text": "[MemoryCard] Error occured when parsing folder memory card at path '{}': {}"
+    },
+    {
+      "offset": "0xbab82",
+      "address": "0xbab82",
+      "text": "MemoryCards"
+    },
+    {
+      "offset": "0xbaf28",
+      "address": "0xbaf28",
+      "text": "microVU0 Recompiler"
+    },
+    {
+      "offset": "0xbeee4",
+      "address": "0xbeee4",
+      "text": "LoadTextureReplacementsAsync"
+    },
+    {
+      "offset": "0xc74d3",
+      "address": "0xc74d3",
+      "text": "SPU2: Error allocating Memory"
+    },
+    {
+      "offset": "0xc74f1",
+      "address": "0xc74f1",
+      "text": "ReloadTextureReplacements"
+    },
+    {
+      "offset": "0xca12f",
+      "address": "0xca12f",
+      "text": "Micro VU%u Recompiler Cache"
+    },
+    {
+      "offset": "0xd3da7",
+      "address": "0xd3da7",
+      "text": "VIF%u Unpack Recompiler Cache"
+    },
+    {
+      "offset": "0xd67e6",
+      "address": "0xd67e6",
+      "text": "Audio may not recover correctly.  Save your game to memorycard, reset,"
+    },
+    {
+      "offset": "0xda4e2",
+      "address": "0xda4e2",
+      "text": "EmuCore/CPU/Recompiler"
+    },
+    {
+      "offset": "0xdaf7c",
+      "address": "0xdaf7c",
+      "text": "xyz/aethersx2/android/MemoryCardInfo"
+    },
+    {
+      "offset": "0xdd667",
+      "address": "0xdd667",
+      "text": "R3000A Recompiler Cache"
+    },
+    {
+      "offset": "0xe3fd4",
+      "address": "0xe3fd4",
+      "text": "ToggleTextureReplacements"
+    },
+    {
+      "offset": "0xe83d3",
+      "address": "0xe83d3",
+      "text": "Lazily allocating JNI environment for thread %p"
+    },
+    {
+      "offset": "0xeb208",
+      "address": "0xeb208",
+      "text": "LoadTextureReplacements"
+    },
+    {
+      "offset": "0xee338",
+      "address": "0xee338",
+      "text": " VU1 Recompiler is not enabled, this will significantly reduce performance."
+    },
+    {
+      "offset": "0xf5791",
+      "address": "0xf5791",
+      "text": "MemoryCards Directory: %s"
+    },
+    {
+      "offset": "0xf5c83",
+      "address": "0xf5c83",
+      "text": "microVU1 Recompiler"
+    },
+    {
+      "offset": "0xfbc5b",
+      "address": "0xfbc5b",
+      "text": "Memorycard reads, writes, erases, terminators, and other processing."
+    },
+    {
+      "offset": "0xffaa8",
+      "address": "0xffaa8",
+      "text": " EE Recompiler is not enabled, this will significantly reduce performance."
+    },
+    {
+      "offset": "0xffaf7",
+      "address": "0xffaf7",
+      "text": " VU0 Recompiler is not enabled, this will significantly reduce performance."
+    },
+    {
+      "offset": "0x1024b4",
+      "address": "0x1024b4",
+      "text": "MemoryCardSave{}"
+    },
+    {
+      "offset": "0x102766",
+      "address": "0x102766",
+      "text": "Reserving memory for recompilers..."
+    },
+    {
+      "offset": "0x108396",
+      "address": "0x108396",
+      "text": "EE/iR5900-ARM64 Recompiler Reset"
+    },
+    {
+      "offset": "0x116d1d",
+      "address": "0x116d1d",
+      "text": " IOP Recompiler is not enabled, this will significantly reduce performance."
+    },
+    {
+      "offset": "0x11ea44",
+      "address": "0x11ea44",
+      "text": "PrecacheTextureReplacements"
+    },
+    {
+      "offset": "0x11ed55",
+      "address": "0x11ed55",
+      "text": "R5900 Recompiler Cache"
+    },
+    {
+      "offset": "0x121d09",
+      "address": "0x121d09",
+      "text": "Memorycards"
+    },
+    {
+      "offset": "0x139fc8",
+      "address": "0x139fc8",
+      "text": "14FileMemoryCard"
+    },
+    {
+      "offset": "0x13a1d9",
+      "address": "0x13a1d9",
+      "text": "16FolderMemoryCard"
+    },
+    {
+      "offset": "0x13a1ec",
+      "address": "0x13a1ec",
+      "text": "26FolderMemoryCardAggregator"
+    },
+    {
+      "offset": "0x16d33d",
+      "address": "0x16d33d",
+      "text": "NSt6__ndk110__function6__funcIZN21GSTextureReplacementsL32QueueAsyncReplacementTextureLoadERKN12_GLOBAL__N_111TextureNameERKNS_12basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEEbE3$_1NSA_ISF_EEFvvEEE"
+    },
+    {
+      "offset": "0x16d40a",
+      "address": "0x16d40a",
+      "text": "ZN21GSTextureReplacementsL32QueueAsyncReplacementTextureLoadERKN12_GLOBAL__N_111TextureNameERKNSt6__ndk112basic_stringIcNS4_11char_traitsIcEENS4_9allocatorIcEEEEbE3$_1"
+    },
+    {
+      "offset": "0x16d4b2",
+      "address": "0x16d4b2",
+      "text": "NSt6__ndk110__function6__funcIZN21GSTextureReplacements11DumpTextureERKN14GSTextureCache12HashCacheKeyERK10GIFRegTEX0RK10GIFRegTEXAR13GSLocalMemoryjE3$_0NS_9allocatorISF_EEFvvEEE"
+    },
+    {
+      "offset": "0x16d565",
+      "address": "0x16d565",
+      "text": "ZN21GSTextureReplacements11DumpTextureERKN14GSTextureCache12HashCacheKeyERK10GIFRegTEX0RK10GIFRegTEXAR13GSLocalMemoryjE3$_0"
+    }
+  ],
+  "changes_applied": false
+}
