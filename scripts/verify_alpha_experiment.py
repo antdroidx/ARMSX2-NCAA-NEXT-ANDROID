@@ -142,7 +142,7 @@ int main() {
  std::vector<u8> mip={11,22,33,255}; assert(scale_alpha(mip,1,1,4));
  assert((mip==std::vector<u8>{11,22,33,160}));
 }
-'''.replace('// USC', usc).replace('// LOADER', loader).replace('// SELECTOR', selector).replace('// CONTROL_ALPHA', control_alpha).replace('// ALPHA', alpha + ';')
+'''.replace('// USC', usc).replace('// LOADER', loader).replace('// SELECTOR', selector).replace('// CONTROL_ALPHA', control_alpha).replace('// ALPHA', 'const unsigned alpha_max=160;\\n ' + alpha + ';')
 with tempfile.TemporaryDirectory() as tmp:
     cpp = Path(tmp) / 'experiment.cpp'
     exe = Path(tmp) / 'experiment'
