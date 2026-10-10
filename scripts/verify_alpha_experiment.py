@@ -134,7 +134,7 @@ int main() {
  assert(s_ncaa_wsu_mode==0 && s_ncaa_usc_mode==0 && !s_ncaa_wsu_key);
  // ALPHA
  std::vector<u8> pixels={1,2,3,0, 4,5,6,128, 7,8,9,255, 99,99,99,99};
- const unsigned alpha_max=160;\n assert(scale_alpha(pixels,3,1,16));
+ assert(scale_alpha(pixels,3,1,16));
  assert((pixels==std::vector<u8>{1,2,3,0,4,5,6,80,7,8,9,160,99,99,99,99}));
  auto untouched=pixels;
  assert(!scale_alpha(pixels,4,2,16)); assert(pixels==untouched);
