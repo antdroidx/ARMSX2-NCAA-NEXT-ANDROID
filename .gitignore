@@ -1,2 +1,11 @@
 __pycache__/
 *.pyc
+*.apk
+*.apk.idsig
+*.jks
+*.log
+/framework/
+/classic-decoded/
+/classic-clean/
+/diagnostics/*-armsx2/
+/diagnostics/*-classic/

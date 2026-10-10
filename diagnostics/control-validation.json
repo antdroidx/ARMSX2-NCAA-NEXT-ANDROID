@@ -1,0 +1,10 @@
+{
+  "apk_sha256": "48af2905a07f3d87fe7357c05d3f373374134d336c342d2b098fd29977b63b2b",
+  "native_preserved": true,
+  "separate_package_verified": true,
+  "signature_verified": true,
+  "runtime_tested": false,
+  "next128_support_verified": false,
+  "jd4029_hash_verified": false,
+  "folder64_support_verified": false
+}

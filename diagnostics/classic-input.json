@@ -1,0 +1,13 @@
+{
+  "url": "https://github.com/Trixarian/NetherSX2-classic/releases/download/2.1/NetherSX2-v2.1-3668.apk",
+  "apk_sha256": "5518c0f0ec7d820ff96b51cca37c2db30b8601fc4e1ccef84bd03659c8d1a643",
+  "application_id": "com.ncaanext.classic3668.diagnostic",
+  "native_sha256": {
+    "lib/arm64-v8a/libemucore.so": "e0cb61cb15bbb14f04faed8b1587def75558c15b0e5a43c5313f5406d5810deb"
+  },
+  "changed_smali": [
+    "smali\\xyz\\aethersx2\\android\\BuildConfig.smali"
+  ],
+  "native_next_features_ported": false,
+  "runtime_validated": false
+}
