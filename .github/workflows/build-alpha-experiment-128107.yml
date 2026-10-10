@@ -1,4 +1,4 @@
-name: NEXT 128108 USC Alpha 160 Experiment
+name: NEXT 128109 Global Alpha Experiment
 
 on:
   workflow_dispatch:
