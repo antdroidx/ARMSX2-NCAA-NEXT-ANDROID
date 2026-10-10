@@ -50,6 +50,26 @@ Hardware validation must exercise independent writes/reads above 32MiB, absence 
 
 ## Current boundary
 
+### Further RAM and folder tracing
+
+Used ELF unwind FDEs to recover containing function ranges: reset-related routine 0x6e70c0..0x6e8440, memory-manager constructor 0x4c81d0..0x4c8638, and folder-open routine beginning 0x48bfc0. Full instructions and raw bytes are retained under diagnostics/native-ram/. These labels describe the analysis anchors, not recovered source-level function names.
+
+PLT relocation lookup resolves 0xb483e0=posix_memalign, 0xb490f0=memset, 0xb48510=mprotect and 0xb473b0=fread. This narrows previously tentative call semantics:
+
+- 0x6e7470 supplies a 32MiB allocation length in w2 to posix_memalign. Result is stored at 0x28a58d0.
+- 0x6e7498 supplies an 81MiB allocation length (0x5100000) to posix_memalign. Result is stored at 0x28a58d8.
+- 0x6e7d98, 0x6e7d9c and 0x6e7da8 form offsets of 64MiB, 72MiB and 80MiB from the second allocation. This is consistent with 8-byte recompiler entries per 4-byte guest instruction followed by ROM tables.
+- 0x6e81b8 loads 0xa20000 and uses a vector pointer-fill loop covering 81MiB. 0x6e81ec supplies 32MiB to memset. These independently constrain allocation and initialization sizes.
+- 0x6e8260 supplies a 32MiB length to mprotect; 0x6e8280 passes 32MiB to another internal memory-protection routine. Their callers and shared page-tracking data still need complete analysis.
+
+With the apparent table layout, expanding guest EE RAM from 32 to 128MiB would increase the table allocation from 81 to 273MiB and move its following ROM tables by 192MiB. That calculation alone does not establish the complete native patch: host RAM commit/layout, every alias and access check, generated code, snapshots, manual tracking and DMA must agree.
+
+In folder-open code, 0x48c498 loads 0x2000 as the size argument to fread while reading _pcsx2_superblock. Other nearby 0x2000 constants are memset lengths for fixed buffers. They are NOT 8MiB card-capacity constants and must not be widened to force 64MiB cards. This illustrates why a global binary constant substitution cannot implement the requested features.
+
+The read-only map script also inventories 1043 exact occurrences of selected memory-size/mask constants across the native text section. These include unrelated functions and are candidates for classification, not patch sites. No bulk substitution was applied.
+
+ADB check again returned an empty connected-device list. A verified working native APK cannot be established here without a test target and the incomplete native mapping cannot yet support a coherent patch. The earlier control APK remains unchanged.
+
 The native investigation established specific places to continue analysis, but not a coherent patch. A matching 3668 native source/relink package would materially shorten the work. Otherwise a full native reverse-engineering and runtime-validation effort remains necessary. No unverified constant substitution or fabricated NEXT support was shipped.
 
 Reproduce inventory with Python packages pyelftools==0.33 and capstone==5.0.9 installed into analysis-tools/, then run scripts/inspect_classic_native.py and scripts/trace_classic_native.py. These scripts are read-only for the native input and write evidence JSON files only.

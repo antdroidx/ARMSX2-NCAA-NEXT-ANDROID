@@ -8,10 +8,12 @@ from capstone import Cs, CS_ARCH_ARM64, CS_MODE_ARM
 from elftools.elf.elffile import ELFFile
 
 root = Path(__file__).resolve().parents[1]
-path = root / 'classic-clean/lib/arm64-v8a/libemucore.so'
+path = root / 'classic-2.2n-decoded/lib/arm64-v8a/libemucore.so'
 targets = {0x121bdd: 'EE Main Memory', 0xc9ccf: 'IOP Main Memory',
            0x108396: 'EE ARM64 reset', 0x13a1d9: 'FolderMemoryCard RTTI',
-           0x11ea44: 'PrecacheTextureReplacements', 0xeb208: 'LoadTextureReplacements'}
+           0x11ea44: 'PrecacheTextureReplacements', 0xeb208: 'LoadTextureReplacements',
+           0xcd548: 'Folder card open log', 0xfbac6: 'Folder card superblock file',
+           0xff2a6: 'Folder card indexing', 0xf8be3: 'Folder card indexing unfiltered'}
 pages = {a & ~4095 for a in targets}
 md = Cs(CS_ARCH_ARM64, CS_MODE_ARM)
 report = []

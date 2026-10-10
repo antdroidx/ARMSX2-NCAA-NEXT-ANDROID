@@ -1,0 +1,1248 @@
+0x006e70c0 ffc302d1 sub      sp, sp, #0xb0
+0x006e70c4 e82300fd str      d8, [sp, #0x40]
+0x006e70c8 fd7b05a9 stp      x29, x30, [sp, #0x50]
+0x006e70cc fc6f06a9 stp      x28, x27, [sp, #0x60]
+0x006e70d0 fa6707a9 stp      x26, x25, [sp, #0x70]
+0x006e70d4 f85f08a9 stp      x24, x23, [sp, #0x80]
+0x006e70d8 f65709a9 stp      x22, x21, [sp, #0x90]
+0x006e70dc f44f0aa9 stp      x20, x19, [sp, #0xa0]
+0x006e70e0 fd430191 add      x29, sp, #0x50
+0x006e70e4 56d03bd5 mrs      x22, tpidr_el0
+0x006e70e8 c81640f9 ldr      x8, [x22, #0x28]
+0x006e70ec a8831ef8 stur     x8, [x29, #-0x18]
+0x006e70f0 f30d01d0 adrp     x19, #0x28a5000
+0x006e70f4 686a44f9 ldr      x8, [x19, #0x8d0]
+0x006e70f8 681b00b4 cbz      x8, #0x6e7464
+0x006e70fc e80d01d0 adrp     x8, #0x28a5000
+0x006e7100 087d44f9 ldr      x8, [x8, #0x8f8]
+0x006e7104 481c00b4 cbz      x8, #0x6e748c
+0x006e7108 e80d01d0 adrp     x8, #0x28a5000
+0x006e710c 08e12191 add      x8, x8, #0x878
+0x006e7110 1ffd9f08 stlrb    wzr, [x8]
+0x006e7114 01110091 add      x1, x8, #4
+0x006e7118 20008052 mov      w0, #1
+0x006e711c 7ddef697 bl       #0x49eb10
+0x006e7120 80960037 tbnz     w0, #0, #0x6e83f0
+0x006e7124 d30b0190 adrp     x19, #0x285f000
+0x006e7128 c8070190 adrp     x8, #0x27df000
+0x006e712c 08011791 add      x8, x8, #0x5c0
+0x006e7130 691643f9 ldr      x9, [x19, #0x628]
+0x006e7134 4ad2ff90 adrp     x10, #0x12f000
+0x006e7138 d70b0190 adrp     x23, #0x285f000
+0x006e713c 291940f9 ldr      x9, [x9, #0x30]
+0x006e7140 e91203f9 str      x9, [x23, #0x620]
+0x006e7144 091d00f9 str      x9, [x8, #0x38]
+0x006e7148 40cd42fd ldr      d0, [x10, #0x598]
+0x006e714c 002100fd str      d0, [x8, #0x40]
+0x006e7150 080140f9 ldr      x8, [x8]
+0x006e7154 880500b4 cbz      x8, #0x6e7204
+0x006e7158 c8070190 adrp     x8, #0x27df000
+0x006e715c 00dd42f9 ldr      x0, [x8, #0x5b8]
+0x006e7160 a00000b4 cbz      x0, #0x6e7174
+0x006e7164 140040f9 ldr      x20, [x0]
+0x006e7168 46801194 bl       #0xb47280 ; import _ZdlPv
+0x006e716c e00314aa mov      x0, x20
+0x006e7170 b4ffffb5 cbnz     x20, #0x6e7164
+0x006e7174 c8070190 adrp     x8, #0x27df000
+0x006e7178 08c11691 add      x8, x8, #0x5b0
+0x006e717c 1f0500f9 str      xzr, [x8, #8]
+0x006e7180 0b0140f9 ldr      x11, [x8]
+0x006e7184 cb0300b4 cbz      x11, #0x6e71fc
+0x006e7188 690500d1 sub      x9, x11, #1
+0x006e718c 68054092 and      x8, x11, #3
+0x006e7190 3f0d00f1 cmp      x9, #3
+0x006e7194 c9070190 adrp     x9, #0x27df000
+0x006e7198 ea031faa mov      x10, xzr
+0x006e719c 23020054 b.lo     #0x6e71e0
+0x006e71a0 6bf57e92 and      x11, x11, #0xfffffffffffffffc
+0x006e71a4 2cd542f9 ldr      x12, [x9, #0x5a8]
+0x006e71a8 4df17dd3 lsl      x13, x10, #3
+0x006e71ac 9f692df8 str      xzr, [x12, x13]
+0x006e71b0 2cd542f9 ldr      x12, [x9, #0x5a8]
+0x006e71b4 8c010d8b add      x12, x12, x13
+0x006e71b8 9f0500f9 str      xzr, [x12, #8]
+0x006e71bc 2cd542f9 ldr      x12, [x9, #0x5a8]
+0x006e71c0 8c010d8b add      x12, x12, x13
+0x006e71c4 9f0900f9 str      xzr, [x12, #0x10]
+0x006e71c8 2cd542f9 ldr      x12, [x9, #0x5a8]
+0x006e71cc 8c010d8b add      x12, x12, x13
+0x006e71d0 9f0d00f9 str      xzr, [x12, #0x18]
+0x006e71d4 4a110091 add      x10, x10, #4
+0x006e71d8 7f010aeb cmp      x11, x10
+0x006e71dc 41feff54 b.ne     #0x6e71a4
+0x006e71e0 e80000b4 cbz      x8, #0x6e71fc
+0x006e71e4 4af17dd3 lsl      x10, x10, #3
+0x006e71e8 2bd542f9 ldr      x11, [x9, #0x5a8]
+0x006e71ec 7f692af8 str      xzr, [x11, x10]
+0x006e71f0 4a210091 add      x10, x10, #8
+0x006e71f4 080500f1 subs     x8, x8, #1
+0x006e71f8 81ffff54 b.ne     #0x6e71e8
+0x006e71fc c8070190 adrp     x8, #0x27df000
+0x006e7200 1fe102f9 str      xzr, [x8, #0x5c0]
+0x006e7204 d4070190 adrp     x20, #0x27df000
+0x006e7208 88f642f9 ldr      x8, [x20, #0x5e8]
+0x006e720c 680500b4 cbz      x8, #0x6e72b8
+0x006e7210 c8070190 adrp     x8, #0x27df000
+0x006e7214 00f142f9 ldr      x0, [x8, #0x5e0]
+0x006e7218 a00000b4 cbz      x0, #0x6e722c
+0x006e721c 150040f9 ldr      x21, [x0]
+0x006e7220 18801194 bl       #0xb47280 ; import _ZdlPv
+0x006e7224 e00315aa mov      x0, x21
+0x006e7228 b5ffffb5 cbnz     x21, #0x6e721c
+0x006e722c c8070190 adrp     x8, #0x27df000
+0x006e7230 08611791 add      x8, x8, #0x5d8
+0x006e7234 1f0500f9 str      xzr, [x8, #8]
+0x006e7238 0b0140f9 ldr      x11, [x8]
+0x006e723c cb0300b4 cbz      x11, #0x6e72b4
+0x006e7240 690500d1 sub      x9, x11, #1
+0x006e7244 68054092 and      x8, x11, #3
+0x006e7248 3f0d00f1 cmp      x9, #3
+0x006e724c c9070190 adrp     x9, #0x27df000
+0x006e7250 ea031faa mov      x10, xzr
+0x006e7254 23020054 b.lo     #0x6e7298
+0x006e7258 6bf57e92 and      x11, x11, #0xfffffffffffffffc
+0x006e725c 2ce942f9 ldr      x12, [x9, #0x5d0]
+0x006e7260 4df17dd3 lsl      x13, x10, #3
+0x006e7264 9f692df8 str      xzr, [x12, x13]
+0x006e7268 2ce942f9 ldr      x12, [x9, #0x5d0]
+0x006e726c 8c010d8b add      x12, x12, x13
+0x006e7270 9f0500f9 str      xzr, [x12, #8]
+0x006e7274 2ce942f9 ldr      x12, [x9, #0x5d0]
+0x006e7278 8c010d8b add      x12, x12, x13
+0x006e727c 9f0900f9 str      xzr, [x12, #0x10]
+0x006e7280 2ce942f9 ldr      x12, [x9, #0x5d0]
+0x006e7284 8c010d8b add      x12, x12, x13
+0x006e7288 9f0d00f9 str      xzr, [x12, #0x18]
+0x006e728c 4a110091 add      x10, x10, #4
+0x006e7290 7f010aeb cmp      x11, x10
+0x006e7294 41feff54 b.ne     #0x6e725c
+0x006e7298 e80000b4 cbz      x8, #0x6e72b4
+0x006e729c 4af17dd3 lsl      x10, x10, #3
+0x006e72a0 2be942f9 ldr      x11, [x9, #0x5d0]
+0x006e72a4 7f692af8 str      xzr, [x11, x10]
+0x006e72a8 4a210091 add      x10, x10, #8
+0x006e72ac 080500f1 subs     x8, x8, #1
+0x006e72b0 81ffff54 b.ne     #0x6e72a0
+0x006e72b4 9ff602f9 str      xzr, [x20, #0x5e8]
+0x006e72b8 e81243f9 ldr      x8, [x23, #0x620]
+0x006e72bc 14414091 add      x20, x8, #0x10, lsl #12
+0x006e72c0 f41203f9 str      x20, [x23, #0x620]
+0x006e72c4 c8070190 adrp     x8, #0x27df000
+0x006e72c8 1fa105b9 str      wzr, [x8, #0x5a0]
+0x006e72cc 681643f9 ldr      x8, [x19, #0x628]
+0x006e72d0 092143a9 ldp      x9, x8, [x8, #0x30]
+0x006e72d4 3301088b add      x19, x9, x8
+0x006e72d8 002500d0 adrp     x0, #0xb89000
+0x006e72dc 00e00591 add      x0, x0, #0x178
+0x006e72e0 5c8a1194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e72e4 1f0000f9 str      xzr, [x0]
+0x006e72e8 883e0091 add      x8, x20, #0xf
+0x006e72ec 14ed7c92 and      x20, x8, #0xfffffffffffffff0
+0x006e72f0 750214cb sub      x21, x19, x20
+0x006e72f4 002500d0 adrp     x0, #0xb89000
+0x006e72f8 00600591 add      x0, x0, #0x158
+0x006e72fc 558a1194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e7300 150000f9 str      x21, [x0]
+0x006e7304 002500d0 adrp     x0, #0xb89000
+0x006e7308 00e00491 add      x0, x0, #0x138
+0x006e730c 518a1194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e7310 140000f9 str      x20, [x0]
+0x006e7314 00668052 mov      w0, #0x330
+0x006e7318 fe7f1194 bl       #0xb47310 ; import _Znwm
+0x006e731c f30300aa mov      x19, x0
+0x006e7320 e10314aa mov      x1, x20
+0x006e7324 e20315aa mov      x2, x21
+0x006e7328 e3031f2a mov      w3, wzr
+0x006e732c 59190694 bl       #0x86d890
+0x006e7330 002500d0 adrp     x0, #0xb89000
+0x006e7334 00600491 add      x0, x0, #0x118
+0x006e7338 468a1194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e733c 683640f9 ldr      x8, [x19, #0x68]
+0x006e7340 130000f9 str      x19, [x0]
+0x006e7344 08f96092 and      x8, x8, #0xffffffff7fffffff
+0x006e7348 683600f9 str      x8, [x19, #0x68]
+0x006e734c 880101d0 adrp     x8, #0x2719000
+0x006e7350 08994ab9 ldr      w8, [x8, #0xa98]
+0x006e7354 29008052 mov      w9, #1
+0x006e7358 2821c89a lsl      x8, x9, x8
+0x006e735c 692e40f9 ldr      x9, [x19, #0x58]
+0x006e7360 2801288a bic      x8, x9, x8
+0x006e7364 682e00f9 str      x8, [x19, #0x58]
+0x006e7368 f8240090 adrp     x24, #0xb83000
+0x006e736c 181f41f9 ldr      x24, [x24, #0x238]
+0x006e7370 580000b4 cbz      x24, #0x6e7378
+0x006e7374 f7811194 bl       #0xb47b50 ; import _ZTH9armAsmPtr
+0x006e7378 002500d0 adrp     x0, #0xb89000
+0x006e737c 00e00491 add      x0, x0, #0x138
+0x006e7380 348a1194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e7384 130040f9 ldr      x19, [x0]
+0x006e7388 f9240090 adrp     x25, #0xb83000
+0x006e738c 39c340f9 ldr      x25, [x25, #0x180]
+0x006e7390 590000b4 cbz      x25, #0x6e7398
+0x006e7394 e7811194 bl       #0xb47b30 ; import _ZTH6armAsm
+0x006e7398 002500d0 adrp     x0, #0xb89000
+0x006e739c 00600491 add      x0, x0, #0x118
+0x006e73a0 2c8a1194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e73a4 080040f9 ldr      x8, [x0]
+0x006e73a8 090d40f9 ldr      x9, [x8, #0x18]
+0x006e73ac 080540f9 ldr      x8, [x8, #8]
+0x006e73b0 280108cb sub      x8, x9, x8
+0x006e73b4 7302088b add      x19, x19, x8
+0x006e73b8 000000b0 adrp     x0, #0x6e8000
+0x006e73bc 00402791 add      x0, x0, #0x9d0
+0x006e73c0 e1031f2a mov      w1, wzr
+0x006e73c4 33cffe97 bl       #0x69b090
+0x006e73c8 e80d01d0 adrp     x8, #0x28a5000
+0x006e73cc 135104f9 str      x19, [x8, #0x8a0]
+0x006e73d0 580000b4 cbz      x24, #0x6e73d8
+0x006e73d4 df811194 bl       #0xb47b50 ; import _ZTH9armAsmPtr
+0x006e73d8 f60300f9 str      x22, [sp]
+0x006e73dc 002500d0 adrp     x0, #0xb89000
+0x006e73e0 00e00491 add      x0, x0, #0x138
+0x006e73e4 1b8a1194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e73e8 130040f9 ldr      x19, [x0]
+0x006e73ec 590000b4 cbz      x25, #0x6e73f4
+0x006e73f0 d0811194 bl       #0xb47b30 ; import _ZTH6armAsm
+0x006e73f4 002500d0 adrp     x0, #0xb89000
+0x006e73f8 00600491 add      x0, x0, #0x118
+0x006e73fc 158a1194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e7400 080040f9 ldr      x8, [x0]
+0x006e7404 150d40f9 ldr      x21, [x8, #0x18]
+0x006e7408 160540f9 ldr      x22, [x8, #8]
+0x006e740c f40d01d0 adrp     x20, #0x28a5000
+0x006e7410 94222591 add      x20, x20, #0x948
+0x006e7414 c1070190 adrp     x1, #0x27df000
+0x006e7418 21801891 add      x1, x1, #0x620
+0x006e741c 80420191 add      x0, x20, #0x50
+0x006e7420 ecd1fe97 bl       #0x69bbd0
+0x006e7424 e1f800b0 adrp     x1, #0x2604000
+0x006e7428 21200991 add      x1, x1, #0x248
+0x006e742c e00314aa mov      x0, x20
+0x006e7430 1cebff97 bl       #0x6e20a0
+0x006e7434 f90300b4 cbz      x25, #0x6e74b0
+0x006e7438 be811194 bl       #0xb47b30 ; import _ZTH6armAsm
+0x006e743c 002500d0 adrp     x0, #0xb89000
+0x006e7440 00600491 add      x0, x0, #0x118
+0x006e7444 038a1194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e7448 000040f9 ldr      x0, [x0]
+0x006e744c 81820091 add      x1, x20, #0x20
+0x006e7450 e20314aa mov      x2, x20
+0x006e7454 03028052 mov      w3, #0x10
+0x006e7458 ee02ff97 bl       #0x6a8010
+0x006e745c b5811194 bl       #0xb47b30 ; import _ZTH6armAsm
+0x006e7460 1c000014 b        #0x6e74d0
+0x006e7464 ff0700f9 str      xzr, [sp, #8]
+0x006e7468 e0230091 add      x0, sp, #8
+0x006e746c 01008252 mov      w1, #0x1000
+0x006e7470 0240a052 mov      w2, #0x2000000
+0x006e7474 db831194 bl       #0xb483e0 ; import posix_memalign
+0x006e7478 e80740f9 ldr      x8, [sp, #8]
+0x006e747c 686a04f9 str      x8, [x19, #0x8d0]
+0x006e7480 e80d01d0 adrp     x8, #0x28a5000
+0x006e7484 087d44f9 ldr      x8, [x8, #0x8f8]
+0x006e7488 08e4ffb5 cbnz     x8, #0x6e7108
+0x006e748c ff0700f9 str      xzr, [sp, #8]
+0x006e7490 e0230091 add      x0, sp, #8
+0x006e7494 01008252 mov      w1, #0x1000
+0x006e7498 02a2a052 mov      w2, #0x5100000
+0x006e749c d1831194 bl       #0xb483e0 ; import posix_memalign
+0x006e74a0 e80740f9 ldr      x8, [sp, #8]
+0x006e74a4 e90d01d0 adrp     x9, #0x28a5000
+0x006e74a8 286d04f9 str      x8, [x9, #0x8d8]
+0x006e74ac 17ffff17 b        #0x6e7108
+0x006e74b0 002500d0 adrp     x0, #0xb89000
+0x006e74b4 00600491 add      x0, x0, #0x118
+0x006e74b8 e6891194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e74bc 000040f9 ldr      x0, [x0]
+0x006e74c0 81820091 add      x1, x20, #0x20
+0x006e74c4 e20314aa mov      x2, x20
+0x006e74c8 03028052 mov      w3, #0x10
+0x006e74cc d102ff97 bl       #0x6a8010
+0x006e74d0 1a08b852 mov      w26, #-0x3fc00000
+0x006e74d4 1b08b052 mov      w27, #-0x7fc00000
+0x006e74d8 002500d0 adrp     x0, #0xb89000
+0x006e74dc 00600491 add      x0, x0, #0x118
+0x006e74e0 dc891194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e74e4 fc0d01d0 adrp     x28, #0x28a5000
+0x006e74e8 9ce32591 add      x28, x28, #0x978
+0x006e74ec 000040f9 ldr      x0, [x0]
+0x006e74f0 881340f9 ldr      x8, [x28, #0x20]
+0x006e74f4 892b40b9 ldr      w9, [x28, #0x28]
+0x006e74f8 8a0340f9 ldr      x10, [x28]
+0x006e74fc 8b0b40b9 ldr      w11, [x28, #8]
+0x006e7500 e80700f9 str      x8, [sp, #8]
+0x006e7504 e91300b9 str      w9, [sp, #0x10]
+0x006e7508 ea4301f8 stur     x10, [sp, #0x14]
+0x006e750c eb1f00b9 str      w11, [sp, #0x1c]
+0x006e7510 ff7f02a9 stp      xzr, xzr, [sp, #0x20]
+0x006e7514 4ad2ff90 adrp     x10, #0x12f000
+0x006e7518 489146fd ldr      d8, [x10, #0xd20]
+0x006e751c e81b00fd str      d8, [sp, #0x30]
+0x006e7520 08fd60d3 lsr      x8, x8, #0x20
+0x006e7524 3f050071 cmp      w9, #1
+0x006e7528 21010054 b.ne     #0x6e754c
+0x006e752c 1f010171 cmp      w8, #0x40
+0x006e7530 43039b1a csel     w3, w26, w27, eq
+0x006e7534 e10d01d0 adrp     x1, #0x28a5000
+0x006e7538 21602691 add      x1, x1, #0x998
+0x006e753c e2230091 add      x2, sp, #8
+0x006e7540 20320694 bl       #0x873dc0
+0x006e7544 d90100b4 cbz      x25, #0x6e757c
+0x006e7548 1d000014 b        #0x6e75bc
+0x006e754c 08210051 sub      w8, w8, #8
+0x006e7550 080d8813 ror      w8, w8, #3
+0x006e7554 1f1d0071 cmp      w8, #7
+0x006e7558 68020054 b.hi     #0x6e75a4
+0x006e755c 49d2ffb0 adrp     x9, #0x130000
+0x006e7560 29410291 add      x9, x9, #0x90
+0x006e7564 23d968b8 ldr      w3, [x9, w8, sxtw #2]
+0x006e7568 e10d01d0 adrp     x1, #0x28a5000
+0x006e756c 21602691 add      x1, x1, #0x998
+0x006e7570 e2230091 add      x2, sp, #8
+0x006e7574 13320694 bl       #0x873dc0
+0x006e7578 390200b5 cbnz     x25, #0x6e75bc
+0x006e757c 002500d0 adrp     x0, #0xb89000
+0x006e7580 00600491 add      x0, x0, #0x118
+0x006e7584 b3891194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e7588 000040f9 ldr      x0, [x0]
+0x006e758c e10d01d0 adrp     x1, #0x28a5000
+0x006e7590 21202591 add      x1, x1, #0x948
+0x006e7594 e20301aa mov      x2, x1
+0x006e7598 43008052 mov      w3, #2
+0x006e759c 9d02ff97 bl       #0x6a8010
+0x006e75a0 12000014 b        #0x6e75e8
+0x006e75a4 0398a052 mov      w3, #0x4c00000
+0x006e75a8 e10d01d0 adrp     x1, #0x28a5000
+0x006e75ac 21602691 add      x1, x1, #0x998
+0x006e75b0 e2230091 add      x2, sp, #8
+0x006e75b4 03320694 bl       #0x873dc0
+0x006e75b8 39feffb4 cbz      x25, #0x6e757c
+0x006e75bc 5d811194 bl       #0xb47b30 ; import _ZTH6armAsm
+0x006e75c0 002500d0 adrp     x0, #0xb89000
+0x006e75c4 00600491 add      x0, x0, #0x118
+0x006e75c8 a2891194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e75cc 000040f9 ldr      x0, [x0]
+0x006e75d0 e10d01d0 adrp     x1, #0x28a5000
+0x006e75d4 21202591 add      x1, x1, #0x948
+0x006e75d8 e20301aa mov      x2, x1
+0x006e75dc 43008052 mov      w3, #2
+0x006e75e0 8c02ff97 bl       #0x6a8010
+0x006e75e4 53811194 bl       #0xb47b30 ; import _ZTH6armAsm
+0x006e75e8 002500d0 adrp     x0, #0xb89000
+0x006e75ec 00600491 add      x0, x0, #0x118
+0x006e75f0 98891194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e75f4 f70d01d0 adrp     x23, #0x28a5000
+0x006e75f8 f7622591 add      x23, x23, #0x958
+0x006e75fc e82240f9 ldr      x8, [x23, #0x40]
+0x006e7600 e80700f9 str      x8, [sp, #8]
+0x006e7604 e94a40b9 ldr      w9, [x23, #0x48]
+0x006e7608 e91300b9 str      w9, [sp, #0x10]
+0x006e760c ea0240f9 ldr      x10, [x23]
+0x006e7610 ea4301f8 stur     x10, [sp, #0x14]
+0x006e7614 ea0a40b9 ldr      w10, [x23, #8]
+0x006e7618 ea1f00b9 str      w10, [sp, #0x1c]
+0x006e761c 000040f9 ldr      x0, [x0]
+0x006e7620 ff7f02a9 stp      xzr, xzr, [sp, #0x20]
+0x006e7624 e81b00fd str      d8, [sp, #0x30]
+0x006e7628 08fd60d3 lsr      x8, x8, #0x20
+0x006e762c 3f050071 cmp      w9, #1
+0x006e7630 21010054 b.ne     #0x6e7654
+0x006e7634 1f010171 cmp      w8, #0x40
+0x006e7638 43039b1a csel     w3, w26, w27, eq
+0x006e763c e10d01d0 adrp     x1, #0x28a5000
+0x006e7640 21602691 add      x1, x1, #0x998
+0x006e7644 e2230091 add      x2, sp, #8
+0x006e7648 de310694 bl       #0x873dc0
+0x006e764c b90200b5 cbnz     x25, #0x6e76a0
+0x006e7650 15000014 b        #0x6e76a4
+0x006e7654 08210051 sub      w8, w8, #8
+0x006e7658 080d8813 ror      w8, w8, #3
+0x006e765c 1f1d0071 cmp      w8, #7
+0x006e7660 48010054 b.hi     #0x6e7688
+0x006e7664 49d2ffb0 adrp     x9, #0x130000
+0x006e7668 29410291 add      x9, x9, #0x90
+0x006e766c 23d968b8 ldr      w3, [x9, w8, sxtw #2]
+0x006e7670 e10d01d0 adrp     x1, #0x28a5000
+0x006e7674 21602691 add      x1, x1, #0x998
+0x006e7678 e2230091 add      x2, sp, #8
+0x006e767c d1310694 bl       #0x873dc0
+0x006e7680 190100b5 cbnz     x25, #0x6e76a0
+0x006e7684 08000014 b        #0x6e76a4
+0x006e7688 0398a052 mov      w3, #0x4c00000
+0x006e768c e10d01d0 adrp     x1, #0x28a5000
+0x006e7690 21602691 add      x1, x1, #0x998
+0x006e7694 e2230091 add      x2, sp, #8
+0x006e7698 ca310694 bl       #0x873dc0
+0x006e769c 590000b4 cbz      x25, #0x6e76a4
+0x006e76a0 24811194 bl       #0xb47b30 ; import _ZTH6armAsm
+0x006e76a4 a80216cb sub      x8, x21, x22
+0x006e76a8 7302088b add      x19, x19, x8
+0x006e76ac 002500d0 adrp     x0, #0xb89000
+0x006e76b0 00600491 add      x0, x0, #0x118
+0x006e76b4 67891194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e76b8 000040f9 ldr      x0, [x0]
+0x006e76bc f50d01d0 adrp     x21, #0x28a5000
+0x006e76c0 b5622291 add      x21, x21, #0x898
+0x006e76c4 a1020491 add      x1, x21, #0x100
+0x006e76c8 2acefe97 bl       #0x69af70
+0x006e76cc b30200f9 str      x19, [x21]
+0x006e76d0 e0031f2a mov      w0, wzr
+0x006e76d4 5b030094 bl       #0x6e8440
+0x006e76d8 a01600f9 str      x0, [x21, #0x28]
+0x006e76dc 20008052 mov      w0, #1
+0x006e76e0 58030094 bl       #0x6e8440
+0x006e76e4 a01a00f9 str      x0, [x21, #0x30]
+0x006e76e8 580000b4 cbz      x24, #0x6e76f0
+0x006e76ec 19811194 bl       #0xb47b50 ; import _ZTH9armAsmPtr
+0x006e76f0 002500d0 adrp     x0, #0xb89000
+0x006e76f4 00e00491 add      x0, x0, #0x138
+0x006e76f8 56891194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e76fc 160040f9 ldr      x22, [x0]
+0x006e7700 590000b4 cbz      x25, #0x6e7708
+0x006e7704 0b811194 bl       #0xb47b30 ; import _ZTH6armAsm
+0x006e7708 002500d0 adrp     x0, #0xb89000
+0x006e770c 00600491 add      x0, x0, #0x118
+0x006e7710 50891194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e7714 080040f9 ldr      x8, [x0]
+0x006e7718 1a0d40f9 ldr      x26, [x8, #0x18]
+0x006e771c 1b0540f9 ldr      x27, [x8, #8]
+0x006e7720 f5f800b0 adrp     x21, #0x2604000
+0x006e7724 b5220991 add      x21, x21, #0x248
+0x006e7728 e00314aa mov      x0, x20
+0x006e772c e10315aa mov      x1, x21
+0x006e7730 5ceaff97 bl       #0x6e20a0
+0x006e7734 600000d0 adrp     x0, #0x6f5000
+0x006e7738 00c00c91 add      x0, x0, #0x330
+0x006e773c e1031f2a mov      w1, wzr
+0x006e7740 54cefe97 bl       #0x69b090
+0x006e7744 d3070190 adrp     x19, #0x27df000
+0x006e7748 73821891 add      x19, x19, #0x620
+0x006e774c 80420191 add      x0, x20, #0x50
+0x006e7750 e10313aa mov      x1, x19
+0x006e7754 1fd1fe97 bl       #0x69bbd0
+0x006e7758 e00314aa mov      x0, x20
+0x006e775c e10315aa mov      x1, x21
+0x006e7760 50eaff97 bl       #0x6e20a0
+0x006e7764 990100b4 cbz      x25, #0x6e7794
+0x006e7768 f2801194 bl       #0xb47b30 ; import _ZTH6armAsm
+0x006e776c 002500d0 adrp     x0, #0xb89000
+0x006e7770 00600491 add      x0, x0, #0x118
+0x006e7774 37891194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e7778 000040f9 ldr      x0, [x0]
+0x006e777c 81820091 add      x1, x20, #0x20
+0x006e7780 e20314aa mov      x2, x20
+0x006e7784 03028052 mov      w3, #0x10
+0x006e7788 2202ff97 bl       #0x6a8010
+0x006e778c e9801194 bl       #0xb47b30 ; import _ZTH6armAsm
+0x006e7790 09000014 b        #0x6e77b4
+0x006e7794 002500d0 adrp     x0, #0xb89000
+0x006e7798 00600491 add      x0, x0, #0x118
+0x006e779c 2d891194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e77a0 000040f9 ldr      x0, [x0]
+0x006e77a4 81820091 add      x1, x20, #0x20
+0x006e77a8 e20314aa mov      x2, x20
+0x006e77ac 03028052 mov      w3, #0x10
+0x006e77b0 1802ff97 bl       #0x6a8010
+0x006e77b4 002500d0 adrp     x0, #0xb89000
+0x006e77b8 00600491 add      x0, x0, #0x118
+0x006e77bc 25891194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e77c0 881340f9 ldr      x8, [x28, #0x20]
+0x006e77c4 e80700f9 str      x8, [sp, #8]
+0x006e77c8 892b40b9 ldr      w9, [x28, #0x28]
+0x006e77cc e91300b9 str      w9, [sp, #0x10]
+0x006e77d0 8a0340f9 ldr      x10, [x28]
+0x006e77d4 ea4301f8 stur     x10, [sp, #0x14]
+0x006e77d8 8a0b40b9 ldr      w10, [x28, #8]
+0x006e77dc ea1f00b9 str      w10, [sp, #0x1c]
+0x006e77e0 000040f9 ldr      x0, [x0]
+0x006e77e4 ff7f02a9 stp      xzr, xzr, [sp, #0x20]
+0x006e77e8 08fd60d3 lsr      x8, x8, #0x20
+0x006e77ec 3f050071 cmp      w9, #1
+0x006e77f0 e81b00fd str      d8, [sp, #0x30]
+0x006e77f4 61010054 b.ne     #0x6e7820
+0x006e77f8 1f010171 cmp      w8, #0x40
+0x006e77fc 0808b852 mov      w8, #-0x3fc00000
+0x006e7800 0908b052 mov      w9, #-0x7fc00000
+0x006e7804 0301891a csel     w3, w8, w9, eq
+0x006e7808 e10d01d0 adrp     x1, #0x28a5000
+0x006e780c 21602691 add      x1, x1, #0x998
+0x006e7810 e2230091 add      x2, sp, #8
+0x006e7814 6b310694 bl       #0x873dc0
+0x006e7818 d90100b4 cbz      x25, #0x6e7850
+0x006e781c 1d000014 b        #0x6e7890
+0x006e7820 08210051 sub      w8, w8, #8
+0x006e7824 080d8813 ror      w8, w8, #3
+0x006e7828 1f1d0071 cmp      w8, #7
+0x006e782c 68020054 b.hi     #0x6e7878
+0x006e7830 49d2ffb0 adrp     x9, #0x130000
+0x006e7834 29410291 add      x9, x9, #0x90
+0x006e7838 23d968b8 ldr      w3, [x9, w8, sxtw #2]
+0x006e783c e10d01d0 adrp     x1, #0x28a5000
+0x006e7840 21602691 add      x1, x1, #0x998
+0x006e7844 e2230091 add      x2, sp, #8
+0x006e7848 5e310694 bl       #0x873dc0
+0x006e784c 390200b5 cbnz     x25, #0x6e7890
+0x006e7850 002500d0 adrp     x0, #0xb89000
+0x006e7854 00600491 add      x0, x0, #0x118
+0x006e7858 fe881194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e785c 000040f9 ldr      x0, [x0]
+0x006e7860 e10d01d0 adrp     x1, #0x28a5000
+0x006e7864 21202591 add      x1, x1, #0x948
+0x006e7868 e20301aa mov      x2, x1
+0x006e786c 43008052 mov      w3, #2
+0x006e7870 e801ff97 bl       #0x6a8010
+0x006e7874 12000014 b        #0x6e78bc
+0x006e7878 0398a052 mov      w3, #0x4c00000
+0x006e787c e10d01d0 adrp     x1, #0x28a5000
+0x006e7880 21602691 add      x1, x1, #0x998
+0x006e7884 e2230091 add      x2, sp, #8
+0x006e7888 4e310694 bl       #0x873dc0
+0x006e788c 39feffb4 cbz      x25, #0x6e7850
+0x006e7890 a8801194 bl       #0xb47b30 ; import _ZTH6armAsm
+0x006e7894 002500d0 adrp     x0, #0xb89000
+0x006e7898 00600491 add      x0, x0, #0x118
+0x006e789c ed881194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e78a0 000040f9 ldr      x0, [x0]
+0x006e78a4 e10d01d0 adrp     x1, #0x28a5000
+0x006e78a8 21202591 add      x1, x1, #0x948
+0x006e78ac e20301aa mov      x2, x1
+0x006e78b0 43008052 mov      w3, #2
+0x006e78b4 d701ff97 bl       #0x6a8010
+0x006e78b8 9e801194 bl       #0xb47b30 ; import _ZTH6armAsm
+0x006e78bc 002500d0 adrp     x0, #0xb89000
+0x006e78c0 00600491 add      x0, x0, #0x118
+0x006e78c4 e3881194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e78c8 e82240f9 ldr      x8, [x23, #0x40]
+0x006e78cc e80700f9 str      x8, [sp, #8]
+0x006e78d0 e94a40b9 ldr      w9, [x23, #0x48]
+0x006e78d4 e91300b9 str      w9, [sp, #0x10]
+0x006e78d8 ea0240f9 ldr      x10, [x23]
+0x006e78dc ea4301f8 stur     x10, [sp, #0x14]
+0x006e78e0 ea0a40b9 ldr      w10, [x23, #8]
+0x006e78e4 ea1f00b9 str      w10, [sp, #0x1c]
+0x006e78e8 000040f9 ldr      x0, [x0]
+0x006e78ec ff7f02a9 stp      xzr, xzr, [sp, #0x20]
+0x006e78f0 08fd60d3 lsr      x8, x8, #0x20
+0x006e78f4 3f050071 cmp      w9, #1
+0x006e78f8 e81b00fd str      d8, [sp, #0x30]
+0x006e78fc 61010054 b.ne     #0x6e7928
+0x006e7900 1f010171 cmp      w8, #0x40
+0x006e7904 0808b852 mov      w8, #-0x3fc00000
+0x006e7908 0908b052 mov      w9, #-0x7fc00000
+0x006e790c 0301891a csel     w3, w8, w9, eq
+0x006e7910 e10d01d0 adrp     x1, #0x28a5000
+0x006e7914 21602691 add      x1, x1, #0x998
+0x006e7918 e2230091 add      x2, sp, #8
+0x006e791c 29310694 bl       #0x873dc0
+0x006e7920 b90200b5 cbnz     x25, #0x6e7974
+0x006e7924 15000014 b        #0x6e7978
+0x006e7928 08210051 sub      w8, w8, #8
+0x006e792c 080d8813 ror      w8, w8, #3
+0x006e7930 1f1d0071 cmp      w8, #7
+0x006e7934 48010054 b.hi     #0x6e795c
+0x006e7938 49d2ffb0 adrp     x9, #0x130000
+0x006e793c 29410291 add      x9, x9, #0x90
+0x006e7940 23d968b8 ldr      w3, [x9, w8, sxtw #2]
+0x006e7944 e10d01d0 adrp     x1, #0x28a5000
+0x006e7948 21602691 add      x1, x1, #0x998
+0x006e794c e2230091 add      x2, sp, #8
+0x006e7950 1c310694 bl       #0x873dc0
+0x006e7954 190100b5 cbnz     x25, #0x6e7974
+0x006e7958 08000014 b        #0x6e7978
+0x006e795c 0398a052 mov      w3, #0x4c00000
+0x006e7960 e10d01d0 adrp     x1, #0x28a5000
+0x006e7964 21602691 add      x1, x1, #0x998
+0x006e7968 e2230091 add      x2, sp, #8
+0x006e796c 15310694 bl       #0x873dc0
+0x006e7970 590000b4 cbz      x25, #0x6e7978
+0x006e7974 6f801194 bl       #0xb47b30 ; import _ZTH6armAsm
+0x006e7978 48031bcb sub      x8, x26, x27
+0x006e797c d402088b add      x20, x22, x8
+0x006e7980 002500d0 adrp     x0, #0xb89000
+0x006e7984 00600491 add      x0, x0, #0x118
+0x006e7988 b2881194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e798c 000040f9 ldr      x0, [x0]
+0x006e7990 f50d01d0 adrp     x21, #0x28a5000
+0x006e7994 b5e22291 add      x21, x21, #0x8b8
+0x006e7998 a1820391 add      x1, x21, #0xe0
+0x006e799c 75cdfe97 bl       #0x69af70
+0x006e79a0 b40200f9 str      x20, [x21]
+0x006e79a4 580000b4 cbz      x24, #0x6e79ac
+0x006e79a8 6a801194 bl       #0xb47b50 ; import _ZTH9armAsmPtr
+0x006e79ac 002500d0 adrp     x0, #0xb89000
+0x006e79b0 00e00491 add      x0, x0, #0x138
+0x006e79b4 a7881194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e79b8 140040f9 ldr      x20, [x0]
+0x006e79bc 590000b4 cbz      x25, #0x6e79c4
+0x006e79c0 5c801194 bl       #0xb47b30 ; import _ZTH6armAsm
+0x006e79c4 002500d0 adrp     x0, #0xb89000
+0x006e79c8 00600491 add      x0, x0, #0x118
+0x006e79cc a1881194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e79d0 080040f9 ldr      x8, [x0]
+0x006e79d4 090d40f9 ldr      x9, [x8, #0x18]
+0x006e79d8 080540f9 ldr      x8, [x8, #8]
+0x006e79dc 280108cb sub      x8, x9, x8
+0x006e79e0 9402088b add      x20, x20, x8
+0x006e79e4 f60d01d0 adrp     x22, #0x28a5000
+0x006e79e8 d6c22291 add      x22, x22, #0x8b0
+0x006e79ec c00640f9 ldr      x0, [x22, #8]
+0x006e79f0 e1031f2a mov      w1, wzr
+0x006e79f4 0bcbfe97 bl       #0x69a620
+0x006e79f8 d40200f9 str      x20, [x22]
+0x006e79fc 002500d0 adrp     x0, #0xb89000
+0x006e7a00 00e00491 add      x0, x0, #0x138
+0x006e7a04 93881194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e7a08 f40300aa mov      x20, x0
+0x006e7a0c 170040f9 ldr      x23, [x0]
+0x006e7a10 e83e0091 add      x8, x23, #0xf
+0x006e7a14 16ed7c92 and      x22, x8, #0xfffffffffffffff0
+0x006e7a18 002500d0 adrp     x0, #0xb89000
+0x006e7a1c 00600591 add      x0, x0, #0x158
+0x006e7a20 8c881194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e7a24 080040f9 ldr      x8, [x0]
+0x006e7a28 0801178b add      x8, x8, x23
+0x006e7a2c 080116cb sub      x8, x8, x22
+0x006e7a30 080000f9 str      x8, [x0]
+0x006e7a34 960200f9 str      x22, [x20]
+0x006e7a38 d80000b4 cbz      x24, #0x6e7a50
+0x006e7a3c 45801194 bl       #0xb47b50 ; import _ZTH9armAsmPtr
+0x006e7a40 002500d0 adrp     x0, #0xb89000
+0x006e7a44 00e00491 add      x0, x0, #0x138
+0x006e7a48 82881194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e7a4c 160040f9 ldr      x22, [x0]
+0x006e7a50 590000b4 cbz      x25, #0x6e7a58
+0x006e7a54 37801194 bl       #0xb47b30 ; import _ZTH6armAsm
+0x006e7a58 002500d0 adrp     x0, #0xb89000
+0x006e7a5c 00600491 add      x0, x0, #0x118
+0x006e7a60 7c881194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e7a64 080040f9 ldr      x8, [x0]
+0x006e7a68 140d40f9 ldr      x20, [x8, #0x18]
+0x006e7a6c 1a0540f9 ldr      x26, [x8, #8]
+0x006e7a70 20008052 mov      w0, #1
+0x006e7a74 5fd1fe97 bl       #0x69bff0
+0x006e7a78 c0070190 adrp     x0, #0x27df000
+0x006e7a7c 00401691 add      x0, x0, #0x590
+0x006e7a80 e1f80090 adrp     x1, #0x2603000
+0x006e7a84 21803e91 add      x1, x1, #0xfa0
+0x006e7a88 52d0fe97 bl       #0x69bbd0
+0x006e7a8c 080101b0 adrp     x8, #0x2708000
+0x006e7a90 012146f9 ldr      x1, [x8, #0xc40]
+0x006e7a94 e00d01d0 adrp     x0, #0x28a5000
+0x006e7a98 00a03291 add      x0, x0, #0xca8
+0x006e7a9c 4dd0fe97 bl       #0x69bbd0
+0x006e7aa0 f7f800d0 adrp     x23, #0x2605000
+0x006e7aa4 f7923791 add      x23, x23, #0xde4
+0x006e7aa8 e80a4039 ldrb     w8, [x23, #2]
+0x006e7aac e9024079 ldrh     w9, [x23]
+0x006e7ab0 093d1033 bfi      w9, w8, #0x10, #0x10
+0x006e7ab4 28008052 mov      w8, #1
+0x006e7ab8 4800a072 movk     w8, #2, lsl #16
+0x006e7abc 1f01296a bics     wzr, w8, w9
+0x006e7ac0 000d0054 b.eq     #0x6e7c60
+0x006e7ac4 33650194 bl       #0x740f90
+0x006e7ac8 e80d01d0 adrp     x8, #0x28a5000
+0x006e7acc 004d44f9 ldr      x0, [x8, #0x898]
+0x006e7ad0 e1031f2a mov      w1, wzr
+0x006e7ad4 d3cafe97 bl       #0x69a620
+0x006e7ad8 b80d00b5 cbnz     x24, #0x6e7c8c
+0x006e7adc 002500d0 adrp     x0, #0xb89000
+0x006e7ae0 00e00491 add      x0, x0, #0x138
+0x006e7ae4 5b881194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e7ae8 1b0040f9 ldr      x27, [x0]
+0x006e7aec 590000b4 cbz      x25, #0x6e7af4
+0x006e7af0 10801194 bl       #0xb47b30 ; import _ZTH6armAsm
+0x006e7af4 002500d0 adrp     x0, #0xb89000
+0x006e7af8 00600491 add      x0, x0, #0x118
+0x006e7afc 55881194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e7b00 080040f9 ldr      x8, [x0]
+0x006e7b04 090d40f9 ldr      x9, [x8, #0x18]
+0x006e7b08 080540f9 ldr      x8, [x8, #8]
+0x006e7b0c 280108cb sub      x8, x9, x8
+0x006e7b10 6803088b add      x8, x27, x8
+0x006e7b14 e90d01d0 adrp     x9, #0x28a5000
+0x006e7b18 289104f9 str      x8, [x9, #0x920]
+0x006e7b1c 20008052 mov      w0, #1
+0x006e7b20 d4d2fe97 bl       #0x69c670
+0x006e7b24 590000b4 cbz      x25, #0x6e7b2c
+0x006e7b28 02801194 bl       #0xb47b30 ; import _ZTH6armAsm
+0x006e7b2c 88021acb sub      x8, x20, x26
+0x006e7b30 d402088b add      x20, x22, x8
+0x006e7b34 002500d0 adrp     x0, #0xb89000
+0x006e7b38 00600491 add      x0, x0, #0x118
+0x006e7b3c 45881194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e7b40 000040f9 ldr      x0, [x0]
+0x006e7b44 f60d01d0 adrp     x22, #0x28a5000
+0x006e7b48 d6022491 add      x22, x22, #0x900
+0x006e7b4c c1721191 add      x1, x22, #0x45c
+0x006e7b50 a402ff97 bl       #0x6a85e0
+0x006e7b54 d40200f9 str      x20, [x22]
+0x006e7b58 580000b4 cbz      x24, #0x6e7b60
+0x006e7b5c fd7f1194 bl       #0xb47b50 ; import _ZTH9armAsmPtr
+0x006e7b60 002500d0 adrp     x0, #0xb89000
+0x006e7b64 00e00491 add      x0, x0, #0x138
+0x006e7b68 3a881194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e7b6c 140040f9 ldr      x20, [x0]
+0x006e7b70 590000b4 cbz      x25, #0x6e7b78
+0x006e7b74 ef7f1194 bl       #0xb47b30 ; import _ZTH6armAsm
+0x006e7b78 002500d0 adrp     x0, #0xb89000
+0x006e7b7c 00600491 add      x0, x0, #0x118
+0x006e7b80 34881194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e7b84 080040f9 ldr      x8, [x0]
+0x006e7b88 090d40f9 ldr      x9, [x8, #0x18]
+0x006e7b8c 080540f9 ldr      x8, [x8, #8]
+0x006e7b90 280108cb sub      x8, x9, x8
+0x006e7b94 9402088b add      x20, x20, x8
+0x006e7b98 80000090 adrp     x0, #0x6f7000
+0x006e7b9c 00802891 add      x0, x0, #0xa20
+0x006e7ba0 e1031f2a mov      w1, wzr
+0x006e7ba4 3bcdfe97 bl       #0x69b090
+0x006e7ba8 f60d01d0 adrp     x22, #0x28a5000
+0x006e7bac d6222491 add      x22, x22, #0x908
+0x006e7bb0 c00e40f9 ldr      x0, [x22, #0x18]
+0x006e7bb4 e1031f2a mov      w1, wzr
+0x006e7bb8 9acafe97 bl       #0x69a620
+0x006e7bbc d40200f9 str      x20, [x22]
+0x006e7bc0 580000b4 cbz      x24, #0x6e7bc8
+0x006e7bc4 e37f1194 bl       #0xb47b50 ; import _ZTH9armAsmPtr
+0x006e7bc8 002500d0 adrp     x0, #0xb89000
+0x006e7bcc 00e00491 add      x0, x0, #0x138
+0x006e7bd0 20881194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e7bd4 160040f9 ldr      x22, [x0]
+0x006e7bd8 590000b4 cbz      x25, #0x6e7be0
+0x006e7bdc d57f1194 bl       #0xb47b30 ; import _ZTH6armAsm
+0x006e7be0 002500d0 adrp     x0, #0xb89000
+0x006e7be4 00600491 add      x0, x0, #0x118
+0x006e7be8 1a881194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e7bec f40300aa mov      x20, x0
+0x006e7bf0 080040f9 ldr      x8, [x0]
+0x006e7bf4 090d40f9 ldr      x9, [x8, #0x18]
+0x006e7bf8 080540f9 ldr      x8, [x8, #8]
+0x006e7bfc 280108cb sub      x8, x9, x8
+0x006e7c00 d602088b add      x22, x22, x8
+0x006e7c04 80000090 adrp     x0, #0x6f7000
+0x006e7c08 00402c91 add      x0, x0, #0xb10
+0x006e7c0c e1031f2a mov      w1, wzr
+0x006e7c10 20cdfe97 bl       #0x69b090
+0x006e7c14 a03640f9 ldr      x0, [x21, #0x68]
+0x006e7c18 e1031f2a mov      w1, wzr
+0x006e7c1c 81cafe97 bl       #0x69a620
+0x006e7c20 b62e00f9 str      x22, [x21, #0x58]
+0x006e7c24 a80240f9 ldr      x8, [x21]
+0x006e7c28 e90d01f0 adrp     x9, #0x28a6000
+0x006e7c2c 28d504f9 str      x8, [x9, #0x9a8]
+0x006e7c30 940240f9 ldr      x20, [x20]
+0x006e7c34 88a649a9 ldp      x8, x9, [x20, #0x98]
+0x006e7c38 1f0109eb cmp      x8, x9
+0x006e7c3c 60030054 b.eq     #0x6e7ca8
+0x006e7c40 80020291 add      x0, x20, #0x80
+0x006e7c44 21008052 mov      w1, #1
+0x006e7c48 86130694 bl       #0x86ca60
+0x006e7c4c 002500d0 adrp     x0, #0xb89000
+0x006e7c50 00600491 add      x0, x0, #0x118
+0x006e7c54 ff871194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e7c58 000040f9 ldr      x0, [x0]
+0x006e7c5c 14000014 b        #0x6e7cac
+0x006e7c60 080101b0 adrp     x8, #0x2708000
+0x006e7c64 012946f9 ldr      x1, [x8, #0xc50]
+0x006e7c68 e00d01d0 adrp     x0, #0x28a5000
+0x006e7c6c 00a03091 add      x0, x0, #0xc28
+0x006e7c70 d8cffe97 bl       #0x69bbd0
+0x006e7c74 c7640194 bl       #0x740f90
+0x006e7c78 e80d01d0 adrp     x8, #0x28a5000
+0x006e7c7c 004d44f9 ldr      x0, [x8, #0x898]
+0x006e7c80 e1031f2a mov      w1, wzr
+0x006e7c84 67cafe97 bl       #0x69a620
+0x006e7c88 b8f2ffb4 cbz      x24, #0x6e7adc
+0x006e7c8c b17f1194 bl       #0xb47b50 ; import _ZTH9armAsmPtr
+0x006e7c90 002500d0 adrp     x0, #0xb89000
+0x006e7c94 00e00491 add      x0, x0, #0x138
+0x006e7c98 ee871194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e7c9c 1b0040f9 ldr      x27, [x0]
+0x006e7ca0 99f2ffb5 cbnz     x25, #0x6e7af0
+0x006e7ca4 94ffff17 b        #0x6e7af4
+0x006e7ca8 e00314aa mov      x0, x20
+0x006e7cac 9f820039 strb     wzr, [x20, #0x20]
+0x006e7cb0 081840b9 ldr      w8, [x0, #0x18]
+0x006e7cb4 090840b9 ldr      w9, [x0, #8]
+0x006e7cb8 1601094b sub      w22, w8, w9
+0x006e7cbc 080040f9 ldr      x8, [x0]
+0x006e7cc0 080540f9 ldr      x8, [x8, #8]
+0x006e7cc4 00013fd6 blr      x8
+0x006e7cc8 002500d0 adrp     x0, #0xb89000
+0x006e7ccc 00600491 add      x0, x0, #0x118
+0x006e7cd0 e0871194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e7cd4 1f0000f9 str      xzr, [x0]
+0x006e7cd8 002500d0 adrp     x0, #0xb89000
+0x006e7cdc 00e00491 add      x0, x0, #0x138
+0x006e7ce0 dc871194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e7ce4 f40300aa mov      x20, x0
+0x006e7ce8 000040f9 ldr      x0, [x0]
+0x006e7cec 0100168b add      x1, x0, x22
+0x006e7cf0 7fe9f697 bl       #0x4a22ec
+0x006e7cf4 880240f9 ldr      x8, [x20]
+0x006e7cf8 0801168b add      x8, x8, x22
+0x006e7cfc 880200f9 str      x8, [x20]
+0x006e7d00 002500d0 adrp     x0, #0xb89000
+0x006e7d04 00600591 add      x0, x0, #0x158
+0x006e7d08 d2871194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e7d0c 080040f9 ldr      x8, [x0]
+0x006e7d10 080116cb sub      x8, x8, x22
+0x006e7d14 080000f9 str      x8, [x0]
+0x006e7d18 b80100b4 cbz      x24, #0x6e7d4c
+0x006e7d1c 8d7f1194 bl       #0xb47b50 ; import _ZTH9armAsmPtr
+0x006e7d20 90df0094 bl       #0x71fb60
+0x006e7d24 8b7f1194 bl       #0xb47b50 ; import _ZTH9armAsmPtr
+0x006e7d28 e80a4039 ldrb     w8, [x23, #2]
+0x006e7d2c e9024079 ldrh     w9, [x23]
+0x006e7d30 091d1033 bfi      w9, w8, #0x10, #8
+0x006e7d34 69017036 tbz      w9, #0xe, #0x6e7d60
+0x006e7d38 760bff97 bl       #0x6aab10
+0x006e7d3c d40b0190 adrp     x20, #0x285f000
+0x006e7d40 e4640194 bl       #0x7410d0
+0x006e7d44 780100b5 cbnz     x24, #0x6e7d70
+0x006e7d48 0b000014 b        #0x6e7d74
+0x006e7d4c 85df0094 bl       #0x71fb60
+0x006e7d50 e80a4039 ldrb     w8, [x23, #2]
+0x006e7d54 e9024079 ldrh     w9, [x23]
+0x006e7d58 091d1033 bfi      w9, w8, #0x10, #8
+0x006e7d5c e9fe7737 tbnz     w9, #0xe, #0x6e7d38
+0x006e7d60 70e7fe97 bl       #0x6a1b20
+0x006e7d64 d40b0190 adrp     x20, #0x285f000
+0x006e7d68 da640194 bl       #0x7410d0
+0x006e7d6c 580000b4 cbz      x24, #0x6e7d74
+0x006e7d70 787f1194 bl       #0xb47b50 ; import _ZTH9armAsmPtr
+0x006e7d74 002500d0 adrp     x0, #0xb89000
+0x006e7d78 00e00491 add      x0, x0, #0x138
+0x006e7d7c b5871194 bl       #0xb49c50 ; import __emutls_get_address
+0x006e7d80 e8031faa mov      x8, xzr
+0x006e7d84 090040f9 ldr      x9, [x0]
+0x006e7d88 ea0d01d0 adrp     x10, #0x28a5000
+0x006e7d8c 4a612391 add      x10, x10, #0x8d8
+0x006e7d90 891203f9 str      x9, [x20, #0x620]
+0x006e7d94 560140f9 ldr      x22, [x10]
+0x006e7d98 0980a052 mov      w9, #0x4000000
+0x006e7d9c 0b90a052 mov      w11, #0x4800000
+0x006e7da0 c902098b add      x9, x22, x9
+0x006e7da4 49d901a9 stp      x9, x22, [x10, #0x18]
+0x006e7da8 09a0a052 mov      w9, #0x5000000
+0x006e7dac cb020b8b add      x11, x22, x11
+0x006e7db0 c902098b add      x9, x22, x9
+0x006e7db4 49ad00a9 stp      x9, x11, [x10, #8]
+0x006e7db8 e9bb6fb2 mov      x9, #-0x20000
+0x006e7dbc 2a814091 add      x10, x9, #0x20, lsl #12
+0x006e7dc0 6b02088b add      x11, x19, x8
+0x006e7dc4 6a2500a9 stp      x10, x9, [x11]
+0x006e7dc8 290141d1 sub      x9, x9, #0x40, lsl #12
+0x006e7dcc 08410091 add      x8, x8, #0x10
+0x006e7dd0 1f0142f1 cmp      x8, #0x80, lsl #12
+0x006e7dd4 41ffff54 b.ne     #0x6e7dbc
+0x006e7dd8 d40b0190 adrp     x20, #0x285f000
+0x006e7ddc 94421d91 add      x20, x20, #0x750
+0x006e7de0 e00314aa mov      x0, x20
+0x006e7de4 e1031f2a mov      w1, wzr
+0x006e7de8 02008152 mov      w2, #0x800
+0x006e7dec c1841194 bl       #0xb490f0 ; import memset
+0x006e7df0 e8031faa mov      x8, xzr
+0x006e7df4 e97b5fb2 mov      x9, #-0x200000000
+0x006e7df8 0900acf2 movk     x9, #0x6000, lsl #16
+0x006e7dfc ea7b5fb2 mov      x10, #-0x200000000
+0x006e7e00 0a00b0f2 movk     x10, #0x8000, lsl #16
+0x006e7e04 c00e084e dup      v0.2d, x22
+0x006e7e08 c902098b add      x9, x22, x9
+0x006e7e0c eb7b5fb2 mov      x11, #-0x200000000
+0x006e7e10 0b00b4f2 movk     x11, #0xa000, lsl #16
+0x006e7e14 ec8762b2 mov      x12, #-0x40000000
+0x006e7e18 cc020c8b add      x12, x22, x12
+0x006e7e1c 810d084e dup      v1.2d, x12
+0x006e7e20 ec7b5fb2 mov      x12, #-0x200000000
+0x006e7e24 0c00b8f2 movk     x12, #0xc000, lsl #16
+0x006e7e28 ed7f60b2 mov      x13, #-0x100000000
+0x006e7e2c eeff9f92 mov      x14, #-0x10000
+0x006e7e30 0e00b4f2 movk     x14, #0xa000, lsl #16
+0x006e7e34 ce020e8b add      x14, x22, x14
+0x006e7e38 c20d084e dup      v2.2d, x14
+0x006e7e3c cd020d8b add      x13, x22, x13
+0x006e7e40 a30d084e dup      v3.2d, x13
+0x006e7e44 cc020c8b add      x12, x22, x12
+0x006e7e48 840d084e dup      v4.2d, x12
+0x006e7e4c cb020b8b add      x11, x22, x11
+0x006e7e50 650d084e dup      v5.2d, x11
+0x006e7e54 ca020a8b add      x10, x22, x10
+0x006e7e58 460d084e dup      v6.2d, x10
+0x006e7e5c 270d084e dup      v7.2d, x9
+0x006e7e60 89224091 add      x9, x20, #8, lsl #12
+0x006e7e64 2a00a052 mov      w10, #0x10000
+0x006e7e68 1064070f movi     v16.2s, #0xe0, lsl #24
+0x006e7e6c 1166060f movi     v17.2s, #0xd0, lsl #24
+0x006e7e70 8b00a052 mov      w11, #0x40000
+0x006e7e74 1264040f movi     v18.2s, #0x80, lsl #24
+0x006e7e78 ac00a052 mov      w12, #0x50000
+0x006e7e7c 1364030f movi     v19.2s, #0x60, lsl #24
+0x006e7e80 4d00a052 mov      w13, #0x20000
+0x006e7e84 1466020f movi     v20.2s, #0x50, lsl #24
+0x006e7e88 ce00a052 mov      w14, #0x60000
+0x006e7e8c 1564020f movi     v21.2s, #0x40, lsl #24
+0x006e7e90 1666010f movi     v22.2s, #0x30, lsl #24
+0x006e7e94 6f02088b add      x15, x19, x8
+0x006e7e98 f0614091 add      x16, x15, #0x18, lsl #12
+0x006e7e9c e001803d str      q0, [x15]
+0x006e7ea0 e169aa3c str      q1, [x15, x10]
+0x006e7ea4 0202803d str      q2, [x16]
+0x006e7ea8 300100fd str      d16, [x9]
+0x006e7eac 310120fd str      d17, [x9, #0x4000]
+0x006e7eb0 e369ab3c str      q3, [x15, x11]
+0x006e7eb4 e469ac3c str      q4, [x15, x12]
+0x006e7eb8 30614091 add      x16, x9, #0x18, lsl #12
+0x006e7ebc 120200fd str      d18, [x16]
+0x006e7ec0 f0614191 add      x16, x15, #0x58, lsl #12
+0x006e7ec4 0502803d str      q5, [x16]
+0x006e7ec8 33692dfc str      d19, [x9, x13]
+0x006e7ecc 30914091 add      x16, x9, #0x24, lsl #12
+0x006e7ed0 e669ae3c str      q6, [x15, x14]
+0x006e7ed4 140200fd str      d20, [x16]
+0x006e7ed8 30a14091 add      x16, x9, #0x28, lsl #12
+0x006e7edc 150200fd str      d21, [x16]
+0x006e7ee0 efa14191 add      x15, x15, #0x68, lsl #12
+0x006e7ee4 30b14091 add      x16, x9, #0x2c, lsl #12
+0x006e7ee8 160200fd str      d22, [x16]
+0x006e7eec 08410091 add      x8, x8, #0x10
+0x006e7ef0 29210091 add      x9, x9, #8
+0x006e7ef4 1f0540f1 cmp      x8, #1, lsl #12
+0x006e7ef8 e701803d str      q7, [x15]
+0x006e7efc c1fcff54 b.ne     #0x6e7e94
+0x006e7f00 e8031faa mov      x8, xzr
+0x006e7f04 0b0c0190 adrp     x11, #0x2867000
+0x006e7f08 6b411991 add      x11, x11, #0x650
+0x006e7f0c 04e4006f movi     v4.2d, #0000000000000000
+0x006e7f10 641107ad stp      q4, q4, [x11, #0xe0]
+0x006e7f14 641106ad stp      q4, q4, [x11, #0xc0]
+0x006e7f18 641105ad stp      q4, q4, [x11, #0xa0]
+0x006e7f1c 641104ad stp      q4, q4, [x11, #0x80]
+0x006e7f20 641103ad stp      q4, q4, [x11, #0x60]
+0x006e7f24 e97b5fb2 mov      x9, #-0x200000000
+0x006e7f28 0990b0f2 movk     x9, #0x8480, lsl #16
+0x006e7f2c ea7b5fb2 mov      x10, #-0x200000000
+0x006e7f30 0a90b8f2 movk     x10, #0xc480, lsl #16
+0x006e7f34 ecff9f92 mov      x12, #-0x10000
+0x006e7f38 0c90b8f2 movk     x12, #0xc480, lsl #16
+0x006e7f3c 641102ad stp      q4, q4, [x11, #0x40]
+0x006e7f40 cc020c8b add      x12, x22, x12
+0x006e7f44 800d084e dup      v0.2d, x12
+0x006e7f48 ca020a8b add      x10, x22, x10
+0x006e7f4c 410d084e dup      v1.2d, x10
+0x006e7f50 641101ad stp      q4, q4, [x11, #0x20]
+0x006e7f54 c902098b add      x9, x22, x9
+0x006e7f58 220d084e dup      v2.2d, x9
+0x006e7f5c 69a14091 add      x9, x11, #0x28, lsl #12
+0x006e7f60 0ac09f52 mov      w10, #0xfe00
+0x006e7f64 8a00a072 movk     w10, #4, lsl #16
+0x006e7f68 0364040f movi     v3.2s, #0x80, lsl #24
+0x006e7f6c 641100ad stp      q4, q4, [x11]
+0x006e7f70 ebff8f92 mov      x11, #-0x8000
+0x006e7f74 0cc09f52 mov      w12, #0xfe00
+0x006e7f78 ac00a072 movk     w12, #5, lsl #16
+0x006e7f7c 0464030f movi     v4.2s, #0x60, lsl #24
+0x006e7f80 6d02088b add      x13, x19, x8
+0x006e7f84 a081bf3d str      q0, [x13, #0xfe00]
+0x006e7f88 a169aa3c str      q1, [x13, x10]
+0x006e7f8c 23692bfc str      d3, [x9, x11]
+0x006e7f90 248500fc str      d4, [x9], #8
+0x006e7f94 08410091 add      x8, x8, #0x10
+0x006e7f98 1f0108f1 cmp      x8, #0x200
+0x006e7f9c a269ac3c str      q2, [x13, x12]
+0x006e7fa0 01ffff54 b.ne     #0x6e7f80
+0x006e7fa4 e80b01f0 adrp     x8, #0x2866000
+0x006e7fa8 08413d91 add      x8, x8, #0xf50
+0x006e7fac 0164044f movi     v1.4s, #0x80, lsl #24
+0x006e7fb0 4900a052 mov      w9, #0x20000
+0x006e7fb4 0169a93c str      q1, [x8, x9]
+0x006e7fb8 0064034f movi     v0.4s, #0x60, lsl #24
+0x006e7fbc 09a14091 add      x9, x8, #0x28, lsl #12
+0x006e7fc0 2001803d str      q0, [x9]
+0x006e7fc4 e97b5fb2 mov      x9, #-0x200000000
+0x006e7fc8 0910b9f2 movk     x9, #0xc880, lsl #16
+0x006e7fcc cb02098b add      x11, x22, x9
+0x006e7fd0 290801f0 adrp     x9, #0x27ee000
+0x006e7fd4 29811891 add      x9, x9, #0x620
+0x006e7fd8 8a00a052 mov      w10, #0x40000
+0x006e7fdc 2b692af8 str      x11, [x9, x10]
+0x006e7fe0 1f7d00a9 stp      xzr, xzr, [x8]
+0x006e7fe4 ea7b5fb2 mov      x10, #-0x200000000
+0x006e7fe8 0a10b1f2 movk     x10, #0x8880, lsl #16
+0x006e7fec ca020a8b add      x10, x22, x10
+0x006e7ff0 ac00a052 mov      w12, #0x50000
+0x006e7ff4 2a692cf8 str      x10, [x9, x12]
+0x006e7ff8 0c018052 mov      w12, #8
+0x006e7ffc 8c00a072 movk     w12, #4, lsl #16
+0x006e8000 2b692cf8 str      x11, [x9, x12]
+0x006e8004 0c018052 mov      w12, #8
+0x006e8008 ac00a072 movk     w12, #5, lsl #16
+0x006e800c 2a692cf8 str      x10, [x9, x12]
+0x006e8010 0c028052 mov      w12, #0x10
+0x006e8014 8c00a072 movk     w12, #4, lsl #16
+0x006e8018 2b692cf8 str      x11, [x9, x12]
+0x006e801c 0c028052 mov      w12, #0x10
+0x006e8020 ac00a072 movk     w12, #5, lsl #16
+0x006e8024 2a692cf8 str      x10, [x9, x12]
+0x006e8028 0c038052 mov      w12, #0x18
+0x006e802c 8c00a072 movk     w12, #4, lsl #16
+0x006e8030 2b692cf8 str      x11, [x9, x12]
+0x006e8034 ecff9f92 mov      x12, #-0x10000
+0x006e8038 0c10b9f2 movk     x12, #0xc880, lsl #16
+0x006e803c cc020c8b add      x12, x22, x12
+0x006e8040 2c3100a9 stp      x12, x12, [x9]
+0x006e8044 0d038052 mov      w13, #0x18
+0x006e8048 ad00a072 movk     w13, #5, lsl #16
+0x006e804c 02e4006f movi     v2.2d, #0000000000000000
+0x006e8050 020908ad stp      q2, q2, [x8, #0x100]
+0x006e8054 2a692df8 str      x10, [x9, x13]
+0x006e8058 2c3101a9 stp      x12, x12, [x9, #0x10]
+0x006e805c 2c0101f9 str      x12, [x9, #0x200]
+0x006e8060 0d408052 mov      w13, #0x200
+0x006e8064 8d00a072 movk     w13, #4, lsl #16
+0x006e8068 2b692df8 str      x11, [x9, x13]
+0x006e806c 0d408052 mov      w13, #0x200
+0x006e8070 ad00a072 movk     w13, #5, lsl #16
+0x006e8074 2a692df8 str      x10, [x9, x13]
+0x006e8078 0d418052 mov      w13, #0x208
+0x006e807c 8d00a072 movk     w13, #4, lsl #16
+0x006e8080 2b692df8 str      x11, [x9, x13]
+0x006e8084 0d418052 mov      w13, #0x208
+0x006e8088 ad00a072 movk     w13, #5, lsl #16
+0x006e808c 2a692df8 str      x10, [x9, x13]
+0x006e8090 0d208052 mov      w13, #0x100
+0x006e8094 4d00a072 movk     w13, #2, lsl #16
+0x006e8098 0169ad3c str      q1, [x8, x13]
+0x006e809c 2c0501f9 str      x12, [x9, #0x208]
+0x006e80a0 2c0901f9 str      x12, [x9, #0x210]
+0x006e80a4 0d428052 mov      w13, #0x210
+0x006e80a8 8d00a072 movk     w13, #4, lsl #16
+0x006e80ac 2b692df8 str      x11, [x9, x13]
+0x006e80b0 0d428052 mov      w13, #0x210
+0x006e80b4 ad00a072 movk     w13, #5, lsl #16
+0x006e80b8 2a692df8 str      x10, [x9, x13]
+0x006e80bc 0d438052 mov      w13, #0x218
+0x006e80c0 8d00a072 movk     w13, #4, lsl #16
+0x006e80c4 2b692df8 str      x11, [x9, x13]
+0x006e80c8 0d438052 mov      w13, #0x218
+0x006e80cc ad00a072 movk     w13, #5, lsl #16
+0x006e80d0 2a692df8 str      x10, [x9, x13]
+0x006e80d4 0d209052 mov      w13, #0x8100
+0x006e80d8 4d00a072 movk     w13, #2, lsl #16
+0x006e80dc 0069ad3c str      q0, [x8, x13]
+0x006e80e0 2c0d01f9 str      x12, [x9, #0x218]
+0x006e80e4 2c1101f9 str      x12, [x9, #0x220]
+0x006e80e8 0d448052 mov      w13, #0x220
+0x006e80ec 8d00a072 movk     w13, #4, lsl #16
+0x006e80f0 2b692df8 str      x11, [x9, x13]
+0x006e80f4 0d448052 mov      w13, #0x220
+0x006e80f8 ad00a072 movk     w13, #5, lsl #16
+0x006e80fc 2a692df8 str      x10, [x9, x13]
+0x006e8100 2c1501f9 str      x12, [x9, #0x228]
+0x006e8104 0d458052 mov      w13, #0x228
+0x006e8108 8d00a072 movk     w13, #4, lsl #16
+0x006e810c 2b692df8 str      x11, [x9, x13]
+0x006e8110 0d458052 mov      w13, #0x228
+0x006e8114 ad00a072 movk     w13, #5, lsl #16
+0x006e8118 2a692df8 str      x10, [x9, x13]
+0x006e811c 0d468052 mov      w13, #0x230
+0x006e8120 8d00a072 movk     w13, #4, lsl #16
+0x006e8124 2b692df8 str      x11, [x9, x13]
+0x006e8128 0d468052 mov      w13, #0x230
+0x006e812c ad00a072 movk     w13, #5, lsl #16
+0x006e8130 2a692df8 str      x10, [x9, x13]
+0x006e8134 2c1901f9 str      x12, [x9, #0x230]
+0x006e8138 2c1d01f9 str      x12, [x9, #0x238]
+0x006e813c 0c478052 mov      w12, #0x238
+0x006e8140 8c00a072 movk     w12, #4, lsl #16
+0x006e8144 2b692cf8 str      x11, [x9, x12]
+0x006e8148 0b228052 mov      w11, #0x110
+0x006e814c 4b00a072 movk     w11, #2, lsl #16
+0x006e8150 0169ab3c str      q1, [x8, x11]
+0x006e8154 0b478052 mov      w11, #0x238
+0x006e8158 ab00a072 movk     w11, #5, lsl #16
+0x006e815c 2a692bf8 str      x10, [x9, x11]
+0x006e8160 09229052 mov      w9, #0x8110
+0x006e8164 4900a072 movk     w9, #2, lsl #16
+0x006e8168 b30701f0 adrp     x19, #0x27df000
+0x006e816c 6a0a43f9 ldr      x10, [x19, #0x610]
+0x006e8170 0069a93c str      q0, [x8, x9]
+0x006e8174 0a0100b5 cbnz     x10, #0x6e8194
+0x006e8178 a80701f0 adrp     x8, #0x27df000
+0x006e817c 09108052 mov      w9, #0x80
+0x006e8180 091906b9 str      w9, [x8, #0x618]
+0x006e8184 00608852 mov      w0, #0x4300
+0x006e8188 ca7c1194 bl       #0xb474b0 ; import malloc
+0x006e818c 600a03f9 str      x0, [x19, #0x610]
+0x006e8190 a01400b4 cbz      x0, #0x6e8424
+0x006e8194 002500b0 adrp     x0, #0xb89000
+0x006e8198 00603e91 add      x0, x0, #0xf98
+0x006e819c 02d1ff90 adrp     x2, #0x108000
+0x006e81a0 42580e91 add      x2, x2, #0x396
+0x006e81a4 61018052 mov      w1, #0xb
+0x006e81a8 1e500694 bl       #0x87c220
+0x006e81ac a0ce404d ld1r     {v0.2d}, [x21]
+0x006e81b0 a81240f9 ldr      x8, [x21, #0x20]
+0x006e81b4 08010191 add      x8, x8, #0x40
+0x006e81b8 4914a052 mov      w9, #0xa20000
+0x006e81bc f60340f9 ldr      x22, [sp]
+0x006e81c0 00013ead stp      q0, q0, [x8, #-0x40]
+0x006e81c4 000100ad stp      q0, q0, [x8]
+0x006e81c8 000101ad stp      q0, q0, [x8, #0x20]
+0x006e81cc 294100f1 subs     x9, x9, #0x10
+0x006e81d0 00013fad stp      q0, q0, [x8, #-0x20]
+0x006e81d4 08010291 add      x8, x8, #0x80
+0x006e81d8 41ffff54 b.ne     #0x6e81c0
+0x006e81dc f40d01b0 adrp     x20, #0x28a5000
+0x006e81e0 94022291 add      x20, x20, #0x880
+0x006e81e4 802a40f9 ldr      x0, [x20, #0x50]
+0x006e81e8 e1031f2a mov      w1, wzr
+0x006e81ec 0240a052 mov      w2, #0x2000000
+0x006e81f0 c0831194 bl       #0xb490f0 ; import memset
+0x006e81f4 9f0200b9 str      wzr, [x20]
+0x006e81f8 600a43f9 ldr      x0, [x19, #0x610]
+0x006e81fc e00000b4 cbz      x0, #0x6e8218
+0x006e8200 a80701f0 adrp     x8, #0x27df000
+0x006e8204 081946b9 ldr      w8, [x8, #0x618]
+0x006e8208 c9108052 mov      w9, #0x86
+0x006e820c 027d099b mul      x2, x8, x9
+0x006e8210 e1031f2a mov      w1, wzr
+0x006e8214 b7831194 bl       #0xb490f0 ; import memset
+0x006e8218 f30d01d0 adrp     x19, #0x28a6000
+0x006e821c 73422691 add      x19, x19, #0x990
+0x006e8220 7f2600b9 str      wzr, [x19, #0x24]
+0x006e8224 f40313aa mov      x20, x19
+0x006e8228 818e40f8 ldr      x1, [x20, #8]!
+0x006e822c e00313aa mov      x0, x19
+0x006e8230 546cff97 bl       #0x6c3380
+0x006e8234 740200f9 str      x20, [x19]
+0x006e8238 7f0a00f9 str      xzr, [x19, #0x10]
+0x006e823c 9f0200f9 str      xzr, [x20]
+0x006e8240 002600f0 adrp     x0, #0xbab000
+0x006e8244 00800791 add      x0, x0, #0x1e0
+0x006e8248 e1031f2a mov      w1, wzr
+0x006e824c 2200a052 mov      w2, #0x10000
+0x006e8250 a8831194 bl       #0xb490f0 ; import memset
+0x006e8254 28270090 adrp     x8, #0xbcc000
+0x006e8258 000140f9 ldr      x0, [x8]
+0x006e825c 800000b4 cbz      x0, #0x6e826c
+0x006e8260 0140a052 mov      w1, #0x2000000
+0x006e8264 62008052 mov      w2, #3
+0x006e8268 aa801194 bl       #0xb48510 ; import mprotect
+0x006e826c ff2b0039 strb     wzr, [sp, #0xa]
+0x006e8270 28208052 mov      w8, #0x101
+0x006e8274 e8130079 strh     w8, [sp, #8]
+0x006e8278 e2230091 add      x2, sp, #8
+0x006e827c e0031f2a mov      w0, wzr
+0x006e8280 0140a052 mov      w1, #0x2000000
+0x006e8284 6b17f897 bl       #0x4ee030
+0x006e8288 f3f800d0 adrp     x19, #0x2606000
+0x006e828c 68ea41f9 ldr      x8, [x19, #0x3d0]
+0x006e8290 680500b4 cbz      x8, #0x6e833c
+0x006e8294 e8f800d0 adrp     x8, #0x2606000
+0x006e8298 00e541f9 ldr      x0, [x8, #0x3c8]
+0x006e829c a00000b4 cbz      x0, #0x6e82b0
+0x006e82a0 140040f9 ldr      x20, [x0]
+0x006e82a4 f77b1194 bl       #0xb47280 ; import _ZdlPv
+0x006e82a8 e00314aa mov      x0, x20
+0x006e82ac b4ffffb5 cbnz     x20, #0x6e82a0
+0x006e82b0 e8f800d0 adrp     x8, #0x2606000
+0x006e82b4 08010f91 add      x8, x8, #0x3c0
+0x006e82b8 1f0500f9 str      xzr, [x8, #8]
+0x006e82bc 0b0140f9 ldr      x11, [x8]
+0x006e82c0 cb0300b4 cbz      x11, #0x6e8338
+0x006e82c4 690500d1 sub      x9, x11, #1
+0x006e82c8 68054092 and      x8, x11, #3
+0x006e82cc 3f0d00f1 cmp      x9, #3
+0x006e82d0 e9f800d0 adrp     x9, #0x2606000
+0x006e82d4 ea031faa mov      x10, xzr
+0x006e82d8 23020054 b.lo     #0x6e831c
+0x006e82dc 6bf57e92 and      x11, x11, #0xfffffffffffffffc
+0x006e82e0 2cdd41f9 ldr      x12, [x9, #0x3b8]
+0x006e82e4 4df17dd3 lsl      x13, x10, #3
+0x006e82e8 9f692df8 str      xzr, [x12, x13]
+0x006e82ec 2cdd41f9 ldr      x12, [x9, #0x3b8]
+0x006e82f0 8c010d8b add      x12, x12, x13
+0x006e82f4 9f0500f9 str      xzr, [x12, #8]
+0x006e82f8 2cdd41f9 ldr      x12, [x9, #0x3b8]
+0x006e82fc 8c010d8b add      x12, x12, x13
+0x006e8300 9f0900f9 str      xzr, [x12, #0x10]
+0x006e8304 2cdd41f9 ldr      x12, [x9, #0x3b8]
+0x006e8308 8c010d8b add      x12, x12, x13
+0x006e830c 9f0d00f9 str      xzr, [x12, #0x18]
+0x006e8310 4a110091 add      x10, x10, #4
+0x006e8314 7f010aeb cmp      x11, x10
+0x006e8318 41feff54 b.ne     #0x6e82e0
+0x006e831c e80000b4 cbz      x8, #0x6e8338
+0x006e8320 4af17dd3 lsl      x10, x10, #3
+0x006e8324 2bdd41f9 ldr      x11, [x9, #0x3b8]
+0x006e8328 7f692af8 str      xzr, [x11, x10]
+0x006e832c 4a210091 add      x10, x10, #8
+0x006e8330 080500f1 subs     x8, x8, #1
+0x006e8334 81ffff54 b.ne     #0x6e8324
+0x006e8338 7fea01f9 str      xzr, [x19, #0x3d0]
+0x006e833c f3f800d0 adrp     x19, #0x2606000
+0x006e8340 68fe41f9 ldr      x8, [x19, #0x3f8]
+0x006e8344 680500b4 cbz      x8, #0x6e83f0
+0x006e8348 e8f800d0 adrp     x8, #0x2606000
+0x006e834c 00f941f9 ldr      x0, [x8, #0x3f0]
+0x006e8350 a00000b4 cbz      x0, #0x6e8364
+0x006e8354 140040f9 ldr      x20, [x0]
+0x006e8358 ca7b1194 bl       #0xb47280 ; import _ZdlPv
+0x006e835c e00314aa mov      x0, x20
+0x006e8360 b4ffffb5 cbnz     x20, #0x6e8354
+0x006e8364 e8f800d0 adrp     x8, #0x2606000
+0x006e8368 08a10f91 add      x8, x8, #0x3e8
+0x006e836c 1f0500f9 str      xzr, [x8, #8]
+0x006e8370 0b0140f9 ldr      x11, [x8]
+0x006e8374 cb0300b4 cbz      x11, #0x6e83ec
+0x006e8378 690500d1 sub      x9, x11, #1
+0x006e837c 68054092 and      x8, x11, #3
+0x006e8380 3f0d00f1 cmp      x9, #3
+0x006e8384 e9f800d0 adrp     x9, #0x2606000
+0x006e8388 ea031faa mov      x10, xzr
+0x006e838c 23020054 b.lo     #0x6e83d0
+0x006e8390 6bf57e92 and      x11, x11, #0xfffffffffffffffc
+0x006e8394 2cf141f9 ldr      x12, [x9, #0x3e0]
+0x006e8398 4df17dd3 lsl      x13, x10, #3
+0x006e839c 9f692df8 str      xzr, [x12, x13]
+0x006e83a0 2cf141f9 ldr      x12, [x9, #0x3e0]
+0x006e83a4 8c010d8b add      x12, x12, x13
+0x006e83a8 9f0500f9 str      xzr, [x12, #8]
+0x006e83ac 2cf141f9 ldr      x12, [x9, #0x3e0]
+0x006e83b0 8c010d8b add      x12, x12, x13
+0x006e83b4 9f0900f9 str      xzr, [x12, #0x10]
+0x006e83b8 2cf141f9 ldr      x12, [x9, #0x3e0]
+0x006e83bc 8c010d8b add      x12, x12, x13
+0x006e83c0 9f0d00f9 str      xzr, [x12, #0x18]
+0x006e83c4 4a110091 add      x10, x10, #4
+0x006e83c8 7f010aeb cmp      x11, x10
+0x006e83cc 41feff54 b.ne     #0x6e8394
+0x006e83d0 e80000b4 cbz      x8, #0x6e83ec
+0x006e83d4 4af17dd3 lsl      x10, x10, #3
+0x006e83d8 2bf141f9 ldr      x11, [x9, #0x3e0]
+0x006e83dc 7f692af8 str      xzr, [x11, x10]
+0x006e83e0 4a210091 add      x10, x10, #8
+0x006e83e4 080500f1 subs     x8, x8, #1
+0x006e83e8 81ffff54 b.ne     #0x6e83d8
+0x006e83ec 7ffe01f9 str      xzr, [x19, #0x3f8]
+0x006e83f0 c81640f9 ldr      x8, [x22, #0x28]
+0x006e83f4 a9835ef8 ldur     x9, [x29, #-0x18]
+0x006e83f8 1f0109eb cmp      x8, x9
+0x006e83fc 61010054 b.ne     #0x6e8428
+0x006e8400 f44f4aa9 ldp      x20, x19, [sp, #0xa0]
+0x006e8404 f65749a9 ldp      x22, x21, [sp, #0x90]
+0x006e8408 f85f48a9 ldp      x24, x23, [sp, #0x80]
+0x006e840c fa6747a9 ldp      x26, x25, [sp, #0x70]
+0x006e8410 fc6f46a9 ldp      x28, x27, [sp, #0x60]
+0x006e8414 fd7b45a9 ldp      x29, x30, [sp, #0x50]
+0x006e8418 e82340fd ldr      d8, [sp, #0x40]
+0x006e841c ffc30291 add      sp, sp, #0xb0
+0x006e8420 c0035fd6 ret      
+0x006e8424 277c1194 bl       #0xb474c0 ; import abort
+0x006e8428 4a821194 bl       #0xb48d50 ; import __stack_chk_fail
+0x006e842c f40300aa mov      x20, x0
+0x006e8430 e00313aa mov      x0, x19
+0x006e8434 937b1194 bl       #0xb47280 ; import _ZdlPv
+0x006e8438 e00314aa mov      x0, x20
+0x006e843c 098def97 bl       #0x2cb860
