@@ -1,0 +1,65 @@
+{
+  "input_sha256": "4e378da548984dc0208ff2240aae003942ae9c5a6eec3a36c838c65ac6a37a63",
+  "globals": [
+    {
+      "got_address": "0xb83070",
+      "name": "EEmem",
+      "symbol_address": "0x2605d80",
+      "symbol_size": 8
+    },
+    {
+      "got_address": "0xb83088",
+      "name": "EErec",
+      "symbol_address": "0x2605d98",
+      "symbol_size": 8
+    },
+    {
+      "got_address": "0xb830a0",
+      "name": "VIF1rec",
+      "symbol_address": "0x2605db0",
+      "symbol_size": 8
+    },
+    {
+      "got_address": "0xb83078",
+      "name": "IOPmem",
+      "symbol_address": "0x2605d88",
+      "symbol_size": 8
+    },
+    {
+      "got_address": "0xb830b8",
+      "name": "bumpAllocator",
+      "symbol_address": "0x2605dc8",
+      "symbol_size": 8
+    },
+    {
+      "got_address": "0xb83098",
+      "name": "VIF0rec",
+      "symbol_address": "0x2605da8",
+      "symbol_size": 8
+    },
+    {
+      "got_address": "0xb83090",
+      "name": "IOPrec",
+      "symbol_address": "0x2605da0",
+      "symbol_size": 8
+    },
+    {
+      "got_address": "0xb83080",
+      "name": "VUmem",
+      "symbol_address": "0x2605d90",
+      "symbol_size": 8
+    },
+    {
+      "got_address": "0xb830b0",
+      "name": "mVU1rec",
+      "symbol_address": "0x2605dc0",
+      "symbol_size": 8
+    },
+    {
+      "got_address": "0xb830a8",
+      "name": "mVU0rec",
+      "symbol_address": "0x2605db8",
+      "symbol_size": 8
+    }
+  ]
+}
