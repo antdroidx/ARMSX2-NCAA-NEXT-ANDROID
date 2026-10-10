@@ -92,8 +92,8 @@ unsigned GSTextureReplacements::NCAAExperimentMode(const GSTextureCache::HashCac
 	if (s_ncaa_wsu_key && key == *s_ncaa_wsu_key) return s_ncaa_wsu_mode;
 	if (NCAAIsUSC(key.TEX0Hash) && key.TEX0.PSM == PSMT4 &&
 		key.TEX0.TW == key.TEX0.TH && (key.TEX0.TW == 7 || key.TEX0.TW == 8))
-		return s_ncaa_usc_mode;
-	return 0;
+		if (s_ncaa_usc_mode) return s_ncaa_usc_mode;
+	return s_ncaa_global_mode ? s_ncaa_global_mode + 3 : 0;
 }
 
 void GSTextureReplacements::Initialize()''')
@@ -115,7 +115,7 @@ void GSTextureReplacements::Initialize()''')
 					for (u32 x = 0; x < width; x++)
 					{
 						u8& alpha = bytes[static_cast<size_t>(y) * pitch + x * 4 + 3];
-						alpha = static_cast<u8>((static_cast<unsigned>(alpha) * 128 + 127) / 255);
+						alpha = static_cast<u8>((static_cast<unsigned>(alpha) * alpha_max + 127) / 255);
 					}
 				return true;
 			};
