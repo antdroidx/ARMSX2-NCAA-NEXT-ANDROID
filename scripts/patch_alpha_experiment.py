@@ -115,7 +115,7 @@ void GSTextureReplacements::Initialize()''')
 			};
 			const bool applied = scale_alpha(rtex.data, rtex.width, rtex.height, rtex.pitch);
 			for (auto& mip : rtex.mips) scale_alpha(mip.data, mip.width, mip.height, mip.pitch);
-			Console.WriteLnFmt("NEXT128107 alpha file={} applied={} range=0-128", filename, applied);
+			Console.WriteLnFmt("NEXT128107 alpha file={} applied={} range=0-160", filename, applied);
 		}
 		else Console.WriteLnFmt("NEXT128107 alpha skipped compressed file={}", filename);
 	}
