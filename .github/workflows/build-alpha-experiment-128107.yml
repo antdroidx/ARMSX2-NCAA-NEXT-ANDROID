@@ -1,4 +1,4 @@
-name: NEXT 128109 Global Alpha Experiment - verified harness
+name: NEXT 128109 Global Alpha Experiment - parser corrected
 
 on:
   workflow_dispatch:
