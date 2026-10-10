@@ -1,6 +1,6 @@
 # Native port investigation — October 10, 2026
 
-No native changes applied; no new APK produced in this investigation. Existing control remains stock Classic emucore. This report records native evidence rather than claiming a completed port.
+The analysis below preceded native implementation. A subsequent first-stage native allocation probe is described in RAM_ALLOCATION_PROBE.md: four allocation/initialization instructions changed and an APK was built. Guest EE RAM remains 32MiB; the full 128MiB port is incomplete. The earlier control still contains stock Classic emucore.
 
 ## User-supplied 2.2n target
 

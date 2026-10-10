@@ -11,3 +11,4 @@ __pycache__/
 /classic-2.2n-decoded/
 /diagnostics/*-armsx2/
 /diagnostics/*-classic/
+/diagnostics/*-ramprobe/

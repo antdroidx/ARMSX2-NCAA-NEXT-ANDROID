@@ -1,0 +1,54 @@
+{
+  "input_native_sha256": "4e378da548984dc0208ff2240aae003942ae9c5a6eec3a36c838c65ac6a37a63",
+  "output_native_sha256": "a81025fc611dfbb0f91d7c367318edd9988c64f8268a2ceebefedd6f12694929",
+  "package": "com.ncaanext.classic3668.ramprobe",
+  "changes": [
+    {
+      "address": "0x6e7470",
+      "file_offset": "0x6e7470",
+      "old_bytes": "0240a052",
+      "new_bytes": "0200a152",
+      "old_instruction": "mov w2, #0x2000000",
+      "new_instruction": "mov w2, #0x8000000",
+      "purpose": "Snapshot allocation: 32MiB -> 128MiB"
+    },
+    {
+      "address": "0x6e7498",
+      "file_offset": "0x6e7498",
+      "old_bytes": "02a2a052",
+      "new_bytes": "0222a252",
+      "old_instruction": "mov w2, #0x5100000",
+      "new_instruction": "mov w2, #0x11100000",
+      "purpose": "Table allocation capacity: 81MiB -> 273MiB"
+    },
+    {
+      "address": "0x6e81b8",
+      "file_offset": "0x6e81b8",
+      "old_bytes": "4914a052",
+      "new_bytes": "4944a052",
+      "old_instruction": "mov w9, #0xa20000",
+      "new_instruction": "mov w9, #0x2220000",
+      "purpose": "Table initialization: 81MiB -> 273MiB"
+    },
+    {
+      "address": "0x6e81ec",
+      "file_offset": "0x6e81ec",
+      "old_bytes": "0240a052",
+      "new_bytes": "0200a152",
+      "old_instruction": "mov w2, #0x2000000",
+      "new_instruction": "mov w2, #0x8000000",
+      "purpose": "Snapshot initialization: 32MiB -> 128MiB"
+    }
+  ],
+  "guest_ram_mib": 32,
+  "snapshot_capacity_mib": 128,
+  "table_capacity_mib": 273,
+  "extra_host_capacity_mib": 288,
+  "next128_supported": false,
+  "runtime_tested": false,
+  "known_limitations": [
+    "Guest RAM mapping remains 32MiB; NEXT27 extended-memory gameplay is not supported.",
+    "Signature/package assumptions may prevent launch.",
+    "Allocation overhead may cause low-memory termination; no ARM64 device test ran."
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "apk_sha256": "8458cb26034e249302f9f50e116024cf991bd85fe780a054a263d7787a8c96f6",
+  "exact_four_native_changes_verified": true,
+  "signature_verified": true,
+  "package_verified": true,
+  "runtime_tested": false,
+  "guest_ram_mib": 32,
+  "next128_supported": false,
+  "stage": "allocation-probe"
+}

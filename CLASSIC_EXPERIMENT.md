@@ -1,6 +1,6 @@
 # Classic 3668 experiment — incomplete native port
 
-This branch contains an isolated Classic **shell control**, not a completed NCAA NEXT native port. No runtime rendering result has been measured. Original ARMSX2 checkout and synced sources were left untouched.
+This branch contains an isolated Classic **shell control** and a subsequent **native allocation probe**, not a completed NCAA NEXT native port. See RAM_ALLOCATION_PROBE.md for the four native changes and the separate probe APK. Guest EE RAM remains 32MiB. No runtime rendering result has been measured. Original ARMSX2 checkout and synced sources were left untouched.
 
 ## Inputs and baseline distinction
 
