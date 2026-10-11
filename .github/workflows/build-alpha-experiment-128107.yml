@@ -1,14 +1,15 @@
-name: NEXT 128109 Global Alpha Experiment - parser corrected
+name: NEXT 128111 Alpha Integrated + Cover Launch Fix
 
 on:
   workflow_dispatch:
   push:
     branches:
-      - 'codex/default-global-alpha-128110'
+      - 'codex/alpha-integrated-cover-launch-128111'
     paths:
       - '.github/workflows/build-alpha-experiment-128107.yml'
       - 'scripts/patch_alpha_experiment.py'
       - 'scripts/verify_alpha_experiment.py'
+      - 'scripts/patch_cover_launch_128111.py'
 
 permissions:
   actions: read
@@ -16,7 +17,7 @@ permissions:
 
 jobs:
   build-android:
-    if: github.ref == 'refs/heads/codex/default-global-alpha-128110'
+    if: github.ref == 'refs/heads/codex/alpha-integrated-cover-launch-128111'
     name: Build Android APK
     runs-on: ubuntu-24.04
     timeout-minutes: 180
@@ -434,6 +435,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 ../scripts/patch_alpha_experiment.py
+          python3 ../scripts/patch_cover_launch_128111.py
           python3 ../scripts/verify_alpha_experiment.py
           cp ../EXPERIMENT_128107.md ../out-experiment-guide.txt
 
