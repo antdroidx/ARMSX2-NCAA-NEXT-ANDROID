@@ -18,6 +18,7 @@ on:
   push:
     branches:
       - 'codex/memcard-hash-upstream-audit'
+      - 'codex/stable-128112-alpha-cover'
 
 jobs:
   build-android:
@@ -422,6 +423,16 @@ jobs:
           grep -n "JD4029 compatibility" pcsx2/GS/Renderers/HW/GSTextureReplacements.cpp
           grep -n "0x00000007FFF00000ULL" pcsx2/GS/Renderers/HW/GSTextureCache.cpp
 
+      - name: Apply verified alpha correction and cover-launch compatibility
+        working-directory: src
+        run: |
+          set -euo pipefail
+          git -C .. apply --check --directory=src patches/usc-number-diagnostic.patch
+          git -C .. apply --directory=src patches/usc-number-diagnostic.patch
+          python3 ../scripts/patch_alpha_experiment.py
+          python3 ../scripts/patch_cover_launch_128111.py
+          python3 ../scripts/verify_alpha_experiment.py
+
       - name: Fetch shaderc third-party deps
         if: inputs.validate_only != true
         working-directory: src/platforms/android
@@ -461,7 +472,7 @@ jobs:
           case "$ENHANCEMENTS" in
             none) VERSION_CODE=128103; VERSION_NAME=0.2.3-next128-mc64-stopcpu; VARIANT=STOPCPU ;;
             cpu) VERSION_CODE=128104; VERSION_NAME=0.2.4-next128-mc64-cpu; VARIANT=CPU ;;
-            cpu-audio) VERSION_CODE=128105; VERSION_NAME=0.2.5-next128-mc64-cpu-audio; VARIANT=CPU-AUDIO ;;
+            cpu-audio) VERSION_CODE=128112; VERSION_NAME=0.2.12-next128-mc64-alpha-cover; VARIANT=CPU-AUDIO ;;
             *) exit 1 ;;
           esac
           printf 'commit=%s\nvariant=%s\nversionCode=%s\nversionName=%s\n' "$GITHUB_SHA" "$VARIANT" "$VERSION_CODE" "$VERSION_NAME" > "$PWD/../../../out/build-info.txt"
