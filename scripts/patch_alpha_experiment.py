@@ -24,7 +24,7 @@ namespace
 {
 	unsigned s_ncaa_wsu_mode = 0;
 	unsigned s_ncaa_usc_mode = 0;
-	unsigned s_ncaa_global_mode = 0;
+	unsigned s_ncaa_global_mode = 1;
 	std::optional<GSTextureCache::HashCacheKey> s_ncaa_wsu_key;
 
 	bool NCAAIsUSC(u64 hash)
@@ -37,7 +37,8 @@ namespace
 
 	void LoadNCAAExperiment()
 	{
-		s_ncaa_wsu_mode = s_ncaa_usc_mode = s_ncaa_global_mode = 0;
+		s_ncaa_wsu_mode = s_ncaa_usc_mode = 0;
+		s_ncaa_global_mode = 1;
 		s_ncaa_wsu_key.reset();
 		if (GSTextureReplacements::s_current_serial != "SLUS-21214")
 			return;
