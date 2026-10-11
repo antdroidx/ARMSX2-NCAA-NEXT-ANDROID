@@ -125,7 +125,7 @@ int main() {
  usc.TEX0.TH=7;
  assert(GSTextureReplacements::NCAAExperimentMode(usc)==3);
  fake_file="wsu=1\nwsu_file=b1ab915d19fe1b9a-456-00001dd4.png\n";
- LoadNCAAExperiment(); assert(!s_ncaa_wsu_key);
+ LoadNCAAExperiment(); s_ncaa_global_mode=0; assert(!s_ncaa_wsu_key);
  assert(GSTextureReplacements::NCAAExperimentMode(wsu)==0);
  assert(GSTextureReplacements::NCAAExperimentMode(usc)==0);
  fake_file="wsu=9\nusc=invalid\nwsu_file=bad.png\n";
