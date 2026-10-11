@@ -82,7 +82,7 @@ struct GSHWDrawConfig {
  const TestVertex* verts=nullptr;
  u32 nverts=0;
 };
-unsigned s_ncaa_wsu_mode=0, s_ncaa_usc_mode=0, s_ncaa_global_mode=0;
+unsigned s_ncaa_wsu_mode=0, s_ncaa_usc_mode=0, s_ncaa_global_mode=1;
 std::optional<GSTextureCache::HashCacheKey> s_ncaa_wsu_key;
 // USC
 // LOADER
@@ -102,7 +102,8 @@ int main() {
  GSTextureCache::HashCacheKey wsu; wsu.TEX0Hash=123; wsu.CLUTHash=456;
  wsu.TEX0.PSM=PSMT4; wsu.TEX0.TW=wsu.TEX0.TH=7;
  auto usc=wsu; usc.TEX0Hash=0xb1ab915d19fe1b9aULL;
- assert(GSTextureReplacements::NCAAExperimentMode(wsu)==0);
+ assert(GSTextureReplacements::NCAAExperimentMode(wsu)==4);
+ s_ncaa_global_mode=0;
  s_ncaa_wsu_key=wsu;
  for (unsigned w=0;w<=3;w++) for(unsigned u=0;u<=3;u++) {
   s_ncaa_wsu_mode=w; s_ncaa_usc_mode=u;
@@ -132,6 +133,8 @@ int main() {
  assert(s_ncaa_wsu_mode==0 && s_ncaa_usc_mode==0);
  fake_file.reset(); LoadNCAAExperiment();
  assert(s_ncaa_wsu_mode==0 && s_ncaa_usc_mode==0 && !s_ncaa_wsu_key);
+ assert(s_ncaa_global_mode==1 && GSTextureReplacements::NCAAExperimentMode(wsu)==4);
+ fake_file="global=0\n"; LoadNCAAExperiment(); assert(s_ncaa_global_mode==0);
  // ALPHA
  std::vector<u8> pixels={1,2,3,0, 4,5,6,128, 7,8,9,255, 99,99,99,99};
  assert(scale_alpha(pixels,3,1,16));
