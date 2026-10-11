@@ -178,62 +178,6 @@ void GSRendererHW::Draw()''')
 				m_conf.ps.key_hi, m_conf.ps.key_lo, control_blend.key, m_conf.blend.key);
 	}
 	GSDrawLog::EndDraw(m_conf, static_cast<u8>(m_prim_overlap));''')
-    # Import into the app's actual texture root through Android's document picker.
-    # No Settings constructor/copy changes and no live renderer reload.
-    android = "platforms/android/app/src/main/java/com/armsx2/ui/textures/"
-    edit(android + "TextureManagerScreen.kt", "    LaunchedEffect(Unit) { viewModel.refresh() }", '''    val experimentPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        uri?.let(viewModel::importExperimentControls)
-    }
-    LaunchedEffect(Unit) { viewModel.refresh() }''')
-    edit(android + "TextureManagerScreen.kt", '                    RoundAction("↻", str("games.card.refresh"), viewModel::refresh)', '''                    RoundAction("↻", str("games.card.refresh"), viewModel::refresh)
-                    RoundAction("🧪", "Import 128107 test controls", { experimentPicker.launch(arrayOf("text/plain")) })
-                    RoundAction("0", "Restore 128107 control", viewModel::resetExperimentControls)''')
-    edit(android + "TextureManagerViewModel.kt", "    private fun textureRoot(): File", r'''    fun importExperimentControls(uri: Uri) {
-        viewModelScope.launch {
-            val result = runCatching {
-                withContext(Dispatchers.IO) {
-                    val text = getApplication<Application>().contentResolver.openInputStream(uri)?.use {
-                        val bytes = ByteArray(4097)
-                        var count = 0
-                        while (count < bytes.size) {
-                            val n = it.read(bytes, count, bytes.size - count)
-                            if (n <= 0) break
-                            count += n
-                        }
-                        require(count <= 4096) { "Control file must be at most 4 KB." }
-                        String(bytes, 0, count, Charsets.UTF_8)
-                    } ?: error("Could not read control file.")
-                    val valid = Regex("(?:wsu|usc|global)=[0-3]|wsu_file=[0-9a-fA-F]{1,16}(?:-[0-9a-fA-F]{1,16})?-[0-9a-fA-F]{8}\\.png")
-                    val normalized = text.removePrefix("\uFEFF").lineSequence().map { it.trim().replace(Regex("\\s*=\\s*"), "=") }.filter { it.isNotEmpty() }.toList()
-                    val invalid = normalized.firstOrNull { !valid.matches(it) }
-                    require(invalid == null) {
-                        "Invalid control line: '$invalid'. Use global=0..3, wsu=0..3, usc=0..3, or exact wsu_file=hash-CLUT-bits.png."
-                    }
-                    textureRoot().mkdirs()
-                    File(textureRoot(), "next128107.txt").writeText(normalized.joinToString("\n", postfix = "\n"))
-                }
-            }
-            state.value = if (result.isSuccess) state.value.copy(
-                message = "128107 controls imported. Fully close and restart this app before testing.", error = null
-            ) else state.value.copy(error = result.exceptionOrNull()?.message, message = null)
-        }
-    }
-
-    fun resetExperimentControls() {
-        viewModelScope.launch {
-            val result = runCatching {
-                withContext(Dispatchers.IO) {
-                    textureRoot().mkdirs()
-                    File(textureRoot(), "next128107.txt").writeText("wsu=0\nusc=0\n")
-                }
-            }
-            state.value = if (result.isSuccess) state.value.copy(
-                message = "Original rendering control restored. Fully close and restart this app.", error = null
-            ) else state.value.copy(error = result.exceptionOrNull()?.message, message = null)
-        }
-    }
-
-    private fun textureRoot(): File''')
 
 
 if __name__ == "__main__":
