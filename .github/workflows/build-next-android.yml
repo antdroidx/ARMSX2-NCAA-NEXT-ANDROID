@@ -439,10 +439,10 @@ jobs:
         run: python3 app/src/main/cpp/3rdparty/shaderc/utils/git-sync-deps
 
       - name: Apply optional selective enhancements
-        if: inputs.enhancements == 'cpu' || inputs.enhancements == 'cpu-audio'
+        if: github.event_name == 'push' || inputs.enhancements == 'cpu' || inputs.enhancements == 'cpu-audio'
         working-directory: src
         env:
-          ENHANCEMENTS: ${{ inputs.enhancements }}
+          ENHANCEMENTS: ${{ github.event_name == 'push' && 'cpu-audio' || inputs.enhancements }}
         run: |
           set -euo pipefail
           git -C .. apply --check --directory=src patches/arm64-selective.patch
@@ -461,7 +461,7 @@ jobs:
           CCACHE_MAXSIZE: 2G
           CMAKE_C_COMPILER_LAUNCHER: ccache
           CMAKE_CXX_COMPILER_LAUNCHER: ccache
-          ENHANCEMENTS: ${{ inputs.enhancements || 'none' }}
+          ENHANCEMENTS: ${{ github.event_name == 'push' && 'cpu-audio' || inputs.enhancements || 'none' }}
         run: |
           set -euxo pipefail
           mkdir -p "$PWD/../../../out"
@@ -510,6 +510,6 @@ jobs:
         if: inputs.validate_only != true
         uses: actions/upload-artifact@v4
         with:
-          name: ARMSX2-NCAA-NEXT-ANDROID-${{ inputs.enhancements || 'none' }}-test-apk
+          name: ARMSX2-NCAA-NEXT-ANDROID-${{ github.event_name == 'push' && 'cpu-audio' || inputs.enhancements || 'none' }}-test-apk
           path: out/*
           if-no-files-found: error
