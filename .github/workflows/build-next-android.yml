@@ -19,6 +19,7 @@ on:
     branches:
       - 'codex/memcard-hash-upstream-audit'
       - main
+      - fix/alpha-atlas-scope
 
 jobs:
   build-android:
@@ -478,7 +479,7 @@ jobs:
           case "$ENHANCEMENTS" in
             none) VERSION_CODE=128103; VERSION_NAME=0.2.3-next128-mc64-stopcpu; VARIANT=STOPCPU ;;
             cpu) VERSION_CODE=128104; VERSION_NAME=0.2.4-next128-mc64-cpu; VARIANT=CPU ;;
-            cpu-audio) VERSION_CODE=128113; VERSION_NAME=0.2.13-next128-mc64-alpha-cover-release; VARIANT=CPU-AUDIO ;;
+            cpu-audio) VERSION_CODE=128114; VERSION_NAME=0.2.14-next128-mc64-alpha-scope-release; VARIANT=CPU-AUDIO ;;
             *) exit 1 ;;
           esac
           printf 'commit=%s\nvariant=%s\nversionCode=%s\nversionName=%s\n' "$GITHUB_SHA" "$VARIANT" "$VERSION_CODE" "$VERSION_NAME" > "$PWD/../../../out/build-info.txt"

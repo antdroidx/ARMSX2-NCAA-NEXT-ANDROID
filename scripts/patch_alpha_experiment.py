@@ -94,7 +94,12 @@ unsigned GSTextureReplacements::NCAAExperimentMode(const GSTextureCache::HashCac
 	if (NCAAIsUSC(key.TEX0Hash) && key.TEX0.PSM == PSMT4 &&
 		key.TEX0.TW == key.TEX0.TH && (key.TEX0.TW == 7 || key.TEX0.TW == 8))
 		if (s_ncaa_usc_mode) return s_ncaa_usc_mode;
-	return s_ncaa_global_mode ? s_ncaa_global_mode + 3 : 0;
+	// The default correction is for small 4-bit number/logo atlases only.
+	// Body, gear and referee textures must retain their original replacement alpha.
+	const bool small_paletted_atlas = key.TEX0.PSM == PSMT4 &&
+		key.TEX0.TW == key.TEX0.TH && (key.TEX0.TW == 7 || key.TEX0.TW == 8) &&
+		key.region_width == 0 && key.region_height == 0;
+	return s_ncaa_global_mode && small_paletted_atlas ? s_ncaa_global_mode + 3 : 0;
 }
 
 void GSTextureReplacements::Initialize()''')

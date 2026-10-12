@@ -103,6 +103,20 @@ int main() {
  wsu.TEX0.PSM=PSMT4; wsu.TEX0.TW=wsu.TEX0.TH=7;
  auto usc=wsu; usc.TEX0Hash=0xb1ab915d19fe1b9aULL;
  assert(GSTextureReplacements::NCAAExperimentMode(wsu)==4);
+ // Preserve opacity for body/referee/gear keys even while default correction is enabled.
+ auto body=wsu; body.TEX0.PSM=19; body.TEX0.TW=8; body.TEX0.TH=7;
+ assert(GSTextureReplacements::NCAAExperimentMode(body)==0);
+ auto rgba=wsu; rgba.TEX0.PSM=0;
+ assert(GSTextureReplacements::NCAAExperimentMode(rgba)==0);
+ auto large=wsu; large.TEX0.TW=large.TEX0.TH=9;
+ assert(GSTextureReplacements::NCAAExperimentMode(large)==0);
+ auto nonsquare=wsu; nonsquare.TEX0.TH=6;
+ assert(GSTextureReplacements::NCAAExperimentMode(nonsquare)==0);
+ auto regional=wsu; regional.region_width=64;
+ assert(GSTextureReplacements::NCAAExperimentMode(regional)==0);
+ auto logo=wsu; logo.TEX0Hash=987; logo.TEX0.TW=logo.TEX0.TH=8;
+ assert(GSTextureReplacements::NCAAExperimentMode(logo)==4);
+
  s_ncaa_global_mode=0;
  s_ncaa_wsu_key=wsu;
  for (unsigned w=0;w<=3;w++) for(unsigned u=0;u<=3;u++) {
