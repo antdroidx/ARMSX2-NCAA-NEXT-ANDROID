@@ -23,9 +23,12 @@ with zipfile.ZipFile(apk) as z, tempfile.TemporaryDirectory(dir=Path.cwd()) as t
         data = z.read(name)
         file = Path(tmp) / name
         file.write_bytes(data)
-        disassembly = subprocess.run([str(tools / 'dexdump'), '-d', str(file)], check=True, capture_output=True, text=True).stdout
+        # dexdump prints modified UTF-8 string literals (including surrogate code
+        # units). Instruction offsets/opcodes are ASCII; tolerate those literals.
+        disassembly = subprocess.run([str(tools / 'dexdump'), '-d', str(file)], check=True, capture_output=True).stdout.decode('utf-8', errors='replace')
         reports[name] = audit(data, disassembly)
 assert reports
-assert sum(r['settings_constructors'] for r in reports.values()) == 1
+# R8 renames Settings in release DEX. Its declarations are audited before R8 by
+# audit_settings_bytecode.py; every post-R8 invocation is checked above by width.
 (apk.parent / 'extended-apk-verification.json').write_text(json.dumps(reports, indent=2))
 print('Extended app label, RC3 version, production status and all DEX invokes verified')
