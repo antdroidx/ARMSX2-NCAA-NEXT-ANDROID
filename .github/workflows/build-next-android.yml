@@ -512,4 +512,5 @@ jobs:
         with:
           name: ARMSX2-NCAA-NEXT-ANDROID-${{ github.event_name == 'push' && 'cpu-audio' || inputs.enhancements || 'none' }}-production-apk
           path: out/*
+          retention-days: 3
           if-no-files-found: error
