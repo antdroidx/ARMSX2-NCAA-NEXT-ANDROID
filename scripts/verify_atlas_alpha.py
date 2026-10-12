@@ -21,11 +21,13 @@ harness=r'''
 using u8=uint8_t; using u32=uint32_t; using u64=uint64_t;
 constexpr u32 PSMT4=20;
 struct TextureName { u32 TEX0_PSM=20,TEX0_TW=7,TEX0_TH=7; bool regional=false; bool HasRegion() const { return regional; } };
-namespace GSTextureReplacements { std::string s_current_serial="SLUS-21214"; }
+namespace GSTextureReplacements { std::string s_current_serial="SLUS-21214"; bool legacy=true; bool UsesLegacyTextureHashing() { return legacy; } }
 // SELECTOR
 int main() {
  TextureName atlas;
  assert(ShouldNormalizeNCAAAlpha(atlas));
+ GSTextureReplacements::legacy=false; assert(!ShouldNormalizeNCAAAlpha(atlas));
+ GSTextureReplacements::legacy=true;
  atlas.TEX0_TW=atlas.TEX0_TH=8; assert(ShouldNormalizeNCAAAlpha(atlas));
  for (u32 psm: {0u,1u,19u,27u}) { auto body=atlas; body.TEX0_PSM=psm; assert(!ShouldNormalizeNCAAAlpha(body)); }
  for (u32 size: {5u,6u,9u,10u}) { auto other=atlas; other.TEX0_TW=other.TEX0_TH=size; assert(!ShouldNormalizeNCAAAlpha(other)); }

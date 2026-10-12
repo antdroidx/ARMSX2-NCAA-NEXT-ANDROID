@@ -1,7 +1,6 @@
-# Proposed per-game texture replacement modes
+# Per-game texture replacement modes
 
-This describes the next feature. The runtime selector is not implemented by the
-branding change.
+Implemented in the RC3 test candidate. Device validation is still required.
 
 Add **Texture replacement method** beside the texture-pack switch in Graphics:
 
@@ -9,40 +8,43 @@ Add **Texture replacement method** beside the texture-pack switch in Graphics:
 - **Legacy JD4029:** Override for packs made with the older dumper.
 - **Current ARMSX2:** Override for packs made with the current dumper.
 
-Use existing global and per-game settings scopes. Missing values in existing
+Uses existing global and per-game settings scopes. Missing values in existing
 configurations mean Auto. Changing the method requires restarting the game.
 Selecting a method does not automatically enable texture replacements.
 
 ## Native implementation
 
-Replace the workflow's unconditional JD4029 patch with a patch retaining both
+The workflow's unconditional JD4029 patch is replaced with a patch retaining both
 the pinned upstream and proven legacy algorithms. Resolve Auto using the loaded
-game's serial, then pass the effective mode to the GS thread. Do not infer pack
-age from alpha values or try both hashes for every draw.
+game's serial on the GS thread. Pack age is not inferred from alpha values and
+only the selected hash method runs for each draw.
 
 Switch all compatibility behavior together: texture regions, full-texture and
 mip hashing, TEX0 key masking, TCC filename parsing, and filename/cache-key
 conversion. Current mode ignores the historical TCC bit as upstream does; Legacy
 preserves it. Dumps and replacement lookups must use the same mode.
 
-Use the native restart-option mechanism. On a game or effective-mode change,
-reload the replacement map and discard pending worker jobs, replacement textures,
-hash-cache entries and dumped-texture tracking. Never reuse keys across modes.
+The native restart-option mechanism defers live method changes to the next boot.
+Renderer initialization recreates the map and caches. A serial change waits for
+worker jobs to finish, clears GS sources and hash entries, and reloads replacement
+textures and dumped-texture tracking. Keys are not reused across modes.
 
 Keep NCAA number/logo alpha correction separate and scoped to NCAA legacy mode.
 Switching hashes does not itself fix blending. Preserve other games' alpha values.
 
 ## Settings and validation
 
-Wire the field through Android JSON persistence, global/per-game merge and diff,
-native settings export, reset, and native equality/restart checks. Adding a field
-also requires updating the verifier patch's 246-field guard and repeating DEX
-validation.
+The field is wired through Android JSON persistence, global/per-game merge and
+diff, native export, reset, and equality/restart checks. The verifier patch now
+supports the additional field, and the production build audits compiled Settings
+and APK DEX invocation widths.
 
-Compare fixed texture-key fixtures against both original implementations:
-paletted/non-paletted textures, TCC on/off, regions and mipmaps. Check Auto for
-NCAA and another serial, explicit overrides, persistence and switching games in
-both directions. Device acceptance needs NCAA NEXT and a current-format pack.
+Verification compares generated region/hash/key algorithm bodies with digest
+fixtures from both original implementations, and compiles the actual resolver
+to check Auto and explicit overrides. It also checks TCC handling, cache reset,
+and persistence paths. The alpha harness checks that Current disables the NCAA
+correction. Device acceptance needs NCAA NEXT and a current-format pack, including
+switching games and explicit overrides in both directions.
 
 ## NCAA defaults
 

@@ -1,0 +1,14 @@
+{
+  "GSTextureCache::SourceRegion GSTextureCache::SourceRegion::Create(GIFRegTEX0 TEX0, GIFRegCLAMP CLAMP)": {
+    "current": "fd7f575d734cdba0243cb6588c893efcb3d981b41d47579780de8a605a07f61d",
+    "legacy": "7ff7cda0bbc7163f3c62f4278a2dd5a88dea48ba1a88734eec38268e89ab6b90"
+  },
+  "static void HashTextureLevel(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, GSTextureCache::SourceRegion region, BlockHashState& hash_st, u8* temp)": {
+    "current": "5de1c52e12599aeeedfd16b1d1fe50a1e08e6e72141e8411532b8db61e1e991a",
+    "legacy": "24efda7d888b6d9ee76a5c3e1cd8094ba56976ce758e62613d5ef5638aed5f14"
+  },
+  "GSTextureCache::HashCacheKey GSTextureCache::HashCacheKey::Create(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const u32* clut, const GSVector2i* lod, SourceRegion region)": {
+    "current": "f108225eea1fd8aa035ad8bafd0ea7625e0b051d735025d993755b6f6a23756d",
+    "legacy": "13166410d31249c561c0029d303a3cb3710caa391f978dd16b2f876dbbe4cee9"
+  }
+}
