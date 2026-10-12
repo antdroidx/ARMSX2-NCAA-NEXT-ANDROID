@@ -64,6 +64,10 @@ jobs:
           unzip -q armsx2.zip
           mv ARMSX2-3D-f4904cb5e3b322178e3815683e221f3ab9354d2e src
 
+      - name: Apply ARMSX2 Extended branding
+        working-directory: src
+        run: python3 ../scripts/patch_extended_branding.py
+
       - name: Restore known-good frontend fixes
         working-directory: src
         run: |
@@ -470,17 +474,18 @@ jobs:
           BUILD_START=$(date +%s)
 
           # Android update ordering is independent of the public release label.
-          VERSION_CODE=128115
+          VERSION_CODE=128116
           case "$ENHANCEMENTS" in
-            none) VERSION_NAME=0.2.5-RC2-stopcpu; VARIANT=STOPCPU ;;
-            cpu) VERSION_NAME=0.2.5-RC2-cpu; VARIANT=CPU ;;
-            cpu-audio) VERSION_NAME=0.2.5-RC2; VARIANT=CPU-AUDIO ;;
+            none) VERSION_NAME=0.2.5-RC3-stopcpu; VARIANT=STOPCPU ;;
+            cpu) VERSION_NAME=0.2.5-RC3-cpu; VARIANT=CPU ;;
+            cpu-audio) VERSION_NAME=0.2.5-RC3; VARIANT=CPU-AUDIO ;;
             *) exit 1 ;;
           esac
           printf 'commit=%s\nvariant=%s\nversionCode=%s\nversionName=%s\n' "$GITHUB_SHA" "$VARIANT" "$VERSION_CODE" "$VERSION_NAME" > "$PWD/../../../out/build-info.txt"
 
           ./gradlew :app:assembleGithubRelease \
             -Parmsx2.applicationId=com.armsx2.ncaanext \
+            '-Parmsx2.appLabel=ARMSX2 Extended' \
             -Parmsx2.versionCode="$VERSION_CODE" \
             -Parmsx2.versionName="$VERSION_NAME" \
             -Parmsx2.hostPageSize=0x1000 \

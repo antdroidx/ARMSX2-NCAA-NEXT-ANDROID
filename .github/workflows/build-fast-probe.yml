@@ -72,6 +72,10 @@ jobs:
           unzip -q armsx2.zip
           mv ARMSX2-3D-f4904cb5e3b322178e3815683e221f3ab9354d2e src
 
+      - name: Apply ARMSX2 Extended branding
+        working-directory: src
+        run: python3 ../scripts/patch_extended_branding.py
+
       - name: Restore Gradle cache
         uses: actions/cache@v4
         with:
