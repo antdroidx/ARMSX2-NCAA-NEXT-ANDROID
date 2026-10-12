@@ -15,10 +15,6 @@ on:
         description: 'Run source/host checks without compiling an APK'
         type: boolean
         default: false
-  push:
-    branches:
-      - 'codex/memcard-hash-upstream-audit'
-      - main
 
 jobs:
   build-android:
@@ -433,11 +429,9 @@ jobs:
         working-directory: src
         run: |
           set -euo pipefail
-          git -C .. apply --check --directory=src patches/usc-number-diagnostic.patch
-          git -C .. apply --directory=src patches/usc-number-diagnostic.patch
-          python3 ../scripts/patch_alpha_experiment.py
+          python3 ../scripts/patch_atlas_alpha.py
           python3 ../scripts/patch_cover_launch_128111.py
-          python3 ../scripts/verify_alpha_experiment.py
+          python3 ../scripts/verify_atlas_alpha.py
 
       - name: Fetch shaderc third-party deps
         if: inputs.validate_only != true
@@ -475,10 +469,12 @@ jobs:
           ccache --zero-stats
           BUILD_START=$(date +%s)
 
+          # Android update ordering is independent of the public release label.
+          VERSION_CODE=128115
           case "$ENHANCEMENTS" in
-            none) VERSION_CODE=128103; VERSION_NAME=0.2.3-next128-mc64-stopcpu; VARIANT=STOPCPU ;;
-            cpu) VERSION_CODE=128104; VERSION_NAME=0.2.4-next128-mc64-cpu; VARIANT=CPU ;;
-            cpu-audio) VERSION_CODE=128113; VERSION_NAME=0.2.13-next128-mc64-alpha-cover-release; VARIANT=CPU-AUDIO ;;
+            none) VERSION_NAME=0.2.5-RC2-stopcpu; VARIANT=STOPCPU ;;
+            cpu) VERSION_NAME=0.2.5-RC2-cpu; VARIANT=CPU ;;
+            cpu-audio) VERSION_NAME=0.2.5-RC2; VARIANT=CPU-AUDIO ;;
             *) exit 1 ;;
           esac
           printf 'commit=%s\nvariant=%s\nversionCode=%s\nversionName=%s\n' "$GITHUB_SHA" "$VARIANT" "$VERSION_CODE" "$VERSION_NAME" > "$PWD/../../../out/build-info.txt"
@@ -518,4 +514,5 @@ jobs:
         with:
           name: ARMSX2-NCAA-NEXT-ANDROID-${{ github.event_name == 'push' && 'cpu-audio' || inputs.enhancements || 'none' }}-production-apk
           path: out/*
+          retention-days: 3
           if-no-files-found: error
