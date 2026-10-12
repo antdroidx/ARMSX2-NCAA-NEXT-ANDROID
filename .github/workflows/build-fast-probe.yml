@@ -1,21 +1,6 @@
 name: Fast ARMSX2 Runtime Probe
 
 on:
-  push:
-    branches:
-      - main
-      - codex/game-exit-no-intro
-    paths:
-      - '.github/workflows/build-fast-probe.yml'
-      - 'scripts/patch_crash_debugger.py'
-      - 'scripts/patch_step_resolution_verify.py'
-      - 'scripts/patch_settings_copy_verify_fix.py'
-      - 'scripts/patch_achievements_settings_verify.py'
-      - 'scripts/patch_configstore_settings_verify.py'
-      - 'scripts/**'
-      - 'tests/**'
-      - 'frontend/**'
-      - 'baseline/**'
   workflow_dispatch:
 
 permissions:
