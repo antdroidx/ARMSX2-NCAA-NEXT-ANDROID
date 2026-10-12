@@ -469,10 +469,12 @@ jobs:
           ccache --zero-stats
           BUILD_START=$(date +%s)
 
+          # Android update ordering is independent of the public release label.
+          VERSION_CODE=128115
           case "$ENHANCEMENTS" in
-            none) VERSION_CODE=128103; VERSION_NAME=0.2.3-next128-mc64-stopcpu; VARIANT=STOPCPU ;;
-            cpu) VERSION_CODE=128104; VERSION_NAME=0.2.4-next128-mc64-cpu; VARIANT=CPU ;;
-            cpu-audio) VERSION_CODE=128114; VERSION_NAME=0.2.14-next128-mc64-alpha-scope-release; VARIANT=CPU-AUDIO ;;
+            none) VERSION_NAME=0.2.5-RC2-stopcpu; VARIANT=STOPCPU ;;
+            cpu) VERSION_NAME=0.2.5-RC2-cpu; VARIANT=CPU ;;
+            cpu-audio) VERSION_NAME=0.2.5-RC2; VARIANT=CPU-AUDIO ;;
             *) exit 1 ;;
           esac
           printf 'commit=%s\nvariant=%s\nversionCode=%s\nversionName=%s\n' "$GITHUB_SHA" "$VARIANT" "$VERSION_CODE" "$VERSION_NAME" > "$PWD/../../../out/build-info.txt"
