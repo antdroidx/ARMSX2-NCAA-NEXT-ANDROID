@@ -21,7 +21,7 @@ if count != 8:
 p.write_text(''.join(lines))
 p = Path('platforms/android/app/src/main/java/com/armsx2/ui/settings/RendererTab.kt')
 s = p.read_text()
-anchor = '            // Texture packs, right under the resolution they are usually paired with.'
+anchor = '            TextureManagerRow()'
 block = '''            SegmentedGridRow(
                 label = "Texture replacement method",
                 options = listOf("Auto", "Legacy", "Current ARMSX2"),
