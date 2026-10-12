@@ -5,7 +5,7 @@ Implemented in the RC3 test candidate. Device validation is still required.
 Add **Texture replacement method** beside the texture-pack switch in Graphics:
 
 - **Auto (recommended):** Legacy JD4029 for `SLUS-21214`; Current ARMSX2 otherwise.
-- **Legacy JD4029:** Override for packs made with the older dumper.
+- **Legacy:** Override for packs made with the older JD4029 dumper.
 - **Current ARMSX2:** Override for packs made with the current dumper.
 
 Uses existing global and per-game settings scopes. Missing values in existing
