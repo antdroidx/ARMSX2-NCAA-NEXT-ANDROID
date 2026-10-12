@@ -62,7 +62,7 @@ def audit(data, disassembly):
                 raise ValueError(f"Unsafe Settings method retained: {name}({proto})")
             if name == "<init>":
                 settings_constructor += 1
-                if argument_words(proto) != 246:
+                if argument_words(proto) not in (246, 247):
                     raise ValueError("Unexpected Settings constructor word count")
 
     count = 0

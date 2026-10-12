@@ -7,7 +7,8 @@ s = p.read_text()
 anchor = 'void GSTextureReplacements::Initialize()'
 helper = r'''static bool ShouldNormalizeNCAAAlpha(const TextureName& name)
 {
-    return GSTextureReplacements::s_current_serial == "SLUS-21214" &&
+    return GSTextureReplacements::UsesLegacyTextureHashing() &&
+        GSTextureReplacements::s_current_serial == "SLUS-21214" &&
         name.TEX0_PSM == PSMT4 && name.TEX0_TW == name.TEX0_TH &&
         (name.TEX0_TW == 7 || name.TEX0_TW == 8) && !name.HasRegion();
 }

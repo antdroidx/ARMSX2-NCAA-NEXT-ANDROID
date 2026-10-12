@@ -173,8 +173,9 @@ for line in ctor_text.splitlines():
     m = re.match(r"^\s*val\s+(\w+)\s*:\s*.+?=\s*(.+?),\s*(?://.*)?$", line)
     if m:
         defaults[m.group(1)] = m.group(2).strip()
-if len(defaults) != 246:
-    raise RuntimeError(f"Expected 246 Settings defaults, found {len(defaults)}")
+expected_fields = 247 if 'textureReplacementMethod' in defaults else 246
+if len(defaults) != expected_fields:
+    raise RuntimeError(f"Expected {expected_fields} Settings defaults, found {len(defaults)}")
 
 # fromJson() already passes all 246 primary-constructor args explicitly (safe:
 # 247 registers including receiver). Replace def.foo fallbacks with literal defaults
@@ -263,7 +264,7 @@ tojson_marker = "    fun toJson(): JSONObject = JSONObject().apply {"
 if "fun withJson(" not in s:
     pos = s.index(tojson_marker)
     helper = '''    /** Android/Dex-safe Settings update path. Avoids the generated copy$default
-     *  helper whose invocation requires 256 registers with this 246-field data class. */
+     *  helper whose invocation exceeds DEX's 255-register limit. */
     fun withJson(update: JSONObject.() -> Unit): Settings =
         Settings.fromJson(toJson().apply(update))
 
@@ -307,14 +308,14 @@ ctor_start = s.index("data class Settings(")
 ctor_end = s.index("\n) {", ctor_start)
 ctor = s[ctor_start:ctor_end]
 fields = re.findall(r"(?m)^\s*val\s+(\w+)\s*:\s*(.+?)\s*=", ctor)
-if len(fields) != 246 or any(t not in {
+if len(fields) != expected_fields or any(t not in {
     "Boolean", "Float", "Int", "String", "List<Dev9HostMapping>",
     "Map<String, Map<String, Float>>",
 } for _, t in fields):
     raise RuntimeError("Settings constructor shape changed; review JVM/DEX word counts")
 ctor, removed = re.subn(r"(?m)^(\s*val\s+\w+\s*:\s*.+?)\s*=\s*.+?,\s*(?://[^\n]*)?$", r"\1,", ctor)
-if removed != 246:
-    raise RuntimeError(f"Expected to remove 246 defaults, removed {removed}")
+if removed != expected_fields:
+    raise RuntimeError(f"Expected to remove {expected_fields} defaults, removed {removed}")
 ctor = ctor.replace("data class Settings(", "class Settings(", 1)
 s = s[:ctor_start] + ctor + s[ctor_end:]
 
