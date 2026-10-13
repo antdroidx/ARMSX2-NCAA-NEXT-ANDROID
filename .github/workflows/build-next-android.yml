@@ -50,6 +50,7 @@ jobs:
         run: sudo apt-get update -qq && sudo apt-get install -y ccache
 
       - name: Restore native compiler cache
+        if: inputs.validate_only != true
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/.ccache
@@ -251,6 +252,14 @@ jobs:
           python3 ../scripts/patch_atlas_alpha.py
           python3 ../scripts/patch_cover_launch_128111.py
           python3 ../scripts/verify_atlas_alpha.py
+
+      - name: Cache replacement texture filenames
+        working-directory: src
+        run: |
+          python3 ../scripts/patch_texture_index_cache.py
+          "$ANDROID_HOME/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang++" \
+            -std=c++20 -fno-exceptions -Wall -Wextra -Werror \
+            -I pcsx2/GS/Renderers/HW -c ../tests/texture_index_harness.cpp -o /tmp/texture-index-android.o
 
       - name: Fetch shaderc third-party deps
         if: inputs.validate_only != true

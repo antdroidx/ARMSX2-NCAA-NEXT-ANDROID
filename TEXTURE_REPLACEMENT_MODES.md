@@ -51,3 +51,22 @@ switching games and explicit overrides in both directions.
 Use the game database for supported NCAA defaults. Review frontend/database
 interaction for each setting: not every Android UI option necessarily maps to
 YAML. Preserve user overrides. Branding work does not change game defaults.
+
+## Persistent filename index
+
+Replacement filenames are cached in the app's cache folder, separately for each
+replacement root. The first boot scans the pack. Subsequent boots validate directory
+timestamps and identity, then reuse the filename list. Adding, removing, or renaming
+files or directories invalidates the index. Corrupt indexes are rebuilt. Image
+contents are still decoded by the existing loader; alpha handling is unchanged.
+Raw filenames are parsed again for the selected Legacy/Current method on each boot.
+
+Graphics → Texture Packs → **Refresh texture index** clears these indexes across
+games. Restart the game afterwards. This is also useful if a pack-sync tool preserves
+directory timestamps. It does not remove textures, shader caches, or game settings.
+Virtual storage paths and trees containing symlinks fall back to the original walk.
+If the cache folder cannot be written, replacements still load through a fresh scan.
+
+Host tests exercise the production header in C++17 and C++20 with exceptions disabled.
+The workflow also compiles it for Android ARM64. Device boot-time measurements and
+the full APK build remain necessary before release; no speedup is claimed yet.
