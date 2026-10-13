@@ -24,6 +24,20 @@ struct Directory
     std::vector<std::uint64_t> stamp;
 };
 
+inline fs::path Utf8Path(const std::string& name)
+{
+#if defined(__cpp_char8_t)
+    return fs::path(std::u8string(reinterpret_cast<const char8_t*>(name.data()), name.size()));
+#else
+    return fs::u8path(name);
+#endif
+}
+inline std::string Utf8Name(const fs::path& path)
+{
+    const auto bytes = path.generic_u8string();
+    return std::string(reinterpret_cast<const char*>(bytes.data()), bytes.size());
+}
+
 inline std::uint64_t Hash(const std::string& bytes)
 {
     std::uint64_t value = 14695981039346656037ULL;
@@ -82,7 +96,7 @@ inline bool Unchanged(const fs::path& root, const std::vector<Directory>& dirs)
     for (const auto& dir : dirs)
     {
         std::vector<std::uint64_t> current;
-        if (!Stamp(root / fs::u8path(dir.relative), &current) || current != dir.stamp)
+        if (!Stamp(root / Utf8Path(dir.relative), &current) || current != dir.stamp)
             return false;
     }
     return true;
@@ -161,7 +175,7 @@ inline bool Load(const fs::path& cache, const std::string& root_name,
         }
         dirs.push_back(std::move(dir));
     }
-    if (!Unchanged(fs::u8path(root_name), dirs) || !reader.Number(&count) ||
+    if (!Unchanged(Utf8Path(root_name), dirs) || !reader.Number(&count) ||
         count > MAX_ENTRIES || count > bytes.size() / 8)
         return false;
     std::vector<std::string> names;
@@ -190,10 +204,16 @@ inline void Save(const fs::path& cache, const std::string& root,
         String(bytes, dir.relative);
         for (auto value : dir.stamp)
             Number(bytes, value);
+        if (bytes.size() > MAX_BYTES - 8)
+            return;
     }
     Number(bytes, files.size());
     for (const auto& name : files)
+    {
         String(bytes, name);
+        if (bytes.size() > MAX_BYTES - 8)
+            return;
+    }
     if (bytes.size() > MAX_BYTES - 8)
         return;
     Number(bytes, Hash(bytes));
@@ -230,7 +250,7 @@ inline bool Scan(const fs::path& root, const std::string& relative,
     if (depth > 128 || dirs->size() + files->size() >= MAX_ENTRIES)
         return false;
     Directory dir{relative, {}};
-    const fs::path path = root / fs::u8path(relative);
+    const fs::path path = root / Utf8Path(relative);
     if (!Stamp(path, &dir.stamp))
         return false;
     dirs->push_back(std::move(dir));
@@ -245,7 +265,7 @@ inline bool Scan(const fs::path& root, const std::string& relative,
         const auto status = it->symlink_status(ec);
         if (ec || fs::is_symlink(status))
             return false;
-        const std::string name = it->path().lexically_relative(root).generic_string();
+        const std::string name = Utf8Name(it->path().lexically_relative(root));
         if (!SafeRelative(name) || name.size() > 4096)
             return false;
         if (fs::is_directory(status))
@@ -265,8 +285,8 @@ inline bool GetFiles(const std::string& root_name, const std::string& cache_name
     std::vector<std::string>* output, bool* cache_hit)
 {
     *cache_hit = false;
-    const fs::path root = fs::u8path(root_name);
-    const fs::path cache = fs::u8path(cache_name);
+    const fs::path root = Utf8Path(root_name);
+    const fs::path cache = Utf8Path(cache_name);
     std::vector<std::string> files;
     if (Load(cache, root_name, &files))
         *cache_hit = true;
@@ -283,7 +303,7 @@ inline bool GetFiles(const std::string& root_name, const std::string& cache_name
     std::vector<std::string> full;
     full.reserve(files.size());
     for (const auto& name : files)
-        full.push_back((root / fs::u8path(name)).string());
+        full.push_back(Utf8Name(root / Utf8Path(name)));
     *output = std::move(full);
     return true;
 }

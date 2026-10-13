@@ -48,10 +48,14 @@ private fun RefreshTextureIndexRow() {
                 busy.value = true
                 scope.launch {
                     val failed = withContext(Dispatchers.IO) {
+                        runCatching {
                         val cache = File(MainActivityRuntime.assetCopyRoot(context), "cache")
-                        cache.listFiles()?.filter {
+                        val indexes = cache.listFiles()
+                        if (indexes == null && cache.exists()) return@runCatching 1
+                        indexes?.filter {
                             it.isFile && it.name.matches(Regex("texture-index-v1-[0-9a-f]{16}\\\\.idx"))
                         }?.count { !it.delete() } ?: 0
+                        }.getOrDefault(1)
                     }
                     busy.value = false
                     Toast.makeText(context,
