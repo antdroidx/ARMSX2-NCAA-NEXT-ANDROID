@@ -1,4 +1,4 @@
-"""Organize renderer controls and seed threaded Android defaults."""
+"""Organize renderer controls and seed Android threading defaults."""
 from pathlib import Path
 
 ROOT = Path('platforms/android/app/src/main/java/com/armsx2')
@@ -40,9 +40,9 @@ p = ROOT / 'config/Settings.kt'
 s = p.read_text(encoding='utf-8')
 old = 'val gsBackThreadMode: Int = if (com.armsx2.BuildConfig.QUEST_VR) 3 else 0'
 assert s.count(old) == 1
-s = s.replace(old, 'val gsBackThreadMode: Int = 3')
+s = s.replace(old, 'val gsBackThreadMode: Int = 0')
 assert s.count('            mtvu = mtvu,') == 1
-s = s.replace('            mtvu = mtvu,', '            mtvu = mtvu,\n            gsBackThreadMode = 3,')
+s = s.replace('            mtvu = mtvu,', '            mtvu = mtvu,\n            gsBackThreadMode = 0,')
 p.write_text(s, encoding='utf-8')
 
 p = ROOT / 'DeviceTier.kt'
@@ -55,7 +55,7 @@ p.write_text(s, encoding='utf-8')
 p = ROOT / 'ui/settings/PerformanceTab.kt'
 s = p.read_text(encoding='utf-8')
 assert s.count('mtvu = true,') == 3
-s = s.replace('mtvu = true,', 'mtvu = true, gsBackThreadMode = 3,')
-s = s.replace('Low-End = every cheap GPU/CPU lever, MTVU gated on core count.', 'Low-End = cheaper GPU/CPU settings with threading enabled.')
+s = s.replace('mtvu = true,', 'mtvu = true, gsBackThreadMode = 0,')
+s = s.replace('Low-End = every cheap GPU/CPU lever, MTVU gated on core count.', 'Low-End = cheaper GPU/CPU settings with MTVU enabled.')
 p.write_text(s, encoding='utf-8')
-print('Grouped renderer controls; GS and VU1 threading enabled in defaults and presets')
+print('Grouped renderer controls; GS threading off; VU1 threading enabled in defaults and presets')
