@@ -47,3 +47,16 @@ set GS Multi-Threading to Off explicitly if the old installation has it enabled.
    index and restart if a synchronization tool preserved directory timestamps.
 
 Do not merge/release until the candidate APK has passed device testing.
+
+## Built candidate
+
+Signed APK build passed on 2026-10-13, source commit
+`534fd7ef2b892cd5b7222a2fb054ce8c5ae18246`, workflow run
+[38438822555](https://github.com/antdroidx/ARMSX2-NCAA-NEXT-ANDROID/actions/runs/38438822555).
+Native/release build step: 1,410 seconds. Version `0.2.5-RC4-test1`, code `128118`.
+All 204,077 post-R8 DEX invokes passed auditing; Settings bytecode, production
+status, Extended app label, and signing certificate checks passed.
+
+APK SHA256: `f111710e206ba2e10f6bd842fbd4e7ca7a2c687eec020f9a865ba526bc9b5ad7`.
+The downloaded APK checksum matches the runner's report. Device validation is
+pending; the PR remains a draft and no release was published.
