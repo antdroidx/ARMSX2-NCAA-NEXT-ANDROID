@@ -261,6 +261,12 @@ jobs:
             -std=c++20 -fno-exceptions -Wall -Wextra -Werror \
             -I pcsx2/GS/Renderers/HW -c ../tests/texture_index_harness.cpp -o /tmp/texture-index-android.o
 
+      - name: Apply and verify conservative GS optimizations
+        working-directory: src
+        run: |
+          python3 ../scripts/patch_conservative_gs.py
+          python3 ../scripts/verify_conservative_gs.py
+
       - name: Fetch shaderc third-party deps
         if: inputs.validate_only != true
         working-directory: src/platforms/android
@@ -298,11 +304,11 @@ jobs:
           BUILD_START=$(date +%s)
 
           # Android update ordering is independent of the public release label.
-          VERSION_CODE=128117
+          VERSION_CODE=128118
           case "$ENHANCEMENTS" in
-            none) VERSION_NAME=0.2.5-RC3-test2-stopcpu; VARIANT=STOPCPU ;;
-            cpu) VERSION_NAME=0.2.5-RC3-test2-cpu; VARIANT=CPU ;;
-            cpu-audio) VERSION_NAME=0.2.5-RC3-test2; VARIANT=CPU-AUDIO ;;
+            none) VERSION_NAME=0.2.5-RC4-test1-stopcpu; VARIANT=STOPCPU ;;
+            cpu) VERSION_NAME=0.2.5-RC4-test1-cpu; VARIANT=CPU ;;
+            cpu-audio) VERSION_NAME=0.2.5-RC4-test1; VARIANT=CPU-AUDIO ;;
             *) exit 1 ;;
           esac
           printf 'commit=%s\nvariant=%s\nversionCode=%s\nversionName=%s\n' "$GITHUB_SHA" "$VARIANT" "$VERSION_CODE" "$VERSION_NAME" > "$PWD/../../../out/build-info.txt"

@@ -1,16 +1,11 @@
 # Release numbering
 
-The last published release is `0.2.5-RC2`. The next production candidate is
-`0.2.5-RC3`, followed by another RC if needed, or `0.2.5`
-when the release is accepted. Feature descriptions belong in release notes.
+The last published release is `0.2.5-RC3`. The next test candidate is
+`0.2.5-RC4-test1`, with Android versionCode `128118` (previous test/release: `128117`).
+It uses the existing production certificate and package, so it can update an
+existing RC2/RC3 installation while keeping settings and saves.
 
-Android's internal `versionCode` is separate from this public label. The next
-build uses `128116`, higher than the previously distributed `128115` RC2
-build, so Android can install it as an update using the same signing
-certificate. Increase this internal number for each new distributed build.
-
-The `none` and `cpu` diagnostic variants append `-stopcpu` and `-cpu` to the
-public label. The default `cpu-audio` production variant uses `0.2.5-RC3`.
-
-Previously built APKs retain their embedded labels (`0.2.13` and `0.2.14`
-with descriptive suffixes). Changing the source does not rename those APKs.
+The next public release can be `0.2.5-RC4`, or `0.2.5` when accepted.
+Increase the internal versionCode for each newly distributed build.
+Diagnostic variants append `-stopcpu` or `-cpu`; the default cpu-audio candidate
+uses `0.2.5-RC4-test1`. Existing APKs retain their embedded version labels.
