@@ -48,3 +48,16 @@ for at least 10 seconds, and export the emulator log. Compare matched scenes
 and settings with RC4-test1; preserve texture barriers on Auto. Rising evictions
 and decoded counts point to turnover worth investigating, rather than proving
 that a larger cache is safe or beneficial.
+
+## Built candidate
+
+Signed release APK `0.2.5-RC4-test2` / `128119` passed the production signer,
+version/label, Settings bytecode, and all post-R8 DEX invocation checks.
+Build source: `6432322ccd924a2b0e16124f19c3e9fa5bc3500c`. Build step: 800 seconds.
+
+[Successful build](https://github.com/antdroidx/ARMSX2-NCAA-NEXT-ANDROID/actions/runs/38520749326).
+[Temporary APK artifact](https://github.com/antdroidx/ARMSX2-NCAA-NEXT-ANDROID/actions/runs/38520749326/artifacts/11873598731).
+APK SHA256: `97949102370a01758680303813c3df8ce3ef56f89c04499b1e0ce2e0b1158ddb`; verified after download.
+
+Device timing and test2 gameplay validation remain pending. No release was
+published and the PR remains a draft.
