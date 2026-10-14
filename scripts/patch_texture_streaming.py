@@ -12,9 +12,12 @@ STATS = '''
 		u32 frames = 0;
 	};
 	static TextureRuntimeStats s_texture_runtime_stats;
+	static bool s_texture_runtime_stats_enabled = false;
 '''
 REPORT = '''
-	if (GSConfig.OsdShowTextureReplacements && ++s_texture_runtime_stats.frames >= 600)
+	// Read GSConfig only on the GS thread; worker counters use this locked flag.
+	s_texture_runtime_stats_enabled = GSConfig.OsdShowTextureReplacements;
+	if (s_texture_runtime_stats_enabled && ++s_texture_runtime_stats.frames >= 600)
 	{
 		s_texture_runtime_stats.frames = 0;
 		Console.WriteLnFmt("Texture streaming stats: decoded-cache hits={} misses={} decoded={} evicted={} "
@@ -57,24 +60,24 @@ def patch(source):
     source = replace_once(source, old, new)
 
     old = function(source, 'void GSTextureReplacements::ResetReplacementCacheLocked()')
-    source = replace_once(source, old, old.replace('{', '{\n\ts_texture_runtime_stats = {};', 1))
+    source = replace_once(source, old, old.replace('{', '{\n\ts_texture_runtime_stats = {};\n\ts_texture_runtime_stats_enabled = false;', 1))
 
     old = function(source, 'GSTexture* GSTextureReplacements::LookupReplacementTexture(')
     new = replace_once(old, '\t\t\tTouchReplacementCacheLocked(name);',
-        '\t\t\tif (GSConfig.OsdShowTextureReplacements)\n\t\t\t\t++s_texture_runtime_stats.hits;\n\t\t\tTouchReplacementCacheLocked(name);')
+        '\t\t\tif (s_texture_runtime_stats_enabled)\n\t\t\t\t++s_texture_runtime_stats.hits;\n\t\t\tTouchReplacementCacheLocked(name);')
     anchor = '\t\t\treturn CreateReplacementTexture(it->second, mipmap);\n\t\t}'
-    new = replace_once(new, anchor, anchor + '\n\t\tif (GSConfig.OsdShowTextureReplacements)\n\t\t\t++s_texture_runtime_stats.misses;')
+    new = replace_once(new, anchor, anchor + '\n\t\tif (s_texture_runtime_stats_enabled)\n\t\t\t++s_texture_runtime_stats.misses;')
     source = replace_once(source, old, new)
 
     old = function(source, 'const GSTextureReplacements::ReplacementTexture* GSTextureReplacements::InsertReplacementCacheLocked(')
     new = replace_once(old, '\tconst size_t incoming = ReplacementTextureBytes(tex);',
-        '\tif (GSConfig.OsdShowTextureReplacements)\n\t\t++s_texture_runtime_stats.decoded;\n\tconst size_t incoming = ReplacementTextureBytes(tex);')
+        '\tif (s_texture_runtime_stats_enabled)\n\t\t++s_texture_runtime_stats.decoded;\n\tconst size_t incoming = ReplacementTextureBytes(tex);')
     new = replace_once(new, '\t\t\ts_replacement_texture_cache.erase(vit);',
-        '\t\t\ts_replacement_texture_cache.erase(vit);\n\t\t\tif (GSConfig.OsdShowTextureReplacements)\n\t\t\t\t++s_texture_runtime_stats.evicted;')
+        '\t\t\ts_replacement_texture_cache.erase(vit);\n\t\t\tif (s_texture_runtime_stats_enabled)\n\t\t\t\t++s_texture_runtime_stats.evicted;')
     source = replace_once(source, old, new)
 
     old = function(source, 'GSTexture* GSTextureReplacements::CreateReplacementTexture(')
-    new = replace_once(old, '\treturn tex;', '''	if (GSConfig.OsdShowTextureReplacements)
+    new = replace_once(old, '\treturn tex;', '''	if (s_texture_runtime_stats_enabled)
 	{
 		++s_texture_runtime_stats.uploads;
 		s_texture_runtime_stats.upload_bytes += ReplacementTextureBytes(rtex);
