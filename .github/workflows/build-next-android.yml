@@ -267,6 +267,12 @@ jobs:
           python3 ../scripts/patch_conservative_gs.py
           python3 ../scripts/verify_conservative_gs.py
 
+      - name: Optimize and verify texture streaming
+        working-directory: src
+        run: |
+          python3 ../scripts/patch_texture_streaming.py
+          python3 ../scripts/verify_texture_streaming.py
+
       - name: Fetch shaderc third-party deps
         if: inputs.validate_only != true
         working-directory: src/platforms/android
