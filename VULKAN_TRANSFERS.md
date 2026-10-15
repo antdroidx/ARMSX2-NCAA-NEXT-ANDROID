@@ -48,3 +48,21 @@ Device test: compare the same scene/driver/resolution/settings against test5 usi
 Vulkan, checking boot and gameplay textures, numbers/logos, translucent gear,
 shadows, menus and several plays. Leave Fastmem at the same setting for the
 comparison. Keep the PR in draft until compatibility and performance acceptance.
+
+## Source validation result
+
+Passed at be1869f:
+https://github.com/antdroidx/ARMSX2-NCAA-NEXT-ANDROID/actions/runs/38822619499
+
+1,188 upload/layout/pixel comparisons passed; 156 barriers were eliminated across
+that synthetic workload. Representative single-level ColorAttachment upload:
+3 -> 2 barriers. All 5,256 rectangle cases matched, including 256 identical
+aligned-copy cases which avoided their second copy. Multi-mip command sequences
+were unchanged. ASan/UBSan and Android ARM64 compilation passed, along with all
+existing core and experimental fast-memory regressions.
+
+Signed test6 build (128123, experimentalFastmem=true) at be1869f:
+https://github.com/antdroidx/ARMSX2-NCAA-NEXT-ANDROID/actions/runs/38822995484
+
+Physical-device results remain pending. The synthetic counts are not measured
+in-game bandwidth or frame-rate improvements.
