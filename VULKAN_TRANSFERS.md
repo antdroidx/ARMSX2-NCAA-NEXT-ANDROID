@@ -66,3 +66,19 @@ https://github.com/antdroidx/ARMSX2-NCAA-NEXT-ANDROID/actions/runs/38822995484
 
 Physical-device results remain pending. The synthetic counts are not measured
 in-game bandwidth or frame-rate improvements.
+
+## Signed APK result
+
+RC4-test6 (128123), source be1869f, experimentalFastmem=true:
+https://github.com/antdroidx/ARMSX2-NCAA-NEXT-ANDROID/actions/runs/38822995484
+
+Full Android build, all source/native regression checks, production certificate,
+Settings and 204082 DEX invoke audits passed. Downloaded SHA256 verified:
+`90efdd98e74201966b473e0f1b653f2c97a091d17a705f93c24ef482caa143ba`.
+The certificate matches test5 and the existing RC2/RC3 production signer.
+
+Artifact (expires October 18, 2026):
+https://github.com/antdroidx/ARMSX2-NCAA-NEXT-ANDROID/actions/runs/38822995484/artifacts/12014268989
+
+Physical-device/driver validation and performance comparison remain pending.
+No merge or public release performed.
