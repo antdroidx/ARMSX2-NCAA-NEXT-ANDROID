@@ -45,7 +45,24 @@ jobs:
           packages: platform-tools
 
       - name: Install Android NDK and CMake
-        run: yes | sdkmanager "ndk;28.2.13676358" "cmake;3.22.1" "cmake;3.31.6" >/dev/null || true
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            set +e
+            yes | sdkmanager "ndk;28.2.13676358" "cmake;3.22.1" "cmake;3.31.6" >/dev/null
+            sdk_status=${PIPESTATUS[1]}
+            set -e
+            if [ "$sdk_status" -eq 0 ] && \
+               [ -x "$ANDROID_HOME/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang++" ] && \
+               [ -x "$ANDROID_HOME/cmake/3.31.6/bin/cmake" ]; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "Required Android NDK/CMake installation failed" >&2
+              exit 1
+            fi
+            sleep 5
+          done
 
       - name: Install Rust Android target
         run: rustup target add aarch64-linux-android
