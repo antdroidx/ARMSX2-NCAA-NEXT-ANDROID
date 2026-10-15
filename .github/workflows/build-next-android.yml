@@ -273,6 +273,15 @@ jobs:
           python3 ../scripts/patch_texture_streaming.py
           python3 ../scripts/verify_texture_streaming.py
 
+      - name: Apply NCAA filtering defaults and Vulkan sampler efficiency
+        working-directory: src
+        run: |
+          python3 -m pip install --quiet PyYAML
+          python3 ../scripts/patch_ncaa_presets.py
+          python3 ../scripts/verify_ncaa_presets.py
+          python3 ../scripts/patch_vulkan_samplers.py
+          python3 ../scripts/verify_vulkan_samplers.py
+
       - name: Fetch shaderc third-party deps
         if: inputs.validate_only != true
         working-directory: src/platforms/android
