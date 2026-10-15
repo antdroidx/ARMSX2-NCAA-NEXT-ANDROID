@@ -38,12 +38,12 @@ struct Code {
         static Runtime runtime;
         auto& simulator=runtime.simulator; auto& counter=runtime.counter;
         simulator.ResetState();counter.count=0;
-        simulator.RunFrom<void>(masm.GetBuffer().GetStartAddress<const a64::Instruction*>(),reinterpret_cast<uintptr_t>(dst),reinterpret_cast<uintptr_t>(src));
+        simulator.RunFrom<void>(masm.GetBuffer()->GetStartAddress<const a64::Instruction*>(),reinterpret_cast<uintptr_t>(dst),reinterpret_cast<uintptr_t>(src));
         return counter.count;
     }
     bool same_bytes(Code& other) {
-        const auto count=masm.GetBuffer().GetCursorOffset();
-        return count==other.masm.GetBuffer().GetCursorOffset() && !std::memcmp(masm.GetBuffer().GetStartAddress<const void*>(),other.masm.GetBuffer().GetStartAddress<const void*>(),count);
+        const auto count=masm.GetBuffer()->GetCursorOffset();
+        return count==other.masm.GetBuffer()->GetCursorOffset() && !std::memcmp(masm.GetBuffer()->GetStartAddress<const void*>(),other.masm.GetBuffer()->GetStartAddress<const void*>(),count);
     }
 };
 int main() {

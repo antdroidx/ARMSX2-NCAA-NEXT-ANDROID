@@ -56,7 +56,8 @@ if __name__ == '__main__':
 		// Continue rendering every callback; do not sleep or wait on this thread.
 		const u32 retry = m_audio_affinity_retry_frames.load(std::memory_order_relaxed);
 		const u32 elapsed = p_numFrames > 0 ? static_cast<u32>(p_numFrames) : 0;
-		m_audio_affinity_retry_frames.store(retry > elapsed ? retry - elapsed : 0, std::memory_order_relaxed);
+		if (retry != 0)
+			m_audio_affinity_retry_frames.store(retry > elapsed ? retry - elapsed : 0, std::memory_order_relaxed);
 		const u64 perf_mask = retry > elapsed ? 0 : VMManager::Internal::GetPerformanceClusterAffinityMask();''')
     old = '\t\t\t\tWARNING_LOG("(Oboe) sched_setaffinity tid={} failed (errno {}) — will retry next callback", tid, errno);'
     new = '''				m_audio_affinity_retry_frames.store(static_cast<u32>(m_sample_rate), std::memory_order_relaxed);
