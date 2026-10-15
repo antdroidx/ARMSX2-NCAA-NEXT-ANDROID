@@ -8,7 +8,7 @@
 #include <iostream>
 #include <vector>
 namespace a64=vixl::aarch64;
-using u8=uint8_t; using u32=uint32_t; using s64=int64_t; using uint=unsigned;
+using u8=uint8_t; using u16=uint16_t; using u32=uint32_t; using s64=int64_t; using uint=unsigned;
 #define VIF_LOG(...) ((void)0)
 #define pxAssume(x) assert(x)
 const u8 nVifT[16]={4,2,1,0,8,4,2,0,12,6,3,0,16,8,4,2};
@@ -26,6 +26,7 @@ struct Runtime {
     ~Runtime(){decoder.RemoveVisitor(&counter);}
 };
 // NAMESPACES
+// COMPUTE_LENGTH
 
 struct Code {
     a64::MacroAssembler masm;
@@ -47,6 +48,25 @@ struct Code {
     }
 };
 int main() {
+    // Exhaust all encoded CL/WL/NUM values against an iterative row walk.
+    size_t span_cases=0;
+    for(uint cl=0;cl<256;++cl) for(uint encoded_wl=0;encoded_wl<256;++encoded_wl) {
+        const uint wl=encoded_wl?encoded_wl:256;
+        const bool fill=cl<wl;
+        uint vcl=0,offset=0;
+        for(uint rows=1;rows<=256;++rows) {
+            if(!fill && vcl>=wl) {offset+=16*(cl-wl);vcl=0;}
+            offset+=16;
+            if(++vcl==(fill?wl:cl))vcl=0;
+            const auto length=dVifComputeLength(cl,encoded_wl,static_cast<u8>(rows),fill);
+            assert(length==std::min(offset,0xFFFFu));
+            for(uint limit:{4096u,16384u}) for(uint start:{0u,limit-16,limit-256})
+                if(start+length<=limit) assert(start+offset<=limit);
+            ++span_cases;
+        }
+    }
+    assert(dVifComputeLength(4,2,0,false)==8160);
+    assert(12288u+dVifComputeLength(4,2,0,false)>16384u);
     size_t cases=0,overlaps=0;
     for(int cl:{1,2,3,7,16,63,64,65,128,255,256})
     for(int wl:{1,2,3,4,7,16,63,64,65,128,255,256})
@@ -85,5 +105,5 @@ int main() {
     std::vector<u8> x(12288),y=x;
     const auto a=old.run(x.data(),x.data()+8192),b=now.run(y.data(),y.data()+8192);
     assert(x==y && b<a);
-    std::cout<<"VIF ARM64 simulator: "<<cases<<" disjoint cases, "<<overlaps<<" overlaps, fallback code equality passed; 256-row executed instructions "<<a<<" -> "<<b<<"\n";
+    std::cout<<"VIF ARM64 simulator: "<<cases<<" disjoint cases, "<<overlaps<<" overlaps, "<<span_cases<<" span cases, fallback code equality passed; 256-row executed instructions "<<a<<" -> "<<b<<"\n";
 }

@@ -28,7 +28,22 @@ if __name__ == '__main__':
 			}''')
     new = replace_once(new, '\tif (doMode >= 2)', '\tif (straight_copy)\n\t\tEmitCopyRows(copy_rows);\n\n\tif (doMode >= 2)')
     helper = (repo / 'patches/vif-copy-rows.inc').read_text()
-    p.write_text(replace_once(source, old, helper + '\n' + new))
+    source = replace_once(source, old, helper + '\n' + new)
+    length_old = function(source, 'static u16 dVifComputeLength(')
+    length_new = """static u16 dVifComputeLength(uint cl, uint wl, u8 num, bool isFill)
+{
+    const uint rows = num ? num : 256;
+    const uint write_length = wl ? wl : 256;
+    uint length = rows * 16;
+    if (!isFill && cl > write_length)
+    {
+        const uint blocks = (rows + write_length - 1) / write_length;
+        length += (blocks - 1) * (cl - write_length) * 16;
+    }
+    // VU memories are at most 16 KiB. Saturation still forces the wrap fallback.
+    return std::min(length, 0xFFFFu);
+}"""
+    p.write_text(replace_once(source, length_old, length_new))
     p = Path('pcsx2/arm64/Vif_UnpackNEON.h')
     s = p.read_text()
     s = replace_once(s, '#include "arm64/AsmHelpers.h"', '#include "arm64/AsmHelpers.h"\n#include <utility>\n#include <vector>')

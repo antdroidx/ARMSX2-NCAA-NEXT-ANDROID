@@ -34,6 +34,7 @@ public:
 '''
 code='namespace Original {\n'+base+old+'\n}\nnamespace Optimized {\n'+base+emit+'\n'+new+'\n}\n'
 harness=(repo/'tests/vif_pairs_harness.cpp').read_text().replace('// NAMESPACES',code)
+harness=harness.replace('// COMPUTE_LENGTH',function(source,'static u16 dVifComputeLength('))
 with tempfile.TemporaryDirectory() as temp:
     temp=Path(temp);(temp/'test.cpp').write_text(harness)
     cmake=f'''cmake_minimum_required(VERSION 3.22)
