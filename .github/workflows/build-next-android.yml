@@ -285,6 +285,8 @@ jobs:
           python3 ../scripts/verify_ncaa_presets.py
           python3 ../scripts/patch_vulkan_samplers.py
           python3 ../scripts/verify_vulkan_samplers.py
+          python3 ../scripts/patch_vulkan_transfers.py
+          python3 ../scripts/verify_vulkan_transfers.py
 
       - name: Fetch shaderc third-party deps
         if: inputs.validate_only != true
@@ -340,11 +342,11 @@ jobs:
           BUILD_START=$(date +%s)
 
           # Android update ordering is independent of the public release label.
-          VERSION_CODE=128122
+          VERSION_CODE=128123
           case "$ENHANCEMENTS" in
-            none) VERSION_NAME=0.2.5-RC4-test5-stopcpu; VARIANT=STOPCPU ;;
-            cpu) VERSION_NAME=0.2.5-RC4-test5-cpu; VARIANT=CPU ;;
-            cpu-audio) VERSION_NAME=0.2.5-RC4-test5; VARIANT=CPU-AUDIO ;;
+            none) VERSION_NAME=0.2.5-RC4-test6-stopcpu; VARIANT=STOPCPU ;;
+            cpu) VERSION_NAME=0.2.5-RC4-test6-cpu; VARIANT=CPU ;;
+            cpu-audio) VERSION_NAME=0.2.5-RC4-test6; VARIANT=CPU-AUDIO ;;
             *) exit 1 ;;
           esac
           printf 'commit=%s\nvariant=%s\nversionCode=%s\nversionName=%s\n' "$GITHUB_SHA" "$VARIANT" "$VERSION_CODE" "$VERSION_NAME" > "$PWD/../../../out/build-info.txt"

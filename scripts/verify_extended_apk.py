@@ -11,8 +11,8 @@ from audit_dex import audit
 apk = Path(sys.argv[1])
 tools = Path(sys.argv[2])
 manifest = subprocess.run([str(tools / 'aapt'), 'dump', 'badging', str(apk)], check=True, capture_output=True, text=True).stdout
-assert "versionCode='128122'" in manifest
-assert "versionName='0.2.5-RC4-test5'" in manifest
+assert "versionCode='128123'" in manifest
+assert "versionName='0.2.5-RC4-test6'" in manifest
 assert "application-label:'ARMSX2 Extended'" in manifest
 assert 'application-debuggable' not in manifest
 reports = {}
