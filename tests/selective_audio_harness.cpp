@@ -49,6 +49,8 @@ struct AudioStreamBuilder {
 struct OboeAudioStream {
     std::recursive_mutex m_lock;
     std::atomic<bool> m_audio_thread_pinned{false};
+    std::atomic<u32> m_audio_affinity_retry_frames{0};
+    std::atomic<bool> m_audio_affinity_warned{false};
     struct { bool android_use_opensles = false; } m_parameters;
     int m_perf_mode = 0, m_sample_rate = 48000;
     u32 m_output_channels = 2;

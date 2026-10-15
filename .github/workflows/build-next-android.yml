@@ -293,6 +293,15 @@ jobs:
             python3 ../scripts/test_selective_source.py
           fi
 
+      - name: Apply and test graphics, cache, audio, and VIF efficiencies
+        if: inputs.enhancements == 'cpu-audio'
+        working-directory: src
+        run: |
+          python3 ../scripts/patch_core_efficiency.py
+          python3 ../scripts/patch_vif_pairs.py
+          python3 ../scripts/verify_core_efficiency.py
+          python3 ../scripts/verify_vif_pairs.py
+
       - name: Build production 4K release APK
         if: inputs.validate_only != true
         working-directory: src/platforms/android
@@ -310,11 +319,11 @@ jobs:
           BUILD_START=$(date +%s)
 
           # Android update ordering is independent of the public release label.
-          VERSION_CODE=128119
+          VERSION_CODE=128120
           case "$ENHANCEMENTS" in
-            none) VERSION_NAME=0.2.5-RC4-test2-stopcpu; VARIANT=STOPCPU ;;
-            cpu) VERSION_NAME=0.2.5-RC4-test2-cpu; VARIANT=CPU ;;
-            cpu-audio) VERSION_NAME=0.2.5-RC4-test2; VARIANT=CPU-AUDIO ;;
+            none) VERSION_NAME=0.2.5-RC4-test3-stopcpu; VARIANT=STOPCPU ;;
+            cpu) VERSION_NAME=0.2.5-RC4-test3-cpu; VARIANT=CPU ;;
+            cpu-audio) VERSION_NAME=0.2.5-RC4-test3; VARIANT=CPU-AUDIO ;;
             *) exit 1 ;;
           esac
           printf 'commit=%s\nvariant=%s\nversionCode=%s\nversionName=%s\n' "$GITHUB_SHA" "$VARIANT" "$VERSION_CODE" "$VERSION_NAME" > "$PWD/../../../out/build-info.txt"
