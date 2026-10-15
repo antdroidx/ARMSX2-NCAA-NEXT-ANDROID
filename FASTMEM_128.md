@@ -50,3 +50,17 @@ off. Also check NCAA NEXT boot, graphics, several plays, save/load, repeated
 close/relaunch, and any other games used regularly. If a regression appears,
 switch Fastmem Off and restart before comparing again. Do not merge/release
 until physical-device acceptance passes.
+
+## Initial validation
+
+Source/native validation passed at bdee5f6:
+https://github.com/antdroidx/ARMSX2-NCAA-NEXT-ANDROID/actions/runs/38816141992
+
+40,960 page-span checks per modeled host-page policy, alias/protection/remap and
+fault-bookkeeping cases passed; both harnesses compile for Android ARM64. VIXL
+executed 405 memory-access and metadata cases. Existing regression checks passed.
+The subsequent full build at c7a8509 also runs the new negative remap regression:
+https://github.com/antdroidx/ARMSX2-NCAA-NEXT-ANDROID/actions/runs/38816622077
+
+No physical-device fast-memory result yet. The latest user-supplied INI requested
+EnableFastmem=true, so this experiment should honor that existing choice.
