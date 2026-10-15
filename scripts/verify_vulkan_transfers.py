@@ -46,7 +46,9 @@ void UpdateFromBuffer(VkCommandBuffer,int,u32,u32,u32,u32,u32,u32,VkBuffer,u32);
 '''
 
 new_copy = function(function(dev, 'void GSDeviceVK::DoRenderHW('), 'if (config.tex_hazard)')
-process = function(Path('pcsx2/GS/Renderers/Common/GSDevice.cpp').read_text(), 'GSVector4i GSDevice::ProcessCopyArea(')
+common_device = Path('pcsx2/GS/Renderers/Common/GSDevice.cpp').read_text()
+assert 'FetchSurface(GSTexture::RenderTarget, w, h, 1,' in function(common_device, 'GSTexture* GSDevice::CreateRenderTarget(int w, int h,')
+process = function(common_device, 'GSVector4i GSDevice::ProcessCopyArea(')
 code = (repo / 'tests/vulkan_transfer_harness.cpp').read_text()
 code = code.replace('// TEXTURE_CLASSES', classes).replace('// OLD_COPIES', fixture['copies']).replace('// NEW_COPIES', new_copy)
 code = code.replace('// PROCESS_COPY_AREA', process.replace('GSDevice::ProcessCopyArea', 'CopyRunner::ProcessCopyArea'))

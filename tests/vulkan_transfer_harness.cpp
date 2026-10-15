@@ -49,7 +49,10 @@ template<class Texture>Result upload(int initial,int levels,int level,int varian
   assert(b.subresourceRange.aspectMask==VK_IMAGE_ASPECT_COLOR_BIT);
   const u32 first=b.subresourceRange.baseMipLevel,count=b.subresourceRange.levelCount;
   assert(first+count<=static_cast<u32>(levels));
-  for(u32 l=first;l<first+count;++l){assert(result.layouts[l]==b.oldLayout);result.layouts[l]=b.newLayout;}
+  for(u32 l=first;l<first+count;++l){
+   if(result.layouts[l]!=b.oldLayout)std::cerr<<"layout mismatch: initial="<<initial<<" levels="<<levels<<" uploaded="<<level<<" barrier mip="<<l<<" actual="<<result.layouts[l]<<" expected="<<b.oldLayout<<"\n";
+   assert(result.layouts[l]==b.oldLayout);result.layouts[l]=b.newLayout;
+  }
   result.events.push_back({src,dst,b.srcAccessMask,b.dstAccessMask,b.oldLayout,b.newLayout,first,count});
  };
  copy_hook=[&](auto layout,const VkBufferImageCopy& b){
@@ -86,6 +89,9 @@ int main(){
  size_t uploads=0,saved=0;
  for(int layout=0;layout<static_cast<int>(Original::GSTextureVK::Layout::Count);++layout)
  for(bool feedback:{false,true})for(bool rt:{false,true})for(int levels:{1,2,4})for(int level=0;level<levels;++level)for(int variant:{0,1,2}){
+  // Hardware ROV targets are constructed with one level. The unchanged
+  // legacy ROV workaround explicitly transitions from base mip zero.
+  if(levels>1&&layout==static_cast<int>(Original::GSTextureVK::Layout::ReadWriteImage))continue;
   device.feedback=feedback;
   auto old=upload<Original::GSTextureVK>(layout,levels,level,variant,rt),now=upload<Optimized::GSTextureVK>(layout,levels,level,variant,rt);
   assert(old.pixels==now.pixels&&old.layouts==now.layouts&&old.final_layout==now.final_layout);

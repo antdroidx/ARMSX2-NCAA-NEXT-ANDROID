@@ -30,7 +30,8 @@ Execute the actual old/new upload function, unchanged production image-layout
 mapping, transition/barrier functions and copy-area alignment code in a host
 harness using real Vulkan types and mocked command recording. Compare complete
 RGBA32 output buffers, untouched pixels/mips, final Vulkan layouts and tracked
-layout. Assert identical pre-copy dependency sequences, transfer-write visibility
+layout. ROV upload cases use single-level targets, matching CreateRenderTarget;
+the legacy ROV workaround is not exercised on non-base mips. Assert identical pre-copy dependency sequences, transfer-write visibility
 to fragment-shader reads, unchanged multi-mip command sequences and no barrier
 count increases. Differential rectangle workloads compare output and copy count.
 Run under ASan/UBSan and compile for Android ARM64. Source hashes check the two
