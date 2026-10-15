@@ -56,3 +56,18 @@ all 256 keys and failure/cleanup paths, under ASan/UBSan; Android ARM64 compilat
 passed. Existing graphics, audio, cache and VIF regressions also passed. No APK
 was built for this follow-up, to avoid another full Actions build before the next
 device-test candidate is requested.
+
+## RC4-test4 APK
+
+Built 0.2.5-RC4-test4 (128121), source 9e8ff0d:
+https://github.com/antdroidx/ARMSX2-NCAA-NEXT-ANDROID/actions/runs/38793057081
+
+Full Android build, preset/sampler/core tests, production signing, Settings
+bytecode and 204,082 DEX invoke checks passed. Downloaded checksum verified:
+`eb980787e681eb8be0f79f9eb5b7ded6c129eb2c7111a6291cd4f0fe8a84c785`.
+Certificate matches test3 and the existing RC2/RC3 production signer.
+
+Test artifact (expires October 18, 2026):
+https://github.com/antdroidx/ARMSX2-NCAA-NEXT-ANDROID/actions/runs/38793057081/artifacts/12000843911
+
+Device testing is pending; no merge or public release performed.
