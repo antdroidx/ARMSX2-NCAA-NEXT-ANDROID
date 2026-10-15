@@ -57,10 +57,28 @@ Source/native validation passed at bdee5f6:
 https://github.com/antdroidx/ARMSX2-NCAA-NEXT-ANDROID/actions/runs/38816141992
 
 40,960 page-span checks per modeled host-page policy, alias/protection/remap and
-fault-bookkeeping cases passed; both harnesses compile for Android ARM64. VIXL
+fault-bookkeeping cases passed; the mapping harness compiles for Android ARM64
+under both host-page policies. VIXL
 executed 405 memory-access and metadata cases. Existing regression checks passed.
 The subsequent full build at c7a8509 also runs the new negative remap regression:
 https://github.com/antdroidx/ARMSX2-NCAA-NEXT-ANDROID/actions/runs/38816622077
 
 No physical-device fast-memory result yet. The latest user-supplied INI requested
 EnableFastmem=true, so this experiment should honor that existing choice.
+
+## Signed APK result
+
+RC4-test5 (128122), experimentalFastmem=true, source c7a8509:
+https://github.com/antdroidx/ARMSX2-NCAA-NEXT-ANDROID/actions/runs/38816622077
+
+Full Android build, all source/native tests (including rejection of the old remap
+implementation), signing, Settings and DEX audits passed. Downloaded SHA256:
+`a334ec0af1f28886b4208b9c679536bfd341b76069de750d8badf38b57d21616`.
+The existing production certificate matches test4; package/version allow an
+in-place update. 204082 DEX invokes checked.
+
+Artifact (expires October 18, 2026):
+https://github.com/antdroidx/ARMSX2-NCAA-NEXT-ANDROID/actions/runs/38816622077/artifacts/12012546361
+
+No Android device was connected. Physical gameplay, actual Android fault/thunk
+execution and speed acceptance remain pending; do not merge or publish yet.
