@@ -63,7 +63,7 @@ still trigger fallback. Pairing adds an overlap fallback and therefore increases
 code size; device cache and frame-time effects still need testing.
 
 Generated ARM64 instructions execute in the pinned VIXL simulator: 351 disjoint
-cases, 585 overlapping cases, and unchanged fallback-code comparisons. An
+cases, 585 overlapping cases, and unchanged fallback-code comparisons passed. An
 exhaustive 16,777,216-case CL/WL/NUM check compares the span with the emitter
 row walk and checks VU boundary decisions.
 The representative contiguous 256-row copy executes 269 instructions instead of
@@ -83,3 +83,18 @@ texture/alpha/crowd checks, audio on speakers and Bluetooth if used, and gamepla
 frame-time comparison. No Android target was connected during implementation.
 No measured device FPS gain is claimed. Keep PR #7 in draft until test3 passes
 device testing.
+
+## Built candidate
+
+Signed APK 0.2.5-RC4-test3 (128120), source dcfad74df6017225c1f6ac9715ac1b290b10a573:
+https://github.com/antdroidx/ARMSX2-NCAA-NEXT-ANDROID/actions/runs/38777787781
+
+All checks passed, including the exhaustive span checks, Android native build,
+Settings declaration audit and 204,077 DEX invokes. Downloaded APK SHA256:
+`147a3701ae1f174edc019897e7d0470a98041fb789613f68be12b91734858460`.
+Production certificate matches the RC2/RC3/test2 signer.
+
+Artifact (expires October 18, 2026):
+https://github.com/antdroidx/ARMSX2-NCAA-NEXT-ANDROID/actions/runs/38777787781/artifacts/11996505017
+
+This remains a device-test candidate, not a merged or published release.
