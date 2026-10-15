@@ -3,8 +3,8 @@
 #include <cstdint>
 #include <cstring>
 #include <iostream>
-#include "aarch64/macro-assembler-aarch64.h"
-#include "aarch64/simulator-aarch64.h"
+#include "vixl/aarch64/macro-assembler-aarch64.h"
+#include "vixl/aarch64/simulator-aarch64.h"
 namespace a64=vixl::aarch64;
 using u8=uint8_t;using u32=uint32_t;using u64=uint64_t;using uptr=uintptr_t;
 a64::MacroAssembler* armAsm;
