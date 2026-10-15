@@ -37,5 +37,14 @@ with tempfile.TemporaryDirectory() as tmp:
   flags=['-std=c++20','-O2','-D__ANDROID__','-DTEST_PAGE_SHIFT='+str(shift)]
   subprocess.run(['g++',*flags,'-fsanitize=undefined','-fno-sanitize-recover=all',str(p),'-o',str(exe)],check=True)
   subprocess.run([str(exe)],check=True,timeout=60)
+  if shift == 12:
+   # Prove the test catches the old stale reverse-map bug, not just the new code.
+   broken=code.replace('s_fastmem_physical_mapping.equal_range(old_offset)', 's_fastmem_physical_mapping.equal_range(mainmem_offset)')
+   assert broken != code
+   bad=Path(tmp)/'old-remap.cpp';bad.write_text(broken);bad_exe=Path(tmp)/'old-remap'
+   subprocess.run(['g++',*flags,str(bad),'-o',str(bad_exe)],check=True)
+   result=subprocess.run([str(bad_exe)],capture_output=True,text=True,timeout=60)
+   assert result.returncode != 0 and 'forward==s_fastmem_physical_mapping.size()' in result.stderr
+   print('Old reverse-remap implementation correctly rejected by invariant regression check')
   subprocess.run([str(clang),*flags,'-c',str(p),'-o',str(Path(tmp)/('mapping-'+str(shift)+'.o'))],check=True)
 print('Production fastmem mapping/fault bookkeeping passed on POSIX and compiled for Android ARM64; ARM64 game backpatch execution still needs device testing')
