@@ -11,6 +11,10 @@ on:
           - none
           - cpu
           - cpu-audio
+      experimental_fastmem:
+        description: 'Experimental selectable EE fast memory with 128 MB support'
+        type: boolean
+        default: false
       validate_only:
         description: 'Run source/host checks without compiling an APK'
         type: boolean
@@ -311,6 +315,14 @@ jobs:
           python3 ../scripts/verify_core_efficiency.py
           python3 ../scripts/verify_vif_pairs.py
 
+      - name: Apply and test experimental 128 MB EE fast memory
+        if: inputs.experimental_fastmem == true
+        working-directory: src
+        run: |
+          python3 ../scripts/patch_fastmem_128.py
+          python3 ../scripts/verify_fastmem_128.py
+          python3 ../scripts/verify_fastmem_emit.py
+
       - name: Build production 4K release APK
         if: inputs.validate_only != true
         working-directory: src/platforms/android
@@ -328,14 +340,15 @@ jobs:
           BUILD_START=$(date +%s)
 
           # Android update ordering is independent of the public release label.
-          VERSION_CODE=128121
+          VERSION_CODE=128122
           case "$ENHANCEMENTS" in
-            none) VERSION_NAME=0.2.5-RC4-test4-stopcpu; VARIANT=STOPCPU ;;
-            cpu) VERSION_NAME=0.2.5-RC4-test4-cpu; VARIANT=CPU ;;
-            cpu-audio) VERSION_NAME=0.2.5-RC4-test4; VARIANT=CPU-AUDIO ;;
+            none) VERSION_NAME=0.2.5-RC4-test5-stopcpu; VARIANT=STOPCPU ;;
+            cpu) VERSION_NAME=0.2.5-RC4-test5-cpu; VARIANT=CPU ;;
+            cpu-audio) VERSION_NAME=0.2.5-RC4-test5; VARIANT=CPU-AUDIO ;;
             *) exit 1 ;;
           esac
           printf 'commit=%s\nvariant=%s\nversionCode=%s\nversionName=%s\n' "$GITHUB_SHA" "$VARIANT" "$VERSION_CODE" "$VERSION_NAME" > "$PWD/../../../out/build-info.txt"
+          printf 'experimentalFastmem=%s\n' '${{ inputs.experimental_fastmem }}' >> "$PWD/../../../out/build-info.txt"
 
           ./gradlew :app:assembleGithubRelease \
             -Parmsx2.applicationId=com.armsx2.ncaanext \
