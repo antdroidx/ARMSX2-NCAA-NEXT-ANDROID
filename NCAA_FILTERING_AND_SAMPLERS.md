@@ -44,3 +44,15 @@ performance gap, not a measured explanation. Restoring fast memory requires
 validating the 128 MB mappings, mirrors, fault/backpatch handling and extended
 address loads/stores; simply removing the guard could reintroduce the original
 RAM bug. This change leaves that path alone.
+
+## Validation result
+
+Source/native CI passed at 9ff995e:
+https://github.com/antdroidx/ARMSX2-NCAA-NEXT-ANDROID/actions/runs/38791048092
+
+YAML parsing, unchanged-entry checksum, schema/override checks and executable
+filter cases passed. All 10,768 sampler differential requests passed, including
+all 256 keys and failure/cleanup paths, under ASan/UBSan; Android ARM64 compilation
+passed. Existing graphics, audio, cache and VIF regressions also passed. No APK
+was built for this follow-up, to avoid another full Actions build before the next
+device-test candidate is requested.
