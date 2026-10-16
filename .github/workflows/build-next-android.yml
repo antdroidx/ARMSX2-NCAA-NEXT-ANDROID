@@ -359,11 +359,11 @@ jobs:
           BUILD_START=$(date +%s)
 
           # Android update ordering is independent of the public release label.
-          VERSION_CODE=128123
+          VERSION_CODE=128124
           case "$ENHANCEMENTS" in
-            none) VERSION_NAME=0.2.5-RC4-test6-stopcpu; VARIANT=STOPCPU ;;
-            cpu) VERSION_NAME=0.2.5-RC4-test6-cpu; VARIANT=CPU ;;
-            cpu-audio) VERSION_NAME=0.2.5-RC4-test6; VARIANT=CPU-AUDIO ;;
+            none) VERSION_NAME=0.2.5-RC4-stopcpu; VARIANT=STOPCPU ;;
+            cpu) VERSION_NAME=0.2.5-RC4-cpu; VARIANT=CPU ;;
+            cpu-audio) VERSION_NAME=0.2.5-RC4; VARIANT=CPU-AUDIO ;;
             *) exit 1 ;;
           esac
           printf 'commit=%s\nvariant=%s\nversionCode=%s\nversionName=%s\n' "$GITHUB_SHA" "$VARIANT" "$VERSION_CODE" "$VERSION_NAME" > "$PWD/../../../out/build-info.txt"
