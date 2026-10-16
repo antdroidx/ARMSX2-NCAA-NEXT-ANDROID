@@ -3,7 +3,7 @@
 - Cache replacement-texture filenames for faster repeat boots; add manual Refresh texture index.
 - Reduce texture-loading bookkeeping, duplicate cache accounting and redundant pixel conversion.
 - Add ARM64 VIF copy efficiencies with overlap handling and corrected 256-row skip checks.
-- Add selectable EE fast-memory support with 128 MB mapping/remap and allocation-fallback fixes (release inclusion pending confirmation).
+- Enable selectable EE fast memory by default with 128 MB mapping/remap and allocation-fallback fixes; preserve saved/per-game Off choices.
 - Avoid redundant Vulkan upload transitions and identical aligned fallback copies.
 - Reduce repeated audio-affinity retries when Android rejects pinning.
 - NCAA 06 / NEXT (SLUS-21214) defaults: mipmapping Off, bilinear PS2, trilinear PS2; preserve existing VU clamp and per-game overrides. Trilinear database selection applies when Auto is selected.

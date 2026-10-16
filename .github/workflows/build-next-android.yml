@@ -12,9 +12,9 @@ on:
           - cpu
           - cpu-audio
       experimental_fastmem:
-        description: 'Experimental selectable EE fast memory with 128 MB support'
+        description: 'Selectable EE fast memory with 128 MB support'
         type: boolean
-        default: false
+        default: true
       validate_only:
         description: 'Run source/host checks without compiling an APK'
         type: boolean

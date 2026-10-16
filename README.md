@@ -15,7 +15,7 @@ updates over RC2/RC3 and RC4 tests without removing settings or saves.
 - Persistent texture filename index for faster repeat boots, with manual refresh.
 - Reduced texture-cache, upload-queue and pixel-conversion overhead.
 - ARM64 VIF copy efficiencies and corrected skip-range handling.
-- Optional selectable EE fast memory with 128 MB mapping and fallback fixes.
+- Selectable EE fast memory enabled by default with 128 MB mapping and fallback fixes.
 - Fewer redundant Vulkan upload transitions and identical fallback copies.
 - Bounded retry work for rejected Android audio-affinity requests.
 - NCAA 06 / NEXT (SLUS-21214) defaults: mipmapping Off, bilinear PS2, trilinear PS2,
@@ -35,9 +35,9 @@ problems in a game, turn it Off and restart the game.
 ## Build and validation
 
 Run **Full ARMSX2 NCAA NEXT Native Build** with `enhancements=cpu-audio`.
-`experimental_fastmem` selects the tested fast-memory variant and remains opt-in
-in the workflow until the public default is confirmed. Saved/per-game Off choices
-are respected when the feature is enabled. Use `validate_only=true` for source
+`experimental_fastmem` retains its historical input name and defaults to true,
+matching test6. Saved/per-game Fastmem Off choices remain respected. Set the
+workflow input false only for a separate diagnostic soft-memory build. Use `validate_only=true` for source
 and native checks without compiling an APK. Signing uses encrypted repository
 secrets; signing material is not included in the source or release downloads.
 
