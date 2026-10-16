@@ -1,16 +1,10 @@
 # Release numbering
 
-The last published release is `0.2.5-RC2`. The next production candidate is
-`0.2.5-RC3`, followed by another RC if needed, or `0.2.5`
-when the release is accepted. Feature descriptions belong in release notes.
+Release candidate 0.2.5-RC4 uses Android versionCode 128124, following test6
+(128123) and published RC3 (128117). Package and production certificate remain
+unchanged. Increase versionCode for each newly distributed APK.
 
-Android's internal `versionCode` is separate from this public label. The next
-build uses `128116`, higher than the previously distributed `128115` RC2
-build, so Android can install it as an update using the same signing
-certificate. Increase this internal number for each new distributed build.
-
-The `none` and `cpu` diagnostic variants append `-stopcpu` and `-cpu` to the
-public label. The default `cpu-audio` production variant uses `0.2.5-RC3`.
-
-Previously built APKs retain their embedded labels (`0.2.13` and `0.2.14`
-with descriptive suffixes). Changing the source does not rename those APKs.
+The experimental_fastmem workflow input retains its historical name and defaults
+to true, explicitly approved by the user for public RC4 to match test6. Saved and
+per-game Fastmem Off choices remain respected. Set the input false only for a
+separate diagnostic soft-memory build.

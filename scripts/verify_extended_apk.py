@@ -11,8 +11,8 @@ from audit_dex import audit
 apk = Path(sys.argv[1])
 tools = Path(sys.argv[2])
 manifest = subprocess.run([str(tools / 'aapt'), 'dump', 'badging', str(apk)], check=True, capture_output=True, text=True).stdout
-assert "versionCode='128117'" in manifest
-assert "versionName='0.2.5-RC3-test2'" in manifest
+assert "versionCode='128124'" in manifest
+assert "versionName='0.2.5-RC4'" in manifest
 assert "application-label:'ARMSX2 Extended'" in manifest
 assert 'application-debuggable' not in manifest
 reports = {}
@@ -31,4 +31,4 @@ assert reports
 # R8 renames Settings in release DEX. Its declarations are audited before R8 by
 # audit_settings_bytecode.py; every post-R8 invocation is checked above by width.
 (apk.parent / 'extended-apk-verification.json').write_text(json.dumps(reports, indent=2))
-print('Extended app label, RC3 version, production status and all DEX invokes verified')
+print('Extended app label, RC4 test version, production status and all DEX invokes verified')

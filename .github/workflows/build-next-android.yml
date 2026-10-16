@@ -11,6 +11,10 @@ on:
           - none
           - cpu
           - cpu-audio
+      experimental_fastmem:
+        description: 'Selectable EE fast memory with 128 MB support'
+        type: boolean
+        default: true
       validate_only:
         description: 'Run source/host checks without compiling an APK'
         type: boolean
@@ -41,7 +45,24 @@ jobs:
           packages: platform-tools
 
       - name: Install Android NDK and CMake
-        run: yes | sdkmanager "ndk;28.2.13676358" "cmake;3.22.1" "cmake;3.31.6" >/dev/null || true
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            set +e
+            yes | sdkmanager "ndk;28.2.13676358" "cmake;3.22.1" "cmake;3.31.6" >/dev/null
+            sdk_status=${PIPESTATUS[1]}
+            set -e
+            if [ "$sdk_status" -eq 0 ] && \
+               [ -x "$ANDROID_HOME/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang++" ] && \
+               [ -x "$ANDROID_HOME/cmake/3.31.6/bin/cmake" ]; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "Required Android NDK/CMake installation failed" >&2
+              exit 1
+            fi
+            sleep 5
+          done
 
       - name: Install Rust Android target
         run: rustup target add aarch64-linux-android
@@ -50,6 +71,7 @@ jobs:
         run: sudo apt-get update -qq && sudo apt-get install -y ccache
 
       - name: Restore native compiler cache
+        if: inputs.validate_only != true
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/.ccache
@@ -252,6 +274,37 @@ jobs:
           python3 ../scripts/patch_cover_launch_128111.py
           python3 ../scripts/verify_atlas_alpha.py
 
+      - name: Cache replacement texture filenames
+        working-directory: src
+        run: |
+          python3 ../scripts/patch_texture_index_cache.py
+          "$ANDROID_HOME/ndk/28.2.13676358/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang++" \
+            -std=c++20 -fno-exceptions -Wall -Wextra -Werror \
+            -I pcsx2/GS/Renderers/HW -c ../tests/texture_index_harness.cpp -o /tmp/texture-index-android.o
+
+      - name: Apply and verify conservative GS optimizations
+        working-directory: src
+        run: |
+          python3 ../scripts/patch_conservative_gs.py
+          python3 ../scripts/verify_conservative_gs.py
+
+      - name: Optimize and verify texture streaming
+        working-directory: src
+        run: |
+          python3 ../scripts/patch_texture_streaming.py
+          python3 ../scripts/verify_texture_streaming.py
+
+      - name: Apply NCAA filtering defaults and Vulkan sampler efficiency
+        working-directory: src
+        run: |
+          python3 -m pip install --quiet PyYAML
+          python3 ../scripts/patch_ncaa_presets.py
+          python3 ../scripts/verify_ncaa_presets.py
+          python3 ../scripts/patch_vulkan_samplers.py
+          python3 ../scripts/verify_vulkan_samplers.py
+          python3 ../scripts/patch_vulkan_transfers.py
+          python3 ../scripts/verify_vulkan_transfers.py
+
       - name: Fetch shaderc third-party deps
         if: inputs.validate_only != true
         working-directory: src/platforms/android
@@ -272,6 +325,23 @@ jobs:
             python3 ../scripts/test_selective_source.py
           fi
 
+      - name: Apply and test graphics, cache, audio, and VIF efficiencies
+        if: inputs.enhancements == 'cpu-audio'
+        working-directory: src
+        run: |
+          python3 ../scripts/patch_core_efficiency.py
+          python3 ../scripts/patch_vif_pairs.py
+          python3 ../scripts/verify_core_efficiency.py
+          python3 ../scripts/verify_vif_pairs.py
+
+      - name: Apply and test experimental 128 MB EE fast memory
+        if: inputs.experimental_fastmem == true
+        working-directory: src
+        run: |
+          python3 ../scripts/patch_fastmem_128.py
+          python3 ../scripts/verify_fastmem_128.py
+          python3 ../scripts/verify_fastmem_emit.py
+
       - name: Build production 4K release APK
         if: inputs.validate_only != true
         working-directory: src/platforms/android
@@ -289,14 +359,15 @@ jobs:
           BUILD_START=$(date +%s)
 
           # Android update ordering is independent of the public release label.
-          VERSION_CODE=128117
+          VERSION_CODE=128124
           case "$ENHANCEMENTS" in
-            none) VERSION_NAME=0.2.5-RC3-test2-stopcpu; VARIANT=STOPCPU ;;
-            cpu) VERSION_NAME=0.2.5-RC3-test2-cpu; VARIANT=CPU ;;
-            cpu-audio) VERSION_NAME=0.2.5-RC3-test2; VARIANT=CPU-AUDIO ;;
+            none) VERSION_NAME=0.2.5-RC4-stopcpu; VARIANT=STOPCPU ;;
+            cpu) VERSION_NAME=0.2.5-RC4-cpu; VARIANT=CPU ;;
+            cpu-audio) VERSION_NAME=0.2.5-RC4; VARIANT=CPU-AUDIO ;;
             *) exit 1 ;;
           esac
           printf 'commit=%s\nvariant=%s\nversionCode=%s\nversionName=%s\n' "$GITHUB_SHA" "$VARIANT" "$VERSION_CODE" "$VERSION_NAME" > "$PWD/../../../out/build-info.txt"
+          printf 'experimentalFastmem=%s\n' '${{ inputs.experimental_fastmem }}' >> "$PWD/../../../out/build-info.txt"
 
           ./gradlew :app:assembleGithubRelease \
             -Parmsx2.applicationId=com.armsx2.ncaanext \
